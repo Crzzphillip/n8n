@@ -1,0 +1,744 @@
+## sv fork: File catalog for packages/cli/src2
+
+Total files: 740
+
+- `src2/abstract-server.ts` — [misc] General component;  defines class AbstractServer; decorator: @Service().
+- `src2/activation-errors.service.ts` — [misc] General component;  defines class ActivationErrorsService; decorator: @Service().
+- `src2/active-executions.ts` — [misc] General component;  defines class ActiveExecutions; decorator: @Service().
+- `src2/active-workflow-manager.ts` — [misc] General component;  defines class ActiveWorkflowManager; decorator: @Service().
+- `src2/auth/auth.service.ts` — [auth] Authentication component;  defines class AuthService; decorator: @Service().
+- `src2/auth/index.ts` — [auth] Authentication component.
+- `src2/auth/jwt.ts` — [auth] Authentication component.
+- `src2/auth/methods/email.ts` — [auth] Authentication component.
+- `src2/auth/__tests__/auth.service.test.ts` — [auth] Authentication component.
+- `src2/collaboration/collaboration.message.ts` — [misc] General component.
+- `src2/collaboration/collaboration.service.ts` — [misc] General component;  defines class CollaborationService; decorator: @Service().
+- `src2/collaboration/collaboration.state.ts` — [misc] General component;  defines class CollaborationState; decorator: @Service().
+- `src2/collaboration/__tests__/collaboration.state.test.ts` — [test] Tests;  defines class CustomDate.
+- `src2/command-registry.ts` — [misc] General component;  defines class CommandRegistry; decorator: @Service().
+- `src2/commands/audit.ts` — [command] CLI command entry;  defines class SecurityAudit; decorator: @Command({.
+- `src2/commands/base-command.ts` — [command] CLI command entry;  defines class BaseCommand.
+- `src2/commands/community-node.ts` — [command] CLI command entry;  defines class CommunityNode; decorator: @Command({.
+- `src2/commands/db/revert.ts` — [command] CLI command entry;  defines class name.; decorator: @Command({.
+- `src2/commands/db/__tests__/revert.test.ts` — [command] CLI command entry;  defines class TestMigration.
+- `src2/commands/execute-batch.ts` — [command] CLI command entry;  defines class ExecuteBatch; decorator: @Command({.
+- `src2/commands/execute.ts` — [command] CLI command entry;  defines class Execute; decorator: @Command({.
+- `src2/commands/export/credentials.ts` — [command] CLI command entry;  defines class ExportCredentialsCommand; decorator: @Command({.
+- `src2/commands/export/workflow.ts` — [command] CLI command entry;  defines class ExportWorkflowsCommand; decorator: @Command({.
+- `src2/commands/import/credentials.ts` — [command] CLI command entry;  defines class ImportCredentialsCommand; decorator: @Command({.
+- `src2/commands/import/workflow.ts` — [command] CLI command entry;  defines class ImportWorkflowsCommand; decorator: @Command({.
+- `src2/commands/ldap/reset.ts` — [command] CLI command entry;  defines class Reset; decorator: @Command({.
+- `src2/commands/license/clear.ts` — [command] CLI command entry;  defines class ClearLicenseCommand; decorator: @Command({.
+- `src2/commands/license/info.ts` — [command] CLI command entry;  defines class LicenseInfoCommand; decorator: @Command({.
+- `src2/commands/list/workflow.ts` — [command] CLI command entry;  defines class ListWorkflowCommand; decorator: @Command({.
+- `src2/commands/mfa/disable.ts` — [command] CLI command entry;  defines class DisableMFACommand; decorator: @Command({.
+- `src2/commands/start.ts` — [command] CLI command entry;  defines class Start; decorator: @Command({.
+- `src2/commands/__tests__/community-node.test.ts` — [command] CLI command entry.
+- `src2/commands/__tests__/execute-batch.test.ts` — [command] CLI command entry.
+- `src2/commands/__tests__/execute.test.ts` — [command] CLI command entry.
+- `src2/commands/__tests__/worker.test.ts` — [command] CLI command entry.
+- `src2/commands/ttwf/generate.ts` — [command] CLI command entry;  defines class TTWFGenerateCommand; decorator: @Command({.
+- `src2/commands/ttwf/worker-pool.ts` — [command] CLI command entry;  defines class WorkerPool.
+- `src2/commands/update/workflow.ts` — [command] CLI command entry;  defines class UpdateWorkflowCommand; decorator: @Command({.
+- `src2/commands/user-management/reset.ts` — [command] CLI command entry;  defines class Reset; decorator: @Command({.
+- `src2/commands/webhook.ts` — [command] CLI command entry;  defines class Webhook; decorator: @Command({.
+- `src2/commands/worker.ts` — [command] CLI command entry;  defines class Worker; decorator: @Command({.
+- `src2/concurrency/concurrency-control.service.ts` — [misc] General component;  defines class ConcurrencyControlService; decorator: @Service().
+- `src2/concurrency/concurrency-queue.ts` — [misc] General component;  defines class ConcurrencyQueue; decorator: @Service().
+- `src2/concurrency/__tests__/concurrency-control.service.test.ts` — [test] Tests.
+- `src2/concurrency/__tests__/concurrency-queue.test.ts` — [test] Tests.
+- `src2/config/index.ts` — [misc] General component.
+- `src2/config/schema.ts` — [misc] General component.
+- `src2/config/__tests__/index.test.ts` — [test] Tests.
+- `src2/config/types.ts` — [misc] General component.
+- `src2/constants.ts` — [misc] General component.
+- `src2/controller.registry.ts` — [misc] General component;  defines class ControllerRegistry; decorator: @Service().
+- `src2/controllers/active-workflows.controller.ts` — [controller] HTTP controller (Express route handlers);  defines class ActiveWorkflowsController; decorator: @RestController('/active-workflows').
+- `src2/controllers/ai.controller.ts` — [controller] HTTP controller (Express route handlers);  defines class AiController; decorator: @RestController('/ai').
+- `src2/controllers/annotation-tags.controller.ee.ts` — [controller] HTTP controller (Express route handlers);  defines class AnnotationTagsController; decorator: @RestController('/annotation-tags').
+- `src2/controllers/api-keys.controller.ts` — [controller] HTTP controller (Express route handlers);  defines class ApiKeysController; decorator: @RestController('/api-keys').
+- `src2/controllers/auth.controller.ts` — [controller] HTTP controller (Express route handlers);  defines class AuthController; decorator: @RestController().
+- `src2/controllers/binary-data.controller.ts` — [controller] HTTP controller (Express route handlers);  defines class BinaryDataController; decorator: @RestController('/binary-data').
+- `src2/controllers/community-node-types.controller.ts` — [controller] HTTP controller (Express route handlers);  defines class CommunityNodeTypesController; decorator: @RestController('/community-node-types').
+- `src2/controllers/community-packages.controller.ts` — [controller] HTTP controller (Express route handlers);  defines class CommunityPackagesController; decorator: @RestController('/community-packages').
+- `src2/controllers/cta.controller.ts` — [controller] HTTP controller (Express route handlers);  defines class CtaController; decorator: @RestController('/cta').
+- `src2/controllers/debug.controller.ts` — [controller] HTTP controller (Express route handlers);  defines class DebugController; decorator: @RestController('/debug').
+- `src2/controllers/dynamic-node-parameters.controller.ts` — [controller] HTTP controller (Express route handlers);  defines class DynamicNodeParametersController; decorator: @RestController('/dynamic-node-parameters').
+- `src2/controllers/e2e.controller.ts` — [controller] HTTP controller (Express route handlers);  defines class E2EController; decorator: @RestController('/e2e').
+- `src2/controllers/folder.controller.ts` — [controller] HTTP controller (Express route handlers);  defines class ProjectController; decorator: @RestController('/projects/:projectId/folders').
+- `src2/controllers/invitation.controller.ts` — [controller] HTTP controller (Express route handlers);  defines class InvitationController; decorator: @RestController('/invitations').
+- `src2/controllers/me.controller.ts` — [controller] HTTP controller (Express route handlers);  defines class MeController; decorator: @RestController('/me').
+- `src2/controllers/mfa.controller.ts` — [controller] HTTP controller (Express route handlers);  defines class MFAController; decorator: @RestController('/mfa').
+- `src2/controllers/node-types.controller.ts` — [controller] HTTP controller (Express route handlers);  defines class NodeTypesController; decorator: @RestController('/node-types').
+- `src2/controllers/oauth/abstract-oauth.controller.ts` — [controller] HTTP controller (Express route handlers);  defines class AbstractOAuthController; decorator: @Service().
+- `src2/controllers/oauth/oauth1-credential.controller.ts` — [controller] HTTP controller (Express route handlers);  defines class OAuth1CredentialController; decorator: @RestController('/oauth1-credential').
+- `src2/controllers/oauth/oauth2-credential.controller.ts` — [controller] HTTP controller (Express route handlers);  defines class OAuth2CredentialController; decorator: @RestController('/oauth2-credential').
+- `src2/controllers/oauth/__tests__/abstract-oauth.controller.test.ts` — [controller] HTTP controller (Express route handlers).
+- `src2/controllers/oauth/__tests__/oauth1-credential.controller.test.ts` — [controller] HTTP controller (Express route handlers).
+- `src2/controllers/oauth/__tests__/oauth2-credential.controller.test.ts` — [controller] HTTP controller (Express route handlers).
+- `src2/controllers/orchestration.controller.ts` — [controller] HTTP controller (Express route handlers);  defines class OrchestrationController; decorator: @RestController('/orchestration').
+- `src2/controllers/owner.controller.ts` — [controller] HTTP controller (Express route handlers);  defines class OwnerController; decorator: @RestController('/owner').
+- `src2/controllers/password-reset.controller.ts` — [controller] HTTP controller (Express route handlers);  defines class PasswordResetController; decorator: @RestController().
+- `src2/controllers/project.controller.ts` — [controller] HTTP controller (Express route handlers);  defines class ProjectController; decorator: @RestController('/projects').
+- `src2/controllers/role.controller.ts` — [controller] HTTP controller (Express route handlers);  defines class RoleController; decorator: @RestController('/roles').
+- `src2/controllers/survey-answers.dto.ts` — [controller] HTTP controller (Express route handlers);  defines class PersonalizationSurveyAnswersV4.
+- `src2/controllers/tags.controller.ts` — [controller] HTTP controller (Express route handlers);  defines class TagsController; decorator: @RestController('/tags').
+- `src2/controllers/__tests__/ai.controller.test.ts` — [controller] HTTP controller (Express route handlers).
+- `src2/controllers/__tests__/api-keys.controller.test.ts` — [controller] HTTP controller (Express route handlers).
+- `src2/controllers/__tests__/auth.controller.test.ts` — [controller] HTTP controller (Express route handlers).
+- `src2/controllers/__tests__/binary-data.controller.test.ts` — [controller] HTTP controller (Express route handlers).
+- `src2/controllers/__tests__/community-packages.controller.test.ts` — [controller] HTTP controller (Express route handlers).
+- `src2/controllers/__tests__/dynamic-node-parameters.controller.test.ts` — [controller] HTTP controller (Express route handlers).
+- `src2/controllers/__tests__/me.controller.test.ts` — [controller] HTTP controller (Express route handlers).
+- `src2/controllers/__tests__/owner.controller.test.ts` — [controller] HTTP controller (Express route handlers).
+- `src2/controllers/__tests__/translation.controller.test.ts` — [controller] HTTP controller (Express route handlers).
+- `src2/controllers/__tests__/users.controller.test.ts` — [controller] HTTP controller (Express route handlers).
+- `src2/controllers/__tests__/user-settings.controller.test.ts` — [controller] HTTP controller (Express route handlers).
+- `src2/controllers/translation.controller.ts` — [controller] HTTP controller (Express route handlers);  defines class TranslationController; decorator: @RestController('/').
+- `src2/controllers/users.controller.ts` — [controller] HTTP controller (Express route handlers);  defines class UsersController; decorator: @RestController('/users').
+- `src2/controllers/user-settings.controller.ts` — [controller] HTTP controller (Express route handlers);  defines class UserSettingsController; decorator: @RestController('/user-settings').
+- `src2/controllers/workflow-statistics.controller.ts` — [controller] HTTP controller (Express route handlers);  defines class WorkflowStatisticsController; decorator: @RestController('/workflow-stats').
+- `src2/controllers/workflow-statistics.types.ts` — [controller] HTTP controller (Express route handlers).
+- `src2/crash-journal.ts` — [misc] General component.
+- `src2/credentials/credentials.controller.ts` — [misc] General component;  defines class CredentialsController; decorator: @RestController('/credentials').
+- `src2/credentials/credentials-finder.service.ts` — [misc] General component;  defines class CredentialsFinderService; decorator: @Service().
+- `src2/credentials/credentials.service.ee.ts` — [misc] General component;  defines class EnterpriseCredentialsService; decorator: @Service().
+- `src2/credentials/credentials.service.ts` — [misc] General component;  defines class CredentialsService; decorator: @Service().
+- `src2/credentials-helper.ts` — [misc] General component;  defines class CredentialsHelper; decorator: @Service().
+- `src2/credentials-overwrites.ts` — [misc] General component;  defines class CredentialsOverwrites; decorator: @Service().
+- `src2/credentials/__tests__/credentials.controller.test.ts` — [test] Tests.
+- `src2/credentials/__tests__/credentials.service.test.ts` — [test] Tests.
+- `src2/credentials/__tests__/credentials.test-data.ts` — [test] Tests.
+- `src2/credential-types.ts` — [misc] General component;  defines class CredentialTypes; decorator: @Service().
+- `src2/databases/repositories/__tests__/credentials.repository.test.ts` — [databases] DB-related helpers.
+- `src2/databases/repositories/__tests__/execution.repository.test.ts` — [databases] DB-related helpers.
+- `src2/databases/repositories/__tests__/folder.repository.test.ts` — [databases] DB-related helpers.
+- `src2/databases/repositories/__tests__/workflow-statistics.test.ts` — [databases] DB-related helpers.
+- `src2/deduplication/deduplication-helper.ts` — [deduplication] Data deduplication;  defines class DeduplicationHelper.
+- `src2/deduplication/index.ts` — [deduplication] Data deduplication.
+- `src2/deprecation/deprecation.service.ts` — [deprecation] Deprecation management;  defines class DeprecationService; decorator: @Service().
+- `src2/deprecation/__tests__/deprecation.service.test.ts` — [deprecation] Deprecation management.
+- `src2/environments.ee/source-control/constants.ts` — [env.ee] Enterprise environments feature.
+- `src2/environments.ee/source-control/middleware/source-control-enabled-middleware.ee.ts` — [env.ee] Enterprise environments feature.
+- `src2/environments.ee/source-control/source-control.config.ts` — [env.ee] Enterprise environments feature;  defines class SourceControlConfig.
+- `src2/environments.ee/source-control/source-control.controller.ee.ts` — [env.ee] Enterprise environments feature;  defines class SourceControlController; decorator: @RestController('/source-control').
+- `src2/environments.ee/source-control/source-control-export.service.ee.ts` — [env.ee] Enterprise environments feature;  defines class SourceControlExportService; decorator: @Service().
+- `src2/environments.ee/source-control/source-control-git.service.ee.ts` — [env.ee] Enterprise environments feature;  defines class SourceControlGitService; decorator: @Service().
+- `src2/environments.ee/source-control/source-control-helper.ee.ts` — [env.ee] Enterprise environments feature.
+- `src2/environments.ee/source-control/source-control-import.service.ee.ts` — [env.ee] Enterprise environments feature;  defines class SourceControlImportService; decorator: @Service().
+- `src2/environments.ee/source-control/source-control-preferences.service.ee.ts` — [env.ee] Enterprise environments feature;  defines class SourceControlPreferencesService; decorator: @Service().
+- `src2/environments.ee/source-control/source-control-scoped.service.ts` — [env.ee] Enterprise environments feature;  defines class SourceControlScopedService; decorator: @Service().
+- `src2/environments.ee/source-control/source-control.service.ee.ts` — [env.ee] Enterprise environments feature;  defines class SourceControlService; decorator: @Service().
+- `src2/environments.ee/source-control/__tests__/source-control.controller.ee.test.ts` — [env.ee] Enterprise environments feature.
+- `src2/environments.ee/source-control/__tests__/source-control-export.service.test.ts` — [env.ee] Enterprise environments feature.
+- `src2/environments.ee/source-control/__tests__/source-control-git.service.test.ts` — [env.ee] Enterprise environments feature.
+- `src2/environments.ee/source-control/__tests__/source-control-helper.ee.test.ts` — [env.ee] Enterprise environments feature.
+- `src2/environments.ee/source-control/__tests__/source-control-import.service.ee.test.ts` — [env.ee] Enterprise environments feature.
+- `src2/environments.ee/source-control/__tests__/source-control-preferences.service.ee.test.ts` — [env.ee] Enterprise environments feature;  defines class validate.
+- `src2/environments.ee/source-control/__tests__/source-control.service.test.ts` — [env.ee] Enterprise environments feature.
+- `src2/environments.ee/source-control/types/exportable-credential.ts` — [env.ee] Enterprise environments feature.
+- `src2/environments.ee/source-control/types/exportable-folders.ts` — [env.ee] Enterprise environments feature.
+- `src2/environments.ee/source-control/types/exportable-tags.ts` — [env.ee] Enterprise environments feature.
+- `src2/environments.ee/source-control/types/exportable-workflow.ts` — [env.ee] Enterprise environments feature.
+- `src2/environments.ee/source-control/types/export-result.ts` — [env.ee] Enterprise environments feature.
+- `src2/environments.ee/source-control/types/import-result.ts` — [env.ee] Enterprise environments feature.
+- `src2/environments.ee/source-control/types/key-pair.ts` — [env.ee] Enterprise environments feature.
+- `src2/environments.ee/source-control/types/key-pair-type.ts` — [env.ee] Enterprise environments feature.
+- `src2/environments.ee/source-control/types/requests.ts` — [env.ee] Enterprise environments feature.
+- `src2/environments.ee/source-control/types/resource-owner.ts` — [env.ee] Enterprise environments feature.
+- `src2/environments.ee/source-control/types/source-control-commit.ts` — [env.ee] Enterprise environments feature;  defines class SourceControlCommit.
+- `src2/environments.ee/source-control/types/source-control-context.ts` — [env.ee] Enterprise environments feature;  defines class SourceControlContext.
+- `src2/environments.ee/source-control/types/source-control-disconnect.ts` — [env.ee] Enterprise environments feature;  defines class SourceControlDisconnect.
+- `src2/environments.ee/source-control/types/source-control-generate-key-pair.ts` — [env.ee] Enterprise environments feature;  defines class SourceControlGenerateKeyPair.
+- `src2/environments.ee/source-control/types/source-control-get-status.ts` — [env.ee] Enterprise environments feature;  defines class SourceControlGetStatus.
+- `src2/environments.ee/source-control/types/source-control-preferences.ts` — [env.ee] Enterprise environments feature;  defines class SourceControlPreferences.
+- `src2/environments.ee/source-control/types/source-control-push.ts` — [env.ee] Enterprise environments feature;  defines class SourceControlPush.
+- `src2/environments.ee/source-control/types/source-control-set-branch.ts` — [env.ee] Enterprise environments feature;  defines class SourceControlSetBranch.
+- `src2/environments.ee/source-control/types/source-control-set-read-only.ts` — [env.ee] Enterprise environments feature;  defines class SourceControlSetReadOnly.
+- `src2/environments.ee/source-control/types/source-control-stage.ts` — [env.ee] Enterprise environments feature;  defines class SourceControlStage.
+- `src2/environments.ee/source-control/types/source-control-workflow-version-id.ts` — [env.ee] Enterprise environments feature.
+- `src2/environments.ee/variables/variables.controller.ee.ts` — [env.ee] Enterprise environments feature;  defines class VariablesController; decorator: @RestController('/variables').
+- `src2/environments.ee/variables/variables.service.ee.ts` — [env.ee] Enterprise environments feature;  defines class VariablesService; decorator: @Service().
+- `src2/errors/aborted-execution-retry.error.ts` — [error] Error class/types;  defines class AbortedExecutionRetryError.
+- `src2/errors/cache-errors/malformed-refresh-value.error.ts` — [error] Error class/types;  defines class MalformedRefreshValueError.
+- `src2/errors/cache-errors/uncacheable-value.error.ts` — [error] Error class/types;  defines class UncacheableValueError.
+- `src2/errors/credential-not-found.error.ts` — [error] Error class/types;  defines class CredentialNotFoundError.
+- `src2/errors/credentials-overwrites-already-set.error.ts` — [error] Error class/types;  defines class CredentialsOverwritesAlreadySetError.
+- `src2/errors/deduplication.error.ts` — [error] Error class/types;  defines class DeduplicationError.
+- `src2/errors/execution-not-found-error.ts` — [error] Error class/types;  defines class ExecutionNotFoundError.
+- `src2/errors/feature-not-licensed.error.ts` — [error] Error class/types;  defines class FeatureNotLicensedError.
+- `src2/errors/folder-not-found.error.ts` — [error] Error class/types;  defines class FolderNotFoundError.
+- `src2/errors/invalid-concurrency-limit.error.ts` — [error] Error class/types;  defines class InvalidConcurrencyLimitError.
+- `src2/errors/invalid-role.error.ts` — [error] Error class/types;  defines class InvalidRoleError.
+- `src2/errors/max-stalled-count.error.ts` — [error] Error class/types;  defines class MaxStalledCountError.
+- `src2/errors/missing-execution-stop.error.ts` — [error] Error class/types;  defines class MissingExecutionStopError.
+- `src2/errors/node-crashed.error.ts` — [error] Error class/types;  defines class NodeCrashedError.
+- `src2/errors/non-json-body.error.ts` — [error] Error class/types;  defines class NonJsonBodyError.
+- `src2/errors/postgres-live-rows-retrieval.error.ts` — [error] Error class/types;  defines class PostgresLiveRowsRetrievalError.
+- `src2/errors/queued-execution-retry.error.ts` — [error] Error class/types;  defines class QueuedExecutionRetryError.
+- `src2/errors/redactable.error.ts` — [error] Error class/types;  defines class RedactableError.
+- `src2/errors/response-errors/abstract/response.error.ts` — [error] Error class/types;  defines class ResponseError.
+- `src2/errors/response-errors/auth.error.ts` — [error] Error class/types;  defines class AuthError.
+- `src2/errors/response-errors/bad-request.error.ts` — [error] Error class/types;  defines class BadRequestError.
+- `src2/errors/response-errors/conflict.error.ts` — [error] Error class/types;  defines class ConflictError.
+- `src2/errors/response-errors/content-too-large.error.ts` — [error] Error class/types;  defines class ContentTooLargeError.
+- `src2/errors/response-errors/forbidden.error.ts` — [error] Error class/types;  defines class ForbiddenError.
+- `src2/errors/response-errors/internal-server.error.ts` — [error] Error class/types;  defines class InternalServerError.
+- `src2/errors/response-errors/invalid-mfa-code.error.ts` — [error] Error class/types;  defines class InvalidMfaCodeError.
+- `src2/errors/response-errors/invalid-mfa-recovery-code-error.ts` — [error] Error class/types;  defines class InvalidMfaRecoveryCodeError.
+- `src2/errors/response-errors/not-found.error.ts` — [error] Error class/types;  defines class NotFoundError.
+- `src2/errors/response-errors/not-implemented.error.ts` — [error] Error class/types;  defines class NotImplementedError.
+- `src2/errors/response-errors/service-unavailable.error.ts` — [error] Error class/types;  defines class ServiceUnavailableError.
+- `src2/errors/response-errors/__tests__/webhook-not-found.error.test.ts` — [error] Error class/types.
+- `src2/errors/response-errors/too-many-requests.error.ts` — [error] Error class/types;  defines class TooManyRequestsError.
+- `src2/errors/response-errors/transfer-credential.error.ts` — [error] Error class/types;  defines class TransferCredentialError.
+- `src2/errors/response-errors/transfer-workflow.error.ts` — [error] Error class/types;  defines class TransferWorkflowError.
+- `src2/errors/response-errors/unauthenticated.error.ts` — [error] Error class/types;  defines class UnauthenticatedError.
+- `src2/errors/response-errors/unprocessable.error.ts` — [error] Error class/types;  defines class UnprocessableRequestError.
+- `src2/errors/response-errors/webhook-not-found.error.ts` — [error] Error class/types;  defines class WebhookNotFoundError.
+- `src2/errors/shared-workflow-not-found.error.ts` — [error] Error class/types;  defines class SharedWorkflowNotFoundError.
+- `src2/errors/subworkflow-policy-denial.error.ts` — [error] Error class/types;  defines class SubworkflowPolicyDenialError.
+- `src2/errors/unknown-execution-mode.error.ts` — [error] Error class/types;  defines class UnknownExecutionModeError.
+- `src2/errors/variable-count-limit-reached.error.ts` — [error] Error class/types;  defines class VariableCountLimitReachedError.
+- `src2/errors/variable-validation.error.ts` — [error] Error class/types;  defines class VariableValidationError.
+- `src2/errors/workflow-crashed.error.ts` — [error] Error class/types;  defines class WorkflowCrashedError.
+- `src2/errors/workflow-history-version-not-found.error.ts` — [error] Error class/types;  defines class WorkflowHistoryVersionNotFoundError.
+- `src2/errors/workflow-missing-id.error.ts` — [error] Error class/types;  defines class WorkflowMissingIdError.
+- `src2/evaluation.ee/test-runner/errors.ee.ts` — [misc] General component;  defines class TestCaseExecutionError.
+- `src2/evaluation.ee/test-runner/evaluation-metrics.ee.ts` — [misc] General component;  defines class EvaluationMetrics.
+- `src2/evaluation.ee/test-runner/test-run-cleanup.service.ee.ts` — [misc] General component;  defines class TestRunCleanupService; decorator: @Service().
+- `src2/evaluation.ee/test-runner/test-runner.service.ee.ts` — [misc] General component;  defines class TestRunnerService; decorator: @Service().
+- `src2/evaluation.ee/test-runner/__tests__/evaluation-metrics.ee.test.ts` — [test] Tests.
+- `src2/evaluation.ee/test-runner/__tests__/mock-data/execution-data.json` — [test] json file.
+- `src2/evaluation.ee/test-runner/__tests__/mock-data/execution-data.multiple-triggers-2.json` — [test] json file.
+- `src2/evaluation.ee/test-runner/__tests__/mock-data/execution-data.multiple-triggers.json` — [test] json file.
+- `src2/evaluation.ee/test-runner/__tests__/mock-data/execution-data-renamed-nodes.json` — [test] json file.
+- `src2/evaluation.ee/test-runner/__tests__/mock-data/workflow.evaluation.json` — [test] json file.
+- `src2/evaluation.ee/test-runner/__tests__/mock-data/workflow.evaluation-middle.json` — [test] json file.
+- `src2/evaluation.ee/test-runner/__tests__/mock-data/workflow.multiple-triggers.json` — [test] json file.
+- `src2/evaluation.ee/test-runner/__tests__/mock-data/workflow.under-test.json` — [test] json file.
+- `src2/evaluation.ee/test-runner/__tests__/mock-data/workflow.under-test-renamed-nodes.json` — [test] json file.
+- `src2/evaluation.ee/test-runner/__tests__/test-runner.service.ee.test.ts` — [test] Tests.
+- `src2/evaluation.ee/test-runner/__tests__/utils.ee.test.ts` — [test] Tests.
+- `src2/evaluation.ee/test-runner/utils.ee.ts` — [misc] General component.
+- `src2/evaluation.ee/test-runs.controller.ee.ts` — [misc] General component;  defines class TestRunsController; decorator: @RestController('/workflows').
+- `src2/evaluation.ee/test-runs.types.ee.ts` — [misc] General component.
+- `src2/evaluation.ee/__tests__/test-runs.controller.ee.test.ts` — [test] Tests.
+- `src2/eventbus/event-bus.controller.ts` — [eventbus] Event bus component;  defines class EventBusController; decorator: @RestController('/eventbus').
+- `src2/eventbus/event-message-classes/abstract-event-message-options.ts` — [eventbus] Event bus component.
+- `src2/eventbus/event-message-classes/abstract-event-message.ts` — [eventbus] Event bus component;  defines class AbstractEventMessage.
+- `src2/eventbus/event-message-classes/abstract-event-payload.ts` — [eventbus] Event bus component.
+- `src2/eventbus/event-message-classes/event-message-ai-node.ts` — [eventbus] Event bus component;  defines class for.
+- `src2/eventbus/event-message-classes/event-message-audit.ts` — [eventbus] Event bus component;  defines class for.
+- `src2/eventbus/event-message-classes/event-message-confirm.ts` — [eventbus] Event bus component;  defines class EventMessageConfirm.
+- `src2/eventbus/event-message-classes/event-message-execution.ts` — [eventbus] Event bus component;  defines class EventMessageExecution.
+- `src2/eventbus/event-message-classes/event-message-generic.ts` — [eventbus] Event bus component;  defines class EventMessageGeneric.
+- `src2/eventbus/event-message-classes/event-message-node.ts` — [eventbus] Event bus component;  defines class for.
+- `src2/eventbus/event-message-classes/event-message-queue.ts` — [eventbus] Event bus component;  defines class EventMessageQueue.
+- `src2/eventbus/event-message-classes/event-message-runner.ts` — [eventbus] Event bus component;  defines class EventMessageRunner.
+- `src2/eventbus/event-message-classes/event-message-workflow.ts` — [eventbus] Event bus component;  defines class for.
+- `src2/eventbus/event-message-classes/index.ts` — [eventbus] Event bus component.
+- `src2/eventbus/index.ts` — [eventbus] Event bus component.
+- `src2/eventbus/message-event-bus-destination/message-event-bus-destination.ee.ts` — [eventbus] Event bus component;  defines class MessageEventBusDestination.
+- `src2/eventbus/message-event-bus-destination/message-event-bus-destination-from-db.ts` — [eventbus] Event bus component.
+- `src2/eventbus/message-event-bus-destination/message-event-bus-destination-sentry.ee.ts` — [eventbus] Event bus component;  defines class MessageEventBusDestinationSentry.
+- `src2/eventbus/message-event-bus-destination/message-event-bus-destination-syslog.ee.ts` — [eventbus] Event bus component;  defines class MessageEventBusDestinationSyslog.
+- `src2/eventbus/message-event-bus-destination/message-event-bus-destination-webhook.ee.ts` — [eventbus] Event bus component;  defines class MessageEventBusDestinationWebhook.
+- `src2/eventbus/message-event-bus/message-event-bus.ts` — [eventbus] Event bus component;  defines class MessageEventBus; decorator: @Service().
+- `src2/eventbus/message-event-bus-writer/message-event-bus-log-writer.ts` — [eventbus] Event bus component;  defines class MessageEventBusLogWriter.
+- `src2/eventbus/message-event-bus-writer/message-event-bus-log-writer-worker.ts` — [eventbus] Event bus component.
+- `src2/events/events.controller.ts` — [events] Event emission/relay component;  defines class EventsController; decorator: @RestController('/events').
+- `src2/events/event.service.ts` — [events] Event emission/relay component;  defines class EventService; decorator: @Service().
+- `src2/events/maps/ai.event-map.ts` — [events] Event emission/relay component.
+- `src2/events/maps/queue-metrics.event-map.ts` — [events] Event emission/relay component.
+- `src2/events/maps/relay.event-map.ts` — [events] Event emission/relay component.
+- `src2/events/relays/event-relay.ts` — [events] Event emission/relay component;  defines class EventRelay; decorator: @Service().
+- `src2/events/relays/log-streaming.event-relay.ts` — [events] Event emission/relay component;  defines class LogStreamingEventRelay; decorator: @Service().
+- `src2/events/relays/telemetry.event-relay.ts` — [events] Event emission/relay component;  defines class TelemetryEventRelay; decorator: @Service().
+- `src2/events/__tests__/log-streaming-event-relay.test.ts` — [events] Event emission/relay component.
+- `src2/events/__tests__/telemetry-event-relay.test.ts` — [events] Event emission/relay component.
+- `src2/execution-lifecycle/execute-error-workflow.ts` — [misc] General component.
+- `src2/execution-lifecycle/execution-lifecycle-hooks.ts` — [misc] General component;  defines class ModulesHooksRegistry; decorator: @Service().
+- `src2/execution-lifecycle/restore-binary-data-id.ts` — [misc] General component.
+- `src2/execution-lifecycle/save-execution-progress.ts` — [misc] General component.
+- `src2/execution-lifecycle/shared/shared-hook-functions.ts` — [misc] General component.
+- `src2/execution-lifecycle/shared/__tests__/shared-hook-functions.test.ts` — [test] Tests.
+- `src2/execution-lifecycle/__tests__/execution-lifecycle-hooks.test.ts` — [test] Tests.
+- `src2/execution-lifecycle/__tests__/restore-binary-data-id.test.ts` — [test] Tests.
+- `src2/execution-lifecycle/__tests__/save-execution-progress.test.ts` — [test] Tests.
+- `src2/execution-lifecycle/__tests__/to-save-settings.test.ts` — [test] Tests.
+- `src2/execution-lifecycle/to-save-settings.ts` — [misc] General component.
+- `src2/executions/execution-data.service.ts` — [executions] Execution pipeline component;  defines class ExecutionDataService; decorator: @Service().
+- `src2/executions/execution-recovery.service.ts` — [executions] Execution pipeline component;  defines class ExecutionRecoveryService; decorator: @Service().
+- `src2/executions/executions.controller.ts` — [executions] Execution pipeline component;  defines class ExecutionsController; decorator: @RestController('/executions').
+- `src2/executions/execution.service.ee.ts` — [executions] Execution pipeline component;  defines class EnterpriseExecutionsService; decorator: @Service().
+- `src2/executions/execution.service.ts` — [executions] Execution pipeline component;  defines class ExecutionService; decorator: @Service().
+- `src2/executions/execution.types.ts` — [executions] Execution pipeline component.
+- `src2/executions/parse-range-query.middleware.ts` — [executions] Execution pipeline component.
+- `src2/executions/pre-execution-checks/credentials-permission-checker.ts` — [executions] Execution pipeline component;  defines class InvalidCredentialError; decorator: @Service().
+- `src2/executions/pre-execution-checks/index.ts` — [executions] Execution pipeline component.
+- `src2/executions/pre-execution-checks/subworkflow-policy-checker.ts` — [executions] Execution pipeline component;  defines class SubworkflowPolicyChecker; decorator: @Service().
+- `src2/executions/pre-execution-checks/__tests__/credentials-permission-checker.test.ts` — [executions] Execution pipeline component.
+- `src2/executions/pre-execution-checks/__tests__/subworkflow-policy-checker.test.ts` — [executions] Execution pipeline component.
+- `src2/executions/__tests__/constants.ts` — [executions] Execution pipeline component.
+- `src2/executions/__tests__/execution-data.service.test.ts` — [executions] Execution pipeline component.
+- `src2/executions/__tests__/execution-recovery.service.test.ts` — [executions] Execution pipeline component.
+- `src2/executions/__tests__/executions.controller.test.ts` — [executions] Execution pipeline component.
+- `src2/executions/__tests__/execution.service.test.ts` — [executions] Execution pipeline component.
+- `src2/executions/__tests__/parse-range-query.middleware.test.ts` — [executions] Execution pipeline component.
+- `src2/executions/__tests__/utils.ts` — [executions] Execution pipeline component.
+- `src2/executions/validation.ts` — [executions] Execution pipeline component.
+- `src2/external-hooks.ts` — [misc] General component;  defines class ExternalHooks; decorator: @Service().
+- `src2/generic-helpers.ts` — [misc] General component.
+- `src2/index.ts` — [misc] General component.
+- `src2/interfaces.ts` — [misc] General component.
+- `src2/jest.d.ts` — [misc] General component.
+- `src2/ldap.ee/constants.ts` — [ldap.ee] Enterprise LDAP integration.
+- `src2/ldap.ee/helpers.ee.ts` — [ldap.ee] Enterprise LDAP integration.
+- `src2/ldap.ee/ldap.controller.ee.ts` — [ldap.ee] Enterprise LDAP integration;  defines class LdapController; decorator: @RestController('/ldap').
+- `src2/ldap.ee/ldap.service.ee.ts` — [ldap.ee] Enterprise LDAP integration;  defines class LdapService; decorator: @Service().
+- `src2/ldap.ee/__tests__/helpers.test.ts` — [ldap.ee] Enterprise LDAP integration.
+- `src2/ldap.ee/__tests__/ldap.service.test.ts` — [ldap.ee] Enterprise LDAP integration.
+- `src2/ldap.ee/types.ts` — [ldap.ee] Enterprise LDAP integration.
+- `src2/license/license.controller.ts` — [misc] General component;  defines class LicenseController; decorator: @RestController('/license').
+- `src2/license/license.service.ts` — [misc] General component;  defines class LicenseService; decorator: @Service().
+- `src2/license/__tests__/license.service.test.ts` — [test] Tests;  defines class LicenseError.
+- `src2/license.ts` — [misc] General component;  defines class License; decorator: @Service().
+- `src2/load-nodes-and-credentials.ts` — [misc] General component;  defines class LoadNodesAndCredentials; decorator: @Service().
+- `src2/manual-execution.service.ts` — [misc] General component;  defines class ManualExecutionService; decorator: @Service().
+- `src2/metrics/license-metrics.service.ts` — [metrics] Metrics/Prometheus integration;  defines class LicenseMetricsService; decorator: @Service().
+- `src2/metrics/prometheus-metrics.service.ts` — [metrics] Metrics/Prometheus integration;  defines class PrometheusMetricsService; decorator: @Service().
+- `src2/metrics/__tests__/license-metrics.service.test.ts` — [metrics] Metrics/Prometheus integration.
+- `src2/metrics/__tests__/prometheus-metrics.service.test.ts` — [metrics] Metrics/Prometheus integration.
+- `src2/metrics/__tests__/prometheus-metrics.service.unmocked.test.ts` — [metrics] Metrics/Prometheus integration.
+- `src2/metrics/types.ts` — [metrics] Metrics/Prometheus integration.
+- `src2/mfa/constants.ts` — [mfa] MFA component.
+- `src2/mfa/helpers.ts` — [mfa] MFA component.
+- `src2/mfa/mfa.service.ts` — [mfa] MFA component;  defines class MfaService; decorator: @Service().
+- `src2/mfa/totp.service.ts` — [mfa] MFA component;  defines class TOTPService; decorator: @Service().
+- `src2/middlewares/body-parser.ts` — [middleware] Express middleware.
+- `src2/middlewares/cors.ts` — [middleware] Express middleware.
+- `src2/middlewares/index.ts` — [middleware] Express middleware.
+- `src2/middlewares/list-query/dtos/base.filter.dto.ts` — [middleware] Express middleware;  defines class BaseFilter.
+- `src2/middlewares/list-query/dtos/base.select.dto.ts` — [middleware] Express middleware;  defines class BaseSelect.
+- `src2/middlewares/list-query/dtos/credentials.filter.dto.ts` — [middleware] Express middleware;  defines class CredentialsFilter.
+- `src2/middlewares/list-query/dtos/credentials.select.dto.ts` — [middleware] Express middleware;  defines class CredentialsSelect.
+- `src2/middlewares/list-query/dtos/pagination.dto.ts` — [middleware] Express middleware;  defines class Pagination.
+- `src2/middlewares/list-query/dtos/user.filter.dto.ts` — [middleware] Express middleware;  defines class UserFilter.
+- `src2/middlewares/list-query/dtos/user.select.dto.ts` — [middleware] Express middleware;  defines class UserSelect.
+- `src2/middlewares/list-query/dtos/workflow.filter.dto.ts` — [middleware] Express middleware;  defines class WorkflowFilter.
+- `src2/middlewares/list-query/dtos/workflow.select.dto.ts` — [middleware] Express middleware;  defines class WorkflowSelect.
+- `src2/middlewares/list-query/dtos/workflow.sort-by.dto.ts` — [middleware] Express middleware;  defines class WorkflowSortByParameter.
+- `src2/middlewares/list-query/filter.ts` — [middleware] Express middleware.
+- `src2/middlewares/list-query/index.ts` — [middleware] Express middleware.
+- `src2/middlewares/list-query/pagination.ts` — [middleware] Express middleware.
+- `src2/middlewares/list-query/select.ts` — [middleware] Express middleware.
+- `src2/middlewares/list-query/sort-by.ts` — [middleware] Express middleware.
+- `src2/middlewares/list-query/__tests__/list-query.test.ts` — [middleware] Express middleware.
+- `src2/modules/external-secrets.ee/constants.ts` — [module] Module integration.
+- `src2/modules/external-secrets.ee/errors/unknown-auth-type.error.ts` — [module] Module integration;  defines class UnknownAuthTypeError.
+- `src2/modules/external-secrets.ee/external-secrets.config.ts` — [module] Module integration;  defines class ExternalSecretsConfig.
+- `src2/modules/external-secrets.ee/external-secrets.controller.ee.ts` — [module] Module integration;  defines class ExternalSecretsController; decorator: @RestController('/external-secrets').
+- `src2/modules/external-secrets.ee/external-secrets-manager.ee.ts` — [module] Module integration;  defines class ExternalSecretsManager; decorator: @Service().
+- `src2/modules/external-secrets.ee/external-secrets.module.ts` — [module] Module integration;  defines class ExternalSecretsModule; decorator: @OnShutdown().
+- `src2/modules/external-secrets.ee/external-secrets-providers.ee.ts` — [module] Module integration;  defines class ExternalSecretsProviders; decorator: @Service().
+- `src2/modules/external-secrets.ee/external-secrets.service.ee.ts` — [module] Module integration;  defines class ExternalSecretsService; decorator: @Service().
+- `src2/modules/external-secrets.ee/providers/aws-secrets-manager.ts` — [module] Module integration;  defines class AwsSecretsManager.
+- `src2/modules/external-secrets.ee/providers/azure-key-vault/azure-key-vault.ts` — [module] Module integration;  defines class AzureKeyVault.
+- `src2/modules/external-secrets.ee/providers/azure-key-vault/types.ts` — [module] Module integration.
+- `src2/modules/external-secrets.ee/providers/gcp-secrets-manager/gcp-secrets-manager.ts` — [module] Module integration;  defines class GcpSecretsManager.
+- `src2/modules/external-secrets.ee/providers/gcp-secrets-manager/types.ts` — [module] Module integration.
+- `src2/modules/external-secrets.ee/providers/infisical.ts` — [module] Module integration;  defines class InfisicalProvider.
+- `src2/modules/external-secrets.ee/providers/__tests__/aws-secrets-manager.test.ts` — [module] Module integration.
+- `src2/modules/external-secrets.ee/providers/__tests__/azure-key-vault.test.ts` — [module] Module integration.
+- `src2/modules/external-secrets.ee/providers/__tests__/gcp-secrets-manager.test.ts` — [module] Module integration.
+- `src2/modules/external-secrets.ee/providers/vault.ts` — [module] Module integration;  defines class VaultProvider.
+- `src2/modules/external-secrets.ee/__tests__/external-secrets-manager.ee.test.ts` — [module] Module integration.
+- `src2/modules/external-secrets.ee/types.ts` — [module] Module integration;  defines class SecretsProvider.
+- `src2/modules/insights/database/entities/insights-by-period.ts` — [module] Module integration;  defines class InsightsByPeriod.
+- `src2/modules/insights/database/entities/insights-metadata.ts` — [module] Module integration;  defines class InsightsMetadata.
+- `src2/modules/insights/database/entities/insights-raw.ts` — [module] Module integration;  defines class InsightsRaw.
+- `src2/modules/insights/database/entities/insights-shared.ts` — [module] Module integration.
+- `src2/modules/insights/database/entities/__tests__/db-utils.ts` — [module] Module integration.
+- `src2/modules/insights/database/entities/__tests__/insights-by-period.test.ts` — [module] Module integration.
+- `src2/modules/insights/database/entities/__tests__/insights-raw.test.ts` — [module] Module integration.
+- `src2/modules/insights/database/repositories/insights-by-period.repository.ts` — [module] Module integration;  defines class InsightsByPeriodRepository; decorator: @Service().
+- `src2/modules/insights/database/repositories/insights-metadata.repository.ts` — [module] Module integration;  defines class InsightsMetadataRepository; decorator: @Service().
+- `src2/modules/insights/database/repositories/insights-raw.repository.ts` — [module] Module integration;  defines class InsightsRawRepository; decorator: @Service().
+- `src2/modules/insights/database/repositories/__tests__/insights-by-period.repository.test.ts` — [module] Module integration.
+- `src2/modules/insights/insights-collection.service.ts` — [module] Module integration;  defines class InsightsCollectionService; decorator: @Service().
+- `src2/modules/insights/insights-compaction.service.ts` — [module] Module integration;  defines class InsightsCompactionService; decorator: @Service().
+- `src2/modules/insights/insights.config.ts` — [module] Module integration;  defines class InsightsConfig.
+- `src2/modules/insights/insights.constants.ts` — [module] Module integration.
+- `src2/modules/insights/insights.controller.ts` — [module] Module integration;  defines class ForbiddenError; decorator: @RestController('/insights').
+- `src2/modules/insights/insights.module.ts` — [module] Module integration;  defines class InsightsModule; decorator: @OnShutdown().
+- `src2/modules/insights/insights-pruning.service.ts` — [module] Module integration;  defines class InsightsPruningService; decorator: @Service().
+- `src2/modules/insights/insights.service.ts` — [module] Module integration;  defines class InsightsService; decorator: @Service().
+- `src2/modules/insights/__tests__/insights-collection.service.test.ts` — [module] Module integration.
+- `src2/modules/insights/__tests__/insights-compaction.service.test.ts` — [module] Module integration.
+- `src2/modules/insights/__tests__/insights.controller.test.ts` — [module] Module integration.
+- `src2/modules/insights/__tests__/insights-pruning.service.test.ts` — [module] Module integration.
+- `src2/modules/insights/__tests__/insights.service.test.ts` — [module] Module integration.
+- `src2/node-types.ts` — [misc] General component;  defines class NodeTypes; decorator: @Service().
+- `src2/permissions.ee/check-access.ts` — [permissions.ee] Enterprise permissions check; ; decorator: "`@ProjectScope` decorator was used but does not have a `credentialId`, `workflowId`, or `projectId` in its URL parameters. This is likely an implementation error. If you're a developer, please check your URL is correct or that this should be using `@GlobalScope`.",.
+- `src2/permissions.ee/__tests__/check-access.test.ts` — [permissions.ee] Enterprise permissions check.
+- `src2/posthog/index.ts` — [misc] General component;  defines class PostHogClient; decorator: @Service().
+- `src2/posthog/__tests__/posthog.test.ts` — [test] Tests.
+- `src2/public-api/index.ts` — [public-api] Public API mounting/types.
+- `src2/public-api/swagger-theme.css` — [public-api] css file.
+- `src2/public-api/types.ts` — [public-api] Public API mounting/types.
+- `src2/public-api/v1/handlers/audit/audit.handler.ts` — [public-api] Public API mounting/types.
+- `src2/public-api/v1/handlers/audit/spec/paths/audit.yml` — [public-api] yml file.
+- `src2/public-api/v1/handlers/audit/spec/schemas/audit.yml` — [public-api] yml file.
+- `src2/public-api/v1/handlers/credentials/credentials.handler.ts` — [public-api] Public API mounting/types.
+- `src2/public-api/v1/handlers/credentials/credentials.middleware.ts` — [public-api] Public API mounting/types.
+- `src2/public-api/v1/handlers/credentials/credentials.service.ts` — [public-api] Public API mounting/types.
+- `src2/public-api/v1/handlers/credentials/spec/paths/credentials.id.transfer.yml` — [public-api] yml file.
+- `src2/public-api/v1/handlers/credentials/spec/paths/credentials.id.yml` — [public-api] yml file.
+- `src2/public-api/v1/handlers/credentials/spec/paths/credentials.schema.id.yml` — [public-api] yml file.
+- `src2/public-api/v1/handlers/credentials/spec/paths/credentials.yml` — [public-api] yml file.
+- `src2/public-api/v1/handlers/credentials/spec/schemas/create-credential-response.yml` — [public-api] yml file.
+- `src2/public-api/v1/handlers/credentials/spec/schemas/credentialType.yml` — [public-api] yml file.
+- `src2/public-api/v1/handlers/credentials/spec/schemas/credential.yml` — [public-api] yml file.
+- `src2/public-api/v1/handlers/credentials/spec/schemas/parameters/credentialId.yml` — [public-api] yml file.
+- `src2/public-api/v1/handlers/credentials/__tests__/credentials.service.test.ts` — [public-api] Public API mounting/types.
+- `src2/public-api/v1/handlers/executions/executions.handler.ts` — [executions] Execution pipeline component.
+- `src2/public-api/v1/handlers/executions/spec/paths/executions.id.yml` — [executions] yml file.
+- `src2/public-api/v1/handlers/executions/spec/paths/executions.yml` — [executions] yml file.
+- `src2/public-api/v1/handlers/executions/spec/schemas/executionList.yml` — [executions] yml file.
+- `src2/public-api/v1/handlers/executions/spec/schemas/execution.yml` — [executions] yml file.
+- `src2/public-api/v1/handlers/executions/spec/schemas/parameters/executionId.yml` — [executions] yml file.
+- `src2/public-api/v1/handlers/executions/spec/schemas/parameters/includeData.yml` — [executions] yml file.
+- `src2/public-api/v1/handlers/projects/projects.handler.ts` — [public-api] Public API mounting/types.
+- `src2/public-api/v1/handlers/projects/spec/paths/projects.projectId.users.userId.yml` — [public-api] yml file.
+- `src2/public-api/v1/handlers/projects/spec/paths/projects.projectId.users.yml` — [public-api] yml file.
+- `src2/public-api/v1/handlers/projects/spec/paths/projects.projectId.yml` — [public-api] yml file.
+- `src2/public-api/v1/handlers/projects/spec/paths/projects.yml` — [public-api] yml file.
+- `src2/public-api/v1/handlers/projects/spec/schemas/parameters/projectId.yml` — [public-api] yml file.
+- `src2/public-api/v1/handlers/projects/spec/schemas/projectList.yml` — [public-api] yml file.
+- `src2/public-api/v1/handlers/projects/spec/schemas/project.yml` — [public-api] yml file.
+- `src2/public-api/v1/handlers/source-control/source-control.handler.ts` — [public-api] Public API mounting/types.
+- `src2/public-api/v1/handlers/source-control/spec/paths/sourceControl.yml` — [public-api] yml file.
+- `src2/public-api/v1/handlers/source-control/spec/schemas/importResult.yml` — [public-api] yml file.
+- `src2/public-api/v1/handlers/source-control/spec/schemas/pull.yml` — [public-api] yml file.
+- `src2/public-api/v1/handlers/tags/spec/paths/tags.id.yml` — [public-api] yml file.
+- `src2/public-api/v1/handlers/tags/spec/paths/tags.yml` — [public-api] yml file.
+- `src2/public-api/v1/handlers/tags/spec/schemas/parameters/tagId.yml` — [public-api] yml file.
+- `src2/public-api/v1/handlers/tags/spec/schemas/tagList.yml` — [public-api] yml file.
+- `src2/public-api/v1/handlers/tags/spec/schemas/tag.yml` — [public-api] yml file.
+- `src2/public-api/v1/handlers/tags/tags.handler.ts` — [public-api] Public API mounting/types.
+- `src2/public-api/v1/handlers/users/spec/paths/users.id.role.yml` — [public-api] yml file.
+- `src2/public-api/v1/handlers/users/spec/paths/users.id.yml` — [public-api] yml file.
+- `src2/public-api/v1/handlers/users/spec/paths/users.yml` — [public-api] yml file.
+- `src2/public-api/v1/handlers/users/spec/schemas/parameters/includeRole.yml` — [public-api] yml file.
+- `src2/public-api/v1/handlers/users/spec/schemas/parameters/userIdentifier.yml` — [public-api] yml file.
+- `src2/public-api/v1/handlers/users/spec/schemas/role.yml` — [public-api] yml file.
+- `src2/public-api/v1/handlers/users/spec/schemas/userList.yml` — [public-api] yml file.
+- `src2/public-api/v1/handlers/users/spec/schemas/user.yml` — [public-api] yml file.
+- `src2/public-api/v1/handlers/users/users.handler.ee.ts` — [public-api] Public API mounting/types.
+- `src2/public-api/v1/handlers/users/users.service.ee.ts` — [public-api] Public API mounting/types.
+- `src2/public-api/v1/handlers/variables/spec/paths/variables.id.yml` — [public-api] yml file.
+- `src2/public-api/v1/handlers/variables/spec/paths/variables.yml` — [public-api] yml file.
+- `src2/public-api/v1/handlers/variables/spec/schemas/parameters/variableId.yml` — [public-api] yml file.
+- `src2/public-api/v1/handlers/variables/spec/schemas/variableList.yml` — [public-api] yml file.
+- `src2/public-api/v1/handlers/variables/spec/schemas/variable.yml` — [public-api] yml file.
+- `src2/public-api/v1/handlers/variables/variables.handler.ts` — [public-api] Public API mounting/types.
+- `src2/public-api/v1/handlers/workflows/spec/paths/workflows.id.activate.yml` — [workflows] yml file.
+- `src2/public-api/v1/handlers/workflows/spec/paths/workflows.id.deactivate.yml` — [workflows] yml file.
+- `src2/public-api/v1/handlers/workflows/spec/paths/workflows.id.tags.yml` — [workflows] yml file.
+- `src2/public-api/v1/handlers/workflows/spec/paths/workflows.id.transfer.yml` — [workflows] yml file.
+- `src2/public-api/v1/handlers/workflows/spec/paths/workflows.id.yml` — [workflows] yml file.
+- `src2/public-api/v1/handlers/workflows/spec/paths/workflows.yml` — [workflows] yml file.
+- `src2/public-api/v1/handlers/workflows/spec/schemas/node.yml` — [workflows] yml file.
+- `src2/public-api/v1/handlers/workflows/spec/schemas/parameters/workflowId.yml` — [workflows] yml file.
+- `src2/public-api/v1/handlers/workflows/spec/schemas/tagIds.yml` — [workflows] yml file.
+- `src2/public-api/v1/handlers/workflows/spec/schemas/workflowList.yml` — [workflows] yml file.
+- `src2/public-api/v1/handlers/workflows/spec/schemas/workflowSettings.yml` — [workflows] yml file.
+- `src2/public-api/v1/handlers/workflows/spec/schemas/workflowTags.yml` — [workflows] yml file.
+- `src2/public-api/v1/handlers/workflows/spec/schemas/workflow.yml` — [workflows] yml file.
+- `src2/public-api/v1/handlers/workflows/workflows.handler.ts` — [workflows] Workflow orchestration component.
+- `src2/public-api/v1/handlers/workflows/workflows.service.ts` — [workflows] Workflow orchestration component.
+- `src2/public-api/v1/openapi.yml` — [public-api] yml file.
+- `src2/public-api/v1/shared/middlewares/global.middleware.ts` — [middleware] Express middleware.
+- `src2/public-api/v1/shared/services/pagination.service.ts` — [service] Business/service logic provider.
+- `src2/public-api/v1/shared/spec/parameters/cursor.yml` — [public-api] yml file.
+- `src2/public-api/v1/shared/spec/parameters/_index.yml` — [public-api] yml file.
+- `src2/public-api/v1/shared/spec/parameters/limit.yml` — [public-api] yml file.
+- `src2/public-api/v1/shared/spec/responses/badRequest.yml` — [public-api] yml file.
+- `src2/public-api/v1/shared/spec/responses/conflict.yml` — [public-api] yml file.
+- `src2/public-api/v1/shared/spec/responses/forbidden.yml` — [public-api] yml file.
+- `src2/public-api/v1/shared/spec/responses/_index.yml` — [public-api] yml file.
+- `src2/public-api/v1/shared/spec/responses/notFound.yml` — [public-api] yml file.
+- `src2/public-api/v1/shared/spec/responses/unauthorized.yml` — [public-api] yml file.
+- `src2/public-api/v1/shared/spec/schemas/error.yml` — [public-api] yml file.
+- `src2/public-api/v1/shared/spec/schemas/_index.yml` — [public-api] yml file.
+- `src2/public-api/v1/__tests__/global.middleware.test.ts` — [public-api] Public API mounting/types.
+- `src2/push/abstract.push.ts` — [push] Push (SSE/WebSocket) transport;  defines class for; decorator: @Service().
+- `src2/push/index.ts` — [push] Push (SSE/WebSocket) transport;  defines class Push; decorator: @Service().
+- `src2/push/push.config.ts` — [push] Push (SSE/WebSocket) transport;  defines class PushConfig.
+- `src2/push/sse.push.ts` — [push] Push (SSE/WebSocket) transport;  defines class SSEPush; decorator: @Service().
+- `src2/push/__tests__/index.test.ts` — [push] Push (SSE/WebSocket) transport.
+- `src2/push/__tests__/sse.push.test.ts` — [push] Push (SSE/WebSocket) transport.
+- `src2/push/__tests__/websocket.push.test.ts` — [push] Push (SSE/WebSocket) transport;  defines class MockWebSocket.
+- `src2/push/types.ts` — [push] Push (SSE/WebSocket) transport.
+- `src2/push/websocket.push.ts` — [push] Push (SSE/WebSocket) transport;  defines class WebSocketPush; decorator: @Service().
+- `src2/requests.ts` — [misc] General component.
+- `src2/response-helper.ts` — [misc] General component.
+- `src2/scaling/constants.ts` — [scaling] Scaling/queue workers.
+- `src2/scaling/job-processor.ts` — [scaling] Scaling/queue workers;  defines class JobProcessor; decorator: @Service().
+- `src2/scaling/multi-main-setup.ee.ts` — [scaling] Scaling/queue workers;  defines class MultiMainSetup; decorator: @Service().
+- `src2/scaling/pubsub/publisher.service.ts` — [scaling] Scaling/queue workers;  defines class Publisher; decorator: @Service().
+- `src2/scaling/pubsub/pubsub.eventbus.ts` — [scaling] Scaling/queue workers;  defines class PubSubEventBus; decorator: @Service().
+- `src2/scaling/pubsub/pubsub.event-map.ts` — [scaling] Scaling/queue workers.
+- `src2/scaling/pubsub/pubsub.registry.ts` — [scaling] Scaling/queue workers;  defines class PubSubRegistry; decorator: @Service().
+- `src2/scaling/pubsub/pubsub.types.ts` — [scaling] Scaling/queue workers.
+- `src2/scaling/pubsub/subscriber.service.ts` — [scaling] Scaling/queue workers;  defines class Subscriber; decorator: @Service().
+- `src2/scaling/pubsub/__tests__/publisher.service.test.ts` — [scaling] Scaling/queue workers.
+- `src2/scaling/pubsub/__tests__/pubsub.registry.test.ts` — [scaling] Scaling/queue workers;  defines class TestService; decorator: @Service().
+- `src2/scaling/pubsub/__tests__/subscriber.service.test.ts` — [scaling] Scaling/queue workers.
+- `src2/scaling/redis/redis.types.ts` — [scaling] Scaling/queue workers.
+- `src2/scaling/scaling.service.ts` — [scaling] Scaling/queue workers;  defines class ScalingService; decorator: @Service().
+- `src2/scaling/scaling.types.ts` — [scaling] Scaling/queue workers.
+- `src2/scaling/__tests__/job-processor.service.test.ts` — [scaling] Scaling/queue workers;  defines class constructor.
+- `src2/scaling/__tests__/scaling.service.test.ts` — [scaling] Scaling/queue workers.
+- `src2/scaling/__tests__/worker-server.test.ts` — [scaling] Scaling/queue workers.
+- `src2/scaling/worker-server.ts` — [scaling] Scaling/queue workers;  defines class WorkerServer; decorator: @Service().
+- `src2/scaling/worker-status.service.ee.ts` — [scaling] Scaling/queue workers;  defines class WorkerStatusService; decorator: @Service().
+- `src2/security-audit/constants.ts` — [security-audit] Security audit feature.
+- `src2/security-audit/risk-reporters/credentials-risk-reporter.ts` — [security-audit] Security audit feature;  defines class CredentialsRiskReporter; decorator: @Service().
+- `src2/security-audit/risk-reporters/database-risk-reporter.ts` — [security-audit] Security audit feature;  defines class DatabaseRiskReporter; decorator: @Service().
+- `src2/security-audit/risk-reporters/filesystem-risk-reporter.ts` — [security-audit] Security audit feature;  defines class FilesystemRiskReporter; decorator: @Service().
+- `src2/security-audit/risk-reporters/instance-risk-reporter.ts` — [security-audit] Security audit feature;  defines class InstanceRiskReporter; decorator: @Service().
+- `src2/security-audit/risk-reporters/nodes-risk-reporter.ts` — [security-audit] Security audit feature;  defines class NodesRiskReporter; decorator: @Service().
+- `src2/security-audit/security-audit.service.ts` — [security-audit] Security audit feature;  defines class SecurityAuditService; decorator: @Service().
+- `src2/security-audit/types.ts` — [security-audit] Security audit feature.
+- `src2/security-audit/utils.ts` — [security-audit] Security audit feature.
+- `src2/server.ts` — [misc] General component;  defines class Server; decorator: @Service().
+- `src2/services/access.service.ts` — [service] Business/service logic provider;  defines class AccessService; decorator: @Service().
+- `src2/services/active-workflows.service.ts` — [service] Business/service logic provider;  defines class ActiveWorkflowsService; decorator: @Service().
+- `src2/services/ai.service.ts` — [service] Business/service logic provider;  defines class AiService; decorator: @Service().
+- `src2/services/ai-workflow-builder.service.ts` — [service] Business/service logic provider;  defines class WorkflowBuilderService; decorator: @Service().
+- `src2/services/annotation-tag.service.ee.ts` — [service] Business/service logic provider;  defines class AnnotationTagService; decorator: @Service().
+- `src2/services/banner.service.ts` — [service] Business/service logic provider;  defines class BannerService; decorator: @Service().
+- `src2/services/cache/cache.service.ts` — [service] Business/service logic provider;  defines class CacheService; decorator: @Service().
+- `src2/services/cache/cache.types.ts` — [service] Business/service logic provider.
+- `src2/services/cache/redis.cache-manager.ts` — [service] Business/service logic provider;  defines class NoCacheableError.
+- `src2/services/cache/__tests__/cache-mock.service.test.ts` — [service] Business/service logic provider.
+- `src2/services/cache/__tests__/cache.service.test.ts` — [service] Business/service logic provider.
+- `src2/services/community-node-types.service.ts` — [service] Business/service logic provider;  defines class CommunityNodeTypesService; decorator: @Service().
+- `src2/services/community-packages.service.ts` — [service] Business/service logic provider;  defines class CommunityPackagesService; decorator: @Service().
+- `src2/services/credentials-tester.service.ts` — [service] Business/service logic provider;  defines class CredentialsTester; decorator: @Service().
+- `src2/services/cta.service.ts` — [service] Business/service logic provider;  defines class CtaService; decorator: @Service().
+- `src2/services/dynamic-node-parameters.service.ts` — [service] Business/service logic provider;  defines class DynamicNodeParametersService; decorator: @Service().
+- `src2/services/execution-metadata.service.ts` — [service] Business/service logic provider;  defines class ExecutionMetadataService; decorator: @Service().
+- `src2/services/folder.service.ts` — [service] Business/service logic provider;  defines class FolderService; decorator: @Service().
+- `src2/services/frontend.service.ts` — [service] Business/service logic provider;  defines class FrontendService; decorator: @Service().
+- `src2/services/hooks.service.ts` — [service] Business/service logic provider;  defines class HooksService; decorator: @Service().
+- `src2/services/import.service.ts` — [service] Business/service logic provider;  defines class ImportService; decorator: @Service().
+- `src2/services/jwt.service.ts` — [service] Business/service logic provider;  defines class JwtService; decorator: @Service().
+- `src2/services/last-active-at.service.ts` — [service] Business/service logic provider;  defines class LastActiveAtService; decorator: @Service().
+- `src2/services/naming.service.ts` — [service] Business/service logic provider;  defines class NamingService; decorator: @Service().
+- `src2/services/ownership.service.ts` — [service] Business/service logic provider;  defines class OwnershipService; decorator: @Service().
+- `src2/services/password.utility.ts` — [service] Business/service logic provider;  defines class PasswordUtility.
+- `src2/services/project.service.ee.ts` — [service] Business/service logic provider;  defines class TeamProjectOverQuotaError; decorator: @Service().
+- `src2/services/pruning/executions-pruning.service.ts` — [service] Business/service logic provider;  defines class ExecutionsPruningService; decorator: @Service().
+- `src2/services/pruning/__tests__/executions-pruning.service.test.ts` — [service] Business/service logic provider.
+- `src2/services/public-api-key.service.ts` — [service] Business/service logic provider;  defines class PublicApiKeyService; decorator: @Service().
+- `src2/services/redis-client.service.ts` — [service] Business/service logic provider;  defines class RedisClientService; decorator: @Service().
+- `src2/services/role.service.ts` — [service] Business/service logic provider;  defines class RoleService; decorator: @Service().
+- `src2/services/tag.service.ts` — [service] Business/service logic provider;  defines class TagService; decorator: @Service().
+- `src2/services/__tests__/active-workflows.service.test.ts` — [service] Business/service logic provider.
+- `src2/services/__tests__/ai.service.test.ts` — [service] Business/service logic provider.
+- `src2/services/__tests__/banner.service.test.ts` — [service] Business/service logic provider.
+- `src2/services/__tests__/community-node-types.service.test.ts` — [service] Business/service logic provider.
+- `src2/services/__tests__/community-packages.service.test.ts` — [service] Business/service logic provider.
+- `src2/services/__tests__/credentials-finder.service.test.ts` — [service] Business/service logic provider.
+- `src2/services/__tests__/credentials-tester.service.test.ts` — [service] Business/service logic provider.
+- `src2/services/__tests__/execution-metadata.service.test.ts` — [service] Business/service logic provider.
+- `src2/services/__tests__/frontend.service.test.ts` — [service] Business/service logic provider.
+- `src2/services/__tests__/hooks.service.test.ts` — [service] Business/service logic provider.
+- `src2/services/__tests__/jwt.service.test.ts` — [service] Business/service logic provider.
+- `src2/services/__tests__/last-active-at.service.test.ts` — [service] Business/service logic provider.
+- `src2/services/__tests__/naming.service.test.ts` — [service] Business/service logic provider.
+- `src2/services/__tests__/ownership.service.test.ts` — [service] Business/service logic provider.
+- `src2/services/__tests__/password.utility.test.ts` — [service] Business/service logic provider.
+- `src2/services/__tests__/project.service.ee.test.ts` — [service] Business/service logic provider.
+- `src2/services/__tests__/public-api-key.service.test.ts` — [service] Business/service logic provider.
+- `src2/services/__tests__/url.service.test.ts` — [service] Business/service logic provider.
+- `src2/services/__tests__/user.service.test.ts` — [service] Business/service logic provider.
+- `src2/services/__tests__/workflow-statistics.service.test.ts` — [service] Business/service logic provider.
+- `src2/services/url.service.ts` — [service] Business/service logic provider;  defines class UrlService; decorator: @Service().
+- `src2/services/user.service.ts` — [service] Business/service logic provider;  defines class UserService; decorator: @Service().
+- `src2/services/workflow-loader.service.ts` — [service] Business/service logic provider;  defines class WorkflowLoaderService; decorator: @Service().
+- `src2/services/workflow-statistics.service.ts` — [service] Business/service logic provider;  defines class WorkflowStatisticsService; decorator: @Service().
+- `src2/shutdown/shutdown.service.ts` — [misc] General component;  defines class ComponentShutdownError; decorator: @Service().
+- `src2/shutdown/__tests__/shutdown.service.test.ts` — [test] Tests;  defines class MockComponent; decorator: 'Component "UnregisteredComponent" is not registered with the DI container. Any component using @OnShutdown() must be decorated with @Service()',.
+- `src2/sso.ee/oidc/constants.ts` — [sso.ee] Enterprise SSO integration.
+- `src2/sso.ee/oidc/oidc.service.ee.ts` — [sso.ee] Enterprise SSO integration;  defines class OidcService; decorator: @Service().
+- `src2/sso.ee/oidc/routes/oidc.controller.ee.ts` — [sso.ee] Enterprise SSO integration;  defines class OidcController; decorator: @RestController('/sso/oidc').
+- `src2/sso.ee/saml/constants.ts` — [sso.ee] Enterprise SSO integration.
+- `src2/sso.ee/saml/errors/invalid-saml-metadata.error.ts` — [sso.ee] Enterprise SSO integration;  defines class InvalidSamlMetadataError.
+- `src2/sso.ee/saml/errors/invalid-saml-metadata-url.error.ts` — [sso.ee] Enterprise SSO integration;  defines class InvalidSamlMetadataUrlError.
+- `src2/sso.ee/saml/middleware/saml-enabled-middleware.ts` — [sso.ee] Enterprise SSO integration.
+- `src2/sso.ee/saml/routes/saml.controller.ee.ts` — [sso.ee] Enterprise SSO integration;  defines class SamlController; decorator: @RestController('/sso/saml').
+- `src2/sso.ee/saml/routes/__tests__/saml.controller.ee.test.ts` — [sso.ee] Enterprise SSO integration.
+- `src2/sso.ee/saml/saml-helpers.ts` — [sso.ee] Enterprise SSO integration.
+- `src2/sso.ee/saml/saml.service.ee.ts` — [sso.ee] Enterprise SSO integration;  defines class SamlService; decorator: @Service().
+- `src2/sso.ee/saml/saml-validator.ts` — [sso.ee] Enterprise SSO integration;  defines class SamlValidator; decorator: @Service().
+- `src2/sso.ee/saml/schema/metadata-exchange.xsd.ts` — [sso.ee] Enterprise SSO integration.
+- `src2/sso.ee/saml/schema/oasis-200401-wss-wssecurity-secext-1.0.xsd.ts` — [sso.ee] Enterprise SSO integration.
+- `src2/sso.ee/saml/schema/oasis-200401-wss-wssecurity-utility-1.0.xsd.ts` — [sso.ee] Enterprise SSO integration.
+- `src2/sso.ee/saml/schema/saml-schema-assertion-2.0.xsd.ts` — [sso.ee] Enterprise SSO integration.
+- `src2/sso.ee/saml/schema/saml-schema-metadata-2.0.xsd.ts` — [sso.ee] Enterprise SSO integration.
+- `src2/sso.ee/saml/schema/saml-schema-protocol-2.0.xsd.ts` — [sso.ee] Enterprise SSO integration.
+- `src2/sso.ee/saml/schema/ws-addr.xsd.ts` — [sso.ee] Enterprise SSO integration.
+- `src2/sso.ee/saml/schema/ws-authorization.xsd.ts` — [sso.ee] Enterprise SSO integration.
+- `src2/sso.ee/saml/schema/ws-federation.xsd.ts` — [sso.ee] Enterprise SSO integration.
+- `src2/sso.ee/saml/schema/ws-securitypolicy-1.2.xsd.ts` — [sso.ee] Enterprise SSO integration.
+- `src2/sso.ee/saml/schema/xenc-schema.xsd.ts` — [sso.ee] Enterprise SSO integration.
+- `src2/sso.ee/saml/schema/xmldsig-core-schema.xsd.ts` — [sso.ee] Enterprise SSO integration.
+- `src2/sso.ee/saml/schema/xml.xsd.ts` — [sso.ee] Enterprise SSO integration.
+- `src2/sso.ee/saml/service-provider.ee.ts` — [sso.ee] Enterprise SSO integration.
+- `src2/sso.ee/saml/__tests__/saml-helpers.test.ts` — [sso.ee] Enterprise SSO integration.
+- `src2/sso.ee/saml/__tests__/saml.service.ee.test.ts` — [sso.ee] Enterprise SSO integration.
+- `src2/sso.ee/saml/__tests__/saml-validator.test.ts` — [sso.ee] Enterprise SSO integration.
+- `src2/sso.ee/saml/types.ts` — [sso.ee] Enterprise SSO integration.
+- `src2/sso.ee/saml/views/init-sso-post.ts` — [sso.ee] Enterprise SSO integration.
+- `src2/sso.ee/sso-helpers.ts` — [sso.ee] Enterprise SSO integration.
+- `src2/task-runners/default-task-runner-disconnect-analyzer.ts` — [task-runner] Task runner subsystem;  defines class DefaultTaskRunnerDisconnectAnalyzer; decorator: @Service().
+- `src2/task-runners/errors/missing-auth-token.error.ts` — [task-runner] Task runner subsystem;  defines class MissingAuthTokenError.
+- `src2/task-runners/errors/task-runner-disconnected-error.ts` — [task-runner] Task runner subsystem;  defines class TaskRunnerDisconnectedError.
+- `src2/task-runners/errors/task-runner-failed-heartbeat.error.ts` — [task-runner] Task runner subsystem;  defines class TaskRunnerFailedHeartbeatError.
+- `src2/task-runners/errors/task-runner-oom-error.ts` — [task-runner] Task runner subsystem;  defines class TaskRunnerOomError.
+- `src2/task-runners/errors/task-runner-restart-loop-error.ts` — [task-runner] Task runner subsystem;  defines class TaskRunnerRestartLoopError.
+- `src2/task-runners/errors/__tests__/task-runner-disconnected-error.test.ts` — [task-runner] Task runner subsystem.
+- `src2/task-runners/forward-to-logger.ts` — [task-runner] Task runner subsystem.
+- `src2/task-runners/internal-task-runner-disconnect-analyzer.ts` — [task-runner] Task runner subsystem;  defines class InternalTaskRunnerDisconnectAnalyzer; decorator: @Service().
+- `src2/task-runners/node-process-oom-detector.ts` — [task-runner] Task runner subsystem;  defines class NodeProcessOomDetector.
+- `src2/task-runners/sliding-window-signal.ts` — [task-runner] Task runner subsystem;  defines class that.
+- `src2/task-runners/task-broker/auth/task-broker-auth.controller.ts` — [task-runner] Task runner subsystem;  defines class TaskBrokerAuthController; decorator: @Service().
+- `src2/task-runners/task-broker/auth/task-broker-auth.schema.ts` — [task-runner] Task runner subsystem.
+- `src2/task-runners/task-broker/auth/task-broker-auth.service.ts` — [task-runner] Task runner subsystem;  defines class TaskBrokerAuthService; decorator: @Service().
+- `src2/task-runners/task-broker/auth/__tests__/task-broker-auth.controller.test.ts` — [task-runner] Task runner subsystem.
+- `src2/task-runners/task-broker/auth/__tests__/task-broker-auth.service.test.ts` — [task-runner] Task runner subsystem.
+- `src2/task-runners/task-broker/errors/task-deferred.error.ts` — [task-runner] Task runner subsystem;  defines class TaskDeferredError.
+- `src2/task-runners/task-broker/errors/task-reject.error.ts` — [task-runner] Task runner subsystem;  defines class TaskRejectError.
+- `src2/task-runners/task-broker/errors/task-runner-accept-timeout.error.ts` — [task-runner] Task runner subsystem;  defines class TaskRunnerAcceptTimeoutError.
+- `src2/task-runners/task-broker/errors/task-runner-execution-timeout.error.ts` — [task-runner] Task runner subsystem;  defines class TaskRunnerExecutionTimeoutError.
+- `src2/task-runners/task-broker/task-broker-server.ts` — [task-runner] Task runner subsystem;  defines class TaskBrokerServer; decorator: @Service().
+- `src2/task-runners/task-broker/task-broker.service.ts` — [task-runner] Task runner subsystem;  defines class TaskBroker; decorator: @Service().
+- `src2/task-runners/task-broker/task-broker-types.ts` — [task-runner] Task runner subsystem.
+- `src2/task-runners/task-broker/task-broker-ws-server.ts` — [task-runner] Task runner subsystem;  defines class TaskBrokerWsServer; decorator: @Service().
+- `src2/task-runners/task-broker/__tests__/task-broker-server.test.ts` — [task-runner] Task runner subsystem.
+- `src2/task-runners/task-broker/__tests__/task-broker.service.test.ts` — [task-runner] Task runner subsystem.
+- `src2/task-runners/task-broker/__tests__/task-broker-ws-server.test.ts` — [task-runner] Task runner subsystem.
+- `src2/task-runners/task-managers/data-request-response-builder.ts` — [task-runner] Task runner subsystem;  defines class DataRequestResponseBuilder.
+- `src2/task-runners/task-managers/data-request-response-stripper.ts` — [task-runner] Task runner subsystem;  defines class DataRequestResponseStripper.
+- `src2/task-runners/task-managers/local-task-requester.ts` — [task-runner] Task runner subsystem;  defines class LocalTaskRequester; decorator: @Service().
+- `src2/task-runners/task-managers/task-requester.ts` — [task-runner] Task runner subsystem;  defines class TaskRequester; decorator: @Service().
+- `src2/task-runners/task-managers/__tests__/data-request-response-builder.test.ts` — [task-runner] Task runner subsystem.
+- `src2/task-runners/task-managers/__tests__/data-request-response-stripper.test.ts` — [task-runner] Task runner subsystem.
+- `src2/task-runners/task-managers/__tests__/task-manager.test.ts` — [task-runner] Task runner subsystem;  defines class TestTaskRequester.
+- `src2/task-runners/task-runner-lifecycle-events.ts` — [task-runner] Task runner subsystem;  defines class TaskRunnerLifecycleEvents; decorator: @Service().
+- `src2/task-runners/task-runner-module.ts` — [task-runner] Task runner subsystem;  defines class TaskRunnerModule; decorator: @Service().
+- `src2/task-runners/task-runner-process-restart-loop-detector.ts` — [task-runner] Task runner subsystem;  defines class to.
+- `src2/task-runners/task-runner-process.ts` — [task-runner] Task runner subsystem;  defines class TaskRunnerProcess; decorator: @Service().
+- `src2/task-runners/__tests__/forward-to-logger.test.ts` — [task-runner] Task runner subsystem.
+- `src2/task-runners/__tests__/node-process-oom-detector.test.ts` — [task-runner] Task runner subsystem.
+- `src2/task-runners/__tests__/sliding-window-signal.test.ts` — [task-runner] Task runner subsystem.
+- `src2/task-runners/__tests__/task-runner-process-restart-loop-detector.test.ts` — [task-runner] Task runner subsystem.
+- `src2/task-runners/__tests__/task-runner-process.test.ts` — [task-runner] Task runner subsystem.
+- `src2/telemetry/index.ts` — [misc] General component;  defines class Telemetry; decorator: @Service().
+- `src2/telemetry/__tests__/telemetry.test.ts` — [test] Tests.
+- `src2/__tests__/active-executions.test.ts` — [test] Tests.
+- `src2/__tests__/active-workflow-manager.test.ts` — [test] Tests.
+- `src2/__tests__/command-registry.test.ts` — [test] Tests;  defines class TestCommand.
+- `src2/__tests__/controller.registry.test.ts` — [test] Tests;  defines class TestController; decorator: @RestController('/test').
+- `src2/__tests__/credentials-helper.test.ts` — [test] Tests.
+- `src2/__tests__/credentials-overwrites.test.ts` — [test] Tests.
+- `src2/__tests__/credential-types.test.ts` — [test] Tests.
+- `src2/__tests__/external-hooks.test.ts` — [test] Tests.
+- `src2/__tests__/license.test.ts` — [test] Tests.
+- `src2/__tests__/load-nodes-and-credentials.test.ts` — [test] Tests.
+- `src2/__tests__/manual-execution.service.test.ts` — [test] Tests.
+- `src2/__tests__/node-types.test.ts` — [test] Tests.
+- `src2/__tests__/project.test-data.ts` — [test] Tests.
+- `src2/__tests__/utils.test.ts` — [test] Tests.
+- `src2/__tests__/wait-tracker.test.ts` — [test] Tests.
+- `src2/__tests__/workflow-execute-additional-data.test.ts` — [test] Tests.
+- `src2/__tests__/workflow-runner.test.ts` — [test] Tests;  defines class MockScalingService; decorator: @Service().
+- `src2/typed-emitter.ts` — [misc] General component;  defines class TypedEmitter.
+- `src2/types/commands.types.ts` — [types] Shared types.
+- `src2/user-management/email/index.ts` — [misc] General component.
+- `src2/user-management/email/interfaces.ts` — [misc] General component.
+- `src2/user-management/email/node-mailer.ts` — [misc] General component;  defines class NodeMailer; decorator: @Service().
+- `src2/user-management/email/templates/_common.mjml` — [misc] mjml file.
+- `src2/user-management/email/templates/credentials-shared.mjml` — [misc] mjml file.
+- `src2/user-management/email/templates/_logo.mjml` — [misc] mjml file.
+- `src2/user-management/email/templates/n8n-logo.png` — [misc] png file.
+- `src2/user-management/email/templates/password-reset-requested.mjml` — [misc] mjml file.
+- `src2/user-management/email/templates/project-shared.mjml` — [misc] mjml file.
+- `src2/user-management/email/templates/user-invited.mjml` — [misc] mjml file.
+- `src2/user-management/email/templates/workflow-shared.mjml` — [misc] mjml file.
+- `src2/user-management/email/__tests__/user-management-mailer.test.ts` — [test] Tests.
+- `src2/user-management/email/user-management-mailer.ts` — [misc] General component;  defines class UserManagementMailer; decorator: @Service().
+- `src2/utils/community-node-types-utils.ts` — [utils] Utility helpers.
+- `src2/utils/npm-utils.ts` — [utils] Utility helpers.
+- `src2/utils/object-to-error.ts` — [utils] Utility helpers.
+- `src2/utils/strapi-utils.ts` — [utils] Utility helpers.
+- `src2/utils/__tests__/npm-utils.test.ts` — [utils] Utility helpers.
+- `src2/utils/__tests__/object-to-error.test.ts` — [utils] Utility helpers.
+- `src2/utils/__tests__/strapi-utils.test.ts` — [utils] Utility helpers.
+- `src2/utils.ts` — [misc] General component.
+- `src2/utlity.types.ts` — [misc] General component.
+- `src2/wait-tracker.ts` — [misc] General component;  defines class WaitTracker; decorator: @Service().
+- `src2/webhooks/constants.ts` — [webhooks] Webhook handling component.
+- `src2/webhooks/live-webhooks.ts` — [webhooks] Webhook handling component;  defines class LiveWebhooks; decorator: @Service().
+- `src2/webhooks/__tests__/test-webhook-registrations.service.test.ts` — [webhooks] Webhook handling component.
+- `src2/webhooks/__tests__/test-webhooks.test.ts` — [webhooks] Webhook handling component.
+- `src2/webhooks/__tests__/waiting-forms.test.ts` — [webhooks] Webhook handling component.
+- `src2/webhooks/__tests__/waiting-webhooks.test.ts` — [webhooks] Webhook handling component.
+- `src2/webhooks/__tests__/webhook-form-data.test.ts` — [webhooks] Webhook handling component;  defines class TestServer.
+- `src2/webhooks/__tests__/webhook-helpers.test.ts` — [webhooks] Webhook handling component.
+- `src2/webhooks/__tests__/webhook-last-node-response-extractor.test.ts` — [webhooks] Webhook handling component.
+- `src2/webhooks/__tests__/webhook-on-received-response-extractor.test.ts` — [webhooks] Webhook handling component.
+- `src2/webhooks/__tests__/webhook-request-handler.test.ts` — [webhooks] Webhook handling component;  defines class TestError.
+- `src2/webhooks/__tests__/webhook-request-sanitizer.test.ts` — [webhooks] Webhook handling component.
+- `src2/webhooks/__tests__/webhook.service.test.ts` — [webhooks] Webhook handling component.
+- `src2/webhooks/test-webhook-registrations.service.ts` — [webhooks] Webhook handling component;  defines class TestWebhookRegistrationsService; decorator: @Service().
+- `src2/webhooks/test-webhooks.ts` — [webhooks] Webhook handling component;  defines class TestWebhooks; decorator: @Service().
+- `src2/webhooks/waiting-forms.ts` — [webhooks] Webhook handling component;  defines class WaitingForms; decorator: @Service().
+- `src2/webhooks/waiting-webhooks.ts` — [webhooks] Webhook handling component;  defines class WaitingWebhooks; decorator: @Service().
+- `src2/webhooks/webhook-execution-context.ts` — [webhooks] Webhook handling component;  defines class that.
+- `src2/webhooks/webhook-form-data.ts` — [webhooks] Webhook handling component.
+- `src2/webhooks/webhook-helpers.ts` — [webhooks] Webhook handling component.
+- `src2/webhooks/webhook-last-node-response-extractor.ts` — [webhooks] Webhook handling component.
+- `src2/webhooks/webhook-on-received-response-extractor.ts` — [webhooks] Webhook handling component.
+- `src2/webhooks/webhook-request-handler.ts` — [webhooks] Webhook handling component;  defines class WebhookRequestHandler.
+- `src2/webhooks/webhook-request-sanitizer.ts` — [webhooks] Webhook handling component.
+- `src2/webhooks/webhook-response.ts` — [webhooks] Webhook handling component.
+- `src2/webhooks/webhooks.controller.ts` — [webhooks] Webhook handling component;  defines class WebhooksController; decorator: @RestController('/webhooks').
+- `src2/webhooks/webhook-server.ts` — [webhooks] Webhook handling component;  defines class WebhookServer; decorator: @Service().
+- `src2/webhooks/webhook.service.ts` — [webhooks] Webhook handling component;  defines class WebhookService; decorator: @Service().
+- `src2/webhooks/webhook.types.ts` — [webhooks] Webhook handling component.
+- `src2/workflow-execute-additional-data.ts` — [misc] General component.
+- `src2/workflow-helpers.ts` — [misc] General component.
+- `src2/workflow-runner.ts` — [misc] General component;  defines class WorkflowRunner; decorator: @Service().
+- `src2/workflows/__tests__/workflow-execution.service.test.ts` — [workflows] Workflow orchestration component.
+- `src2/workflows/__tests__/workflows.controller.test.ts` — [workflows] Workflow orchestration component.
+- `src2/workflows/workflow-execution.service.ts` — [workflows] Workflow orchestration component;  defines class WorkflowExecutionService; decorator: @Service().
+- `src2/workflows/workflow-finder.service.ts` — [workflows] Workflow orchestration component;  defines class WorkflowFinderService; decorator: @Service().
+- `src2/workflows/workflow.formatter.ts` — [workflows] Workflow orchestration component.
+- `src2/workflows/workflow-history.ee/__tests__/workflow-history-helper.ee.test.ts` — [workflows] Workflow orchestration component.
+- `src2/workflows/workflow-history.ee/__tests__/workflow-history.service.ee.test.ts` — [workflows] Workflow orchestration component.
+- `src2/workflows/workflow-history.ee/workflow-history.controller.ee.ts` — [workflows] Workflow orchestration component;  defines class WorkflowHistoryController; decorator: @RestController('/workflow-history').
+- `src2/workflows/workflow-history.ee/workflow-history-helper.ee.ts` — [workflows] Workflow orchestration component.
+- `src2/workflows/workflow-history.ee/workflow-history-manager.ee.ts` — [workflows] Workflow orchestration component;  defines class WorkflowHistoryManager; decorator: @Service().
+- `src2/workflows/workflow-history.ee/workflow-history.service.ee.ts` — [workflows] Workflow orchestration component;  defines class WorkflowHistoryService; decorator: @Service().
+- `src2/workflows/workflow.request.ts` — [workflows] Workflow orchestration component.
+- `src2/workflows/workflows.controller.ts` — [workflows] Workflow orchestration component;  defines class WorkflowsController; decorator: @RestController('/workflows').
+- `src2/workflows/workflow.service.ee.ts` — [workflows] Workflow orchestration component;  defines class EnterpriseWorkflowService; decorator: @Service().
+- `src2/workflows/workflow.service.ts` — [workflows] Workflow orchestration component;  defines class WorkflowService; decorator: @Service().
+- `src2/workflows/workflow-sharing.service.ts` — [workflows] Workflow orchestration component;  defines class WorkflowSharingService; decorator: @Service().
+- `src2/workflows/workflow-static-data.service.ts` — [workflows] Workflow orchestration component;  defines class WorkflowStaticDataService; decorator: @Service().
+- `src2/zod-alias-support.ts` — [misc] General component.
