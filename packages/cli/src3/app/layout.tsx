@@ -1,3 +1,5 @@
+import '../styles/n8n-theme.scss';
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">

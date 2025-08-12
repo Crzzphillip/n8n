@@ -4,6 +4,7 @@ const nextConfig = {
   experimental: {
     serverActions: true,
   },
+  sassOptions: {},
 };
 
 export default nextConfig;
