@@ -2,10 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import '../../../import-controllers';
 import { matchAndHandle } from '../../../lib/registry-adapter';
 import { ensureBootstrapped } from '../../../lib/bootstrap';
+import { ensureRuntimeInitialized } from '../../../lib/runtime-init';
 
 async function handle(req: NextRequest) {
   try {
     await ensureBootstrapped();
+    await ensureRuntimeInitialized();
     const resp = await matchAndHandle(req);
     return resp;
   } catch (error) {
