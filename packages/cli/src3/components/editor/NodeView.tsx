@@ -194,13 +194,13 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
         tagsStore.getState().fetchTags(),
       ];
 
-      // Add enterprise features if enabled
+      // Add enterprise features if enabled (placeholders)
       if (settingsStore.getState().isEnterpriseFeatureEnabled[EnterpriseEditionFeature.Variables]) {
-        // Add environment variables loading
+        // TODO: environmentsStore.fetchAllVariables()
       }
 
       if (settingsStore.getState().isEnterpriseFeatureEnabled[EnterpriseEditionFeature.ExternalSecrets]) {
-        // Add external secrets loading
+        // TODO: externalSecretsStore.fetchAllSecrets()
       }
 
       try {
@@ -502,6 +502,10 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
     await canvasOperations.renameNode(node.name, nextName, { trackHistory: true });
   }, [workflow.nodes, canvasOperations]);
 
+  const keyBindingsEnabled = useMemo(() => {
+    return !ndvStore.activeNode && uiStore.activeModals.length === 0;
+  }, [ndvStore.activeNode, uiStore.activeModals]);
+
   useKeyboardShortcuts({
     onSave: () => workflowSaving.saveCurrentWorkflow(),
     onUndo: () => {
@@ -557,7 +561,7 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
       if (!selectedNodeId) return;
       void onOpenRenameNodeModal(selectedNodeId);
     },
-  });
+  }, keyBindingsEnabled);
 
   // Enhanced computed values
   const viewportBoundaries = useMemo<ViewportBoundaries>(() => ({
@@ -986,6 +990,23 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
     }
   }, [params, initializeDebugMode]);
 
+  const showFallbackNodes = useMemo(() => triggerNodes.length === 0, [triggerNodes]);
+
+  useEffect(() => {
+    // Inject fallback nodes if no triggers and not read-only
+    if (showFallbackNodes && !isReadOnlyEnv) {
+      const hasNodes = workflow.nodes.length > 0;
+      if (!hasNodes) {
+        void canvasOperations.addNodes([
+          // Assistant prompt placeholder
+          { type: 'ai-prompt', position: [-690, -15], parameters: {} as any },
+          // Add Nodes placeholder
+          { type: 'add-nodes', position: [0, 0], parameters: {} as any },
+        ]);
+      }
+    }
+  }, [showFallbackNodes, isReadOnlyEnv]);
+
   if (loading) return <div style={{ padding: 16 }}>Loading…</div>;
 
   return (
@@ -1100,6 +1121,8 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
           <button onClick={() => onCutNodes(Array.from(selectedNodeIds))} disabled={selectedNodeIds.size === 0}>Cut</button>
           <button onClick={() => onDuplicateNodes(Array.from(selectedNodeIds))} disabled={selectedNodeIds.size === 0}>Duplicate</button>
           <button onClick={() => onPinNodes(Array.from(selectedNodeIds))} disabled={selectedNodeIds.size === 0}>Pin/Unpin</button>
+          <button onClick={() => logsStore.getState().toggleInputOpen()}>{logsStore.getState().detailsState === 'both' || logsStore.getState().detailsState === 'input' ? 'Hide' : 'Show'} Input</button>
+          <button onClick={() => logsStore.getState().toggleOutputOpen()}>{logsStore.getState().detailsState === 'both' || logsStore.getState().detailsState === 'output' ? 'Hide' : 'Show'} Output</button>
         </div>
         
         {/* Read-only callout */}
