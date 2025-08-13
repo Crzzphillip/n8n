@@ -1220,19 +1220,19 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
         
         {/* Canvas Actions Row */}
         <div style={{ display: 'flex', gap: 8, padding: '8px 12px' }}>
-          <button onClick={() => canvasOperations.tidyUp({ source: 'button' })}>Tidy up</button>
-          <button onClick={() => onExtractWorkflow(Array.from(selectedNodeIds))} disabled={selectedNodeIds.size === 0}>Extract workflow</button>
-          <button onClick={() => nodeCreatorStore.getState().openNodeCreatorForTriggerNodes(NODE_CREATOR_OPEN_SOURCES.PLUS_ENDPOINT)}>Add node</button>
-          <button onClick={onOpenNodeCreatorFromCanvas}>Open Creator (+)</button>
-          <button onClick={onCreateSticky}>Add Sticky</button>
-          <button onClick={onDeleteSelectedConnection} disabled={!selectedEdge}>Delete connection</button>
-          <button onClick={() => onCopyNodes(Array.from(selectedNodeIds))} disabled={selectedNodeIds.size === 0}>Copy</button>
-          <button onClick={() => onCutNodes(Array.from(selectedNodeIds))} disabled={selectedNodeIds.size === 0}>Cut</button>
-          <button onClick={() => onDuplicateNodes(Array.from(selectedNodeIds))} disabled={selectedNodeIds.size === 0}>Duplicate</button>
-          <button onClick={() => onPinNodes(Array.from(selectedNodeIds))} disabled={selectedNodeIds.size === 0}>Pin/Unpin</button>
-          <button onClick={onRunWorkflowToSelectedNode} disabled={!selectedNodeId}>Run node</button>
-          <button onClick={() => logsStore.getState().toggleInputOpen()}>{logsStore.getState().detailsState === 'both' || logsStore.getState().detailsState === 'input' ? 'Hide' : 'Show'} Input</button>
-          <button onClick={() => logsStore.getState().toggleOutputOpen()}>{logsStore.getState().detailsState === 'both' || logsStore.getState().detailsState === 'output' ? 'Hide' : 'Show'} Output</button>
+          <button data-testid="tidy-up" onClick={() => canvasOperations.tidyUp({ source: 'button' })}>Tidy up</button>
+          <button data-testid="extract-workflow" onClick={() => onExtractWorkflow(Array.from(selectedNodeIds))} disabled={selectedNodeIds.size === 0}>Extract workflow</button>
+          <button data-testid="add-node-trigger" onClick={() => nodeCreatorStore.getState().openNodeCreatorForTriggerNodes(NODE_CREATOR_OPEN_SOURCES.PLUS_ENDPOINT)}>Add node</button>
+          <button data-testid="open-creator-plus" onClick={onOpenNodeCreatorFromCanvas}>Open Creator (+)</button>
+          <button data-testid="add-sticky" onClick={onCreateSticky}>Add Sticky</button>
+          <button data-testid="delete-connection" onClick={onDeleteSelectedConnection} disabled={!selectedEdge}>Delete connection</button>
+          <button data-testid="copy" onClick={() => onCopyNodes(Array.from(selectedNodeIds))} disabled={selectedNodeIds.size === 0}>Copy</button>
+          <button data-testid="cut" onClick={() => onCutNodes(Array.from(selectedNodeIds))} disabled={selectedNodeIds.size === 0}>Cut</button>
+          <button data-testid="duplicate" onClick={() => onDuplicateNodes(Array.from(selectedNodeIds))} disabled={selectedNodeIds.size === 0}>Duplicate</button>
+          <button data-testid="pin" onClick={() => onPinNodes(Array.from(selectedNodeIds))} disabled={selectedNodeIds.size === 0}>Pin/Unpin</button>
+          <button data-testid="run-node" onClick={onRunWorkflowToSelectedNode} disabled={!selectedNodeId}>Run node</button>
+          <button data-testid="toggle-input" onClick={() => logsStore.getState().toggleInputOpen()}>{logsStore.getState().detailsState === 'both' || logsStore.getState().detailsState === 'input' ? 'Hide' : 'Show'} Input</button>
+          <button data-testid="toggle-output" onClick={() => logsStore.getState().toggleOutputOpen()}>{logsStore.getState().detailsState === 'both' || logsStore.getState().detailsState === 'output' ? 'Hide' : 'Show'} Output</button>
         </div>
         
         {/* Read-only callout */}
@@ -1324,6 +1324,8 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
               if (node) setSelectedNodeId(node.id);
             }}
             onSaveKeyboardShortcut={workflowSaving.saveCurrentWorkflow}
+            readOnly={isReadOnlyEnv}
+            isProductionExecutionPreview={isProductionExecutionPreview}
           />
         ) : (
           <NDV selectedNodeId={selectedNodeId} onSaveKeyboardShortcut={workflowSaving.saveCurrentWorkflow} />

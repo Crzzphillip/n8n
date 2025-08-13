@@ -9,6 +9,8 @@ export default function NodeDetailsView(props: {
   onOpenConnectionNodeCreator?: (nodeId: string, connectionType: string, connectionIndex?: number) => void;
   onSwitchSelectedNode?: (nodeName: string) => void;
   onSaveKeyboardShortcut?: () => void;
+  readOnly?: boolean;
+  isProductionExecutionPreview?: boolean;
 }) {
   const { current } = useWorkflowStore();
   const node = useMemo(() => current?.nodes.find((n) => n.id === props.selectedNodeId), [current, props.selectedNodeId]);
@@ -21,6 +23,7 @@ export default function NodeDetailsView(props: {
   if (!node) return <div style={{ padding: 12 }}>No node selected</div>;
 
   const save = () => {
+    if (props.readOnly) return;
     try {
       const params = JSON.parse(raw);
       const wf = useWorkflowStore.getState().current;
@@ -36,6 +39,7 @@ export default function NodeDetailsView(props: {
   };
 
   const onSchemaChange = (params: Record<string, any>) => {
+    if (props.readOnly) return;
     const wf = useWorkflowStore.getState().current;
     if (!wf) return;
     const updated = {
@@ -55,21 +59,28 @@ export default function NodeDetailsView(props: {
 
   return (
     <div style={{ padding: 12, borderLeft: '1px solid #eee', height: '100%' }} onKeyDown={onKeyDown} tabIndex={0}>
+      {props.isProductionExecutionPreview && (
+        <div style={{ background: '#fff7e6', border: '1px solid #ffe58f', padding: 8, borderRadius: 6, marginBottom: 8 }}>
+          This is a production execution preview
+        </div>
+      )}
       <h4>Node: {node.name}</h4>
       <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
-        <button onClick={() => props.onOpenConnectionNodeCreator?.(node.id, 'outputs', 0)}>Open connection node creator</button>
+        <button onClick={() => props.onOpenConnectionNodeCreator?.(node.id, 'outputs', 0)} disabled={props.readOnly}>Open connection node creator</button>
         <button onClick={() => props.onSwitchSelectedNode?.(node.name)}>Switch selected node</button>
       </div>
-      <div style={{ marginBottom: 8 }}>
-        <label>Credential <CredentialSelector value={node.parameters?.credentials} onChange={(id) => onSchemaChange({ ...(node.parameters || {}), credentials: id })} /></label>
-      </div>
+      {!props.readOnly && (
+        <div style={{ marginBottom: 8 }}>
+          <label>Credential <CredentialSelector value={node.parameters?.credentials} onChange={(id) => onSchemaChange({ ...(node.parameters || {}), credentials: id })} /></label>
+        </div>
+      )}
       {node.type ? (
-        <SchemaForm nodeType={node.type} value={node.parameters || {}} onChange={onSchemaChange} />
+        <SchemaForm nodeType={node.type} value={node.parameters || {}} onChange={props.readOnly ? () => {} : onSchemaChange} />
       ) : (
         <>
-          <textarea value={raw} onChange={(e) => setRaw(e.target.value)} style={{ width: '100%', height: 240 }} />
+          <textarea value={raw} onChange={(e) => setRaw(e.target.value)} style={{ width: '100%', height: 240 }} disabled={props.readOnly} />
           <div style={{ marginTop: 8 }}>
-            <button onClick={save}>Save parameters</button>
+            <button onClick={save} disabled={props.readOnly}>Save parameters</button>
           </div>
         </>
       )}

@@ -201,4 +201,14 @@ describe('NodeView', () => {
     });
     expect(addNodesSpy).toHaveBeenCalled();
   });
+
+  it('clicks Run node and Add Sticky buttons', async () => {
+    (global as any).fetch = jest.fn(async () => ({ ok: true, json: async () => ({ id: 'wf', name: 'WF', nodes: [{ id: 'n1', name: 'Node 1', position: { x: 0, y: 0 } }], connections: {} }) }));
+    const { getByTestId } = render(<NodeView mode="existing" /> as any);
+    const addSticky = getByTestId('add-sticky');
+    await act(async () => { fireEvent.click(addSticky); });
+    const runNode = getByTestId('run-node');
+    await act(async () => { fireEvent.click(runNode); });
+    expect(runNode).toBeTruthy();
+  });
 });
