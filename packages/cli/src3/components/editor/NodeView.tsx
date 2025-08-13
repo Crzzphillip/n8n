@@ -100,6 +100,8 @@ import { isValidNodeConnectionType, isVueFlowConnection } from '../../src3/utils
 import { tryToParseNumber } from '../../src3/utils/typesUtils';
 import { getNodeViewTab } from '../../src3/utils/nodeViewUtils';
 import { getNodesWithNormalizedPosition } from '../../src3/utils/nodeViewUtils';
+import { usePermissions } from '../../src3/hooks/usePermissions';
+import { getEasyAiWorkflowJson, getRagStarterWorkflowJson } from '../../src3/utils/easyAiWorkflowUtils';
 
 // Types
 import type { INodeUi, XYPosition, ViewportTransform, Dimensions, ViewportBoundaries, AddedNodesAndConnections } from '../../src3/types/Interface';
@@ -250,6 +252,19 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
       if (templateId) {
         (async () => {
           try {
+            // Recognize easy AI / RAG shortcuts
+            if (templateId === getEasyAiWorkflowJson().meta.templateId) {
+              await importWorkflowExact(getEasyAiWorkflowJson());
+              telemetry.track('template.open', { template_id: templateId });
+              setTimeout(() => canvasEventBus.emit('fitView'));
+              return;
+            }
+            if (templateId === getRagStarterWorkflowJson().meta.templateId) {
+              await importWorkflowExact(getRagStarterWorkflowJson());
+              telemetry.track('template.open', { template_id: templateId });
+              setTimeout(() => canvasEventBus.emit('fitView'));
+              return;
+            }
             // Minimal template fetch
             const res = await fetch(`/api/rest/templates/${templateId}`);
             if (!res.ok) throw new Error('Failed to fetch template');
@@ -935,7 +950,7 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
     void canvasOperations.addNodes([{ type: STICKY_NODE_TYPE }], { trackHistory: true });
   }, [canvasOperations]);
 
-  const isReadOnlyEnv = sourceControlStore.preferences.branchReadOnly;
+  const isReadOnlyEnv = usePermissions().isCanvasReadOnly;
   const [readOnlyNotified, setReadOnlyNotified] = useState(false);
 
   const checkIfEditingIsAllowed = useCallback(() => {
