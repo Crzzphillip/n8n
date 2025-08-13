@@ -236,7 +236,8 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
       setLoading(true);
       fetchJson<Workflow>(`/api/rest/workflows/${workflowId}`)
         .then((wf) => {
-          setWorkflow(wf);
+          workflowHelpers.resetWorkspace();
+          workflowHelpers.initializeWorkspace(wf);
           documentTitle.setWorkflowTitle(wf.name);
           void externalHooks.run('workflow.open', { workflowId: wf.id, workflowName: wf.name });
         })
@@ -254,13 +255,15 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
           try {
             // Recognize easy AI / RAG shortcuts
             if (templateId === getEasyAiWorkflowJson().meta.templateId) {
-              await importWorkflowExact(getEasyAiWorkflowJson());
+              workflowHelpers.resetWorkspace();
+              workflowHelpers.initializeWorkspace(getEasyAiWorkflowJson());
               telemetry.track('template.open', { template_id: templateId });
               setTimeout(() => canvasEventBus.emit('fitView'));
               return;
             }
             if (templateId === getRagStarterWorkflowJson().meta.templateId) {
-              await importWorkflowExact(getRagStarterWorkflowJson());
+              workflowHelpers.resetWorkspace();
+              workflowHelpers.initializeWorkspace(getRagStarterWorkflowJson());
               telemetry.track('template.open', { template_id: templateId });
               setTimeout(() => canvasEventBus.emit('fitView'));
               return;
@@ -269,7 +272,8 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
             const res = await fetch(`/api/rest/templates/${templateId}`);
             if (!res.ok) throw new Error('Failed to fetch template');
             const data = await res.json();
-            await importWorkflowExact({ workflow: data.workflow, name: data.name });
+            workflowHelpers.resetWorkspace();
+            workflowHelpers.initializeWorkspace({ workflow: data.workflow, name: data.name });
             telemetry.track('template.open', { template_id: templateId });
             setTimeout(() => canvasEventBus.emit('fitView'));
           } catch (e) {
@@ -1087,6 +1091,45 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
       await guardedReplace(`${window.location.pathname}?${sp.toString()}`);
     });
   }, [executionDebugging, workflow.name, params, guardedReplace, workflowHelpers]);
+
+  useEffect(() => {
+    const offFitView = canvasEventBus.on('fitView', () => {});
+    const offToggleFocus = canvasEventBus.on('toggle:focus-panel', () => {
+      focusPanelStore.getState().toggleFocusPanel();
+    });
+    const offCreateSticky = canvasEventBus.on('create:sticky', () => {
+      void canvasOperations.addNodes([{ type: STICKY_NODE_TYPE }], { trackHistory: true });
+    });
+    const offCreateNodePlus = canvasEventBus.on('create:node', ({ source }) => {
+      nodeCreatorStore.getState().setNodeCreatorState({ createNodeActive: true, source: NODE_CREATOR_OPEN_SOURCES.PLUS_ENDPOINT });
+    });
+    const offClickConnectionAdd = canvasEventBus.on('click:connection:add', ({ source, target }) => {
+      nodeCreatorStore.getState().openNodeCreatorForConnectingNode({ connection: { source: source, sourceHandle: 'outputs-main-0' }, eventSource: NODE_CREATOR_OPEN_SOURCES.NODE_CONNECTION_ACTION });
+    });
+    const offRunNode = canvasEventBus.on('run:node', ({ nodeId }) => {
+      void runWorkflow.runWorkflowToNode(nodeId);
+    });
+    const offUpdateInputs = canvasEventBus.on('update:node:inputs', ({ nodeId }) => {
+      canvasOperations.revalidateNodeInputConnections(nodeId);
+    });
+    const offUpdateOutputs = canvasEventBus.on('update:node:outputs', ({ nodeId }) => {
+      canvasOperations.revalidateNodeOutputConnections(nodeId);
+    });
+    const offOpenSubworkflow = canvasEventBus.on('open:subworkflow', ({ nodeId }) => {
+      telemetry.track('Subworkflow open', { nodeId });
+    });
+    return () => {
+      offFitView?.();
+      offToggleFocus?.();
+      offCreateSticky?.();
+      offCreateNodePlus?.();
+      offClickConnectionAdd?.();
+      offRunNode?.();
+      offUpdateInputs?.();
+      offUpdateOutputs?.();
+      offOpenSubworkflow?.();
+    };
+  }, [focusPanelStore, canvasOperations, nodeCreatorStore, runWorkflow, telemetry]);
 
   useEffect(() => {
     const execId = params.get('executionId');

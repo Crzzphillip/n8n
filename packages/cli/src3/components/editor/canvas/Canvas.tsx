@@ -121,7 +121,11 @@ export default function Canvas(props: {
     } else if (props.onSelectEdge) {
       props.onSelectEdge(undefined);
     }
-  }, [props.onSelectNode, props.onSelectEdge]);
+    // Report selection range presence
+    const hasRange = (params.nodes || []).filter((n) => n.selected).length > 1;
+    canvasEventBus.emit('nodes:select', { ids: (params.nodes || []).filter((n) => n.selected).map((n) => String(n.id)) });
+    props.onRangeSelectionChange?.(hasRange);
+  }, [props.onSelectNode, props.onSelectEdge, props.onRangeSelectionChange]);
 
   const handleMove = useCallback((_evt: any, viewport: { x: number; y: number; zoom: number }) => {
     if (!props.onViewportChange) return;
@@ -181,6 +185,10 @@ export default function Canvas(props: {
             <button onClick={() => rf.zoomIn()}>+</button>
             <button onClick={() => rf.zoomOut()}>-</button>
             <button onClick={() => rf.fitView()}>Fit</button>
+            <button onClick={() => canvasEventBus.emit('toggle:focus-panel')}>Toggle Focus</button>
+            <button onClick={() => canvasEventBus.emit('create:sticky')}>Sticky</button>
+            <button onClick={() => canvasEventBus.emit('create:node', { source: 'plus' })}>+</button>
+            <button onClick={() => canvasEventBus.emit('click:connection:add', { source: 'node', target: undefined })}>Add Conn</button>
           </Panel>
         </ReactFlow>
       </ReactFlowProvider>

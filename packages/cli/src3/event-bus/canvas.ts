@@ -9,4 +9,12 @@ export interface CanvasEvents {
 	tidyUp: { source: string; nodeIdsFilter?: string[] };
 	'saved:workflow': void;
 	'open:execution': any;
+	'toggle:focus-panel': void;
+	'run:node': { nodeId: string };
+	'update:node:inputs': { nodeId: string };
+	'update:node:outputs': { nodeId: string };
+	'create:sticky': void;
+	'create:node': { source: string };
+	'click:connection:add': { source: string; target?: string };
+	'open:subworkflow': { nodeId: string };
 }
