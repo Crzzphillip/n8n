@@ -490,6 +490,10 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
 
     const offSaved = canvasEventBus.on('saved:workflow', () => {
       toast.showSuccess('Workflow saved');
+      // NDV save context toast
+      if (ndvStore.activeNodeName) {
+        toast.showSuccess('Saved from Node panel');
+      }
     });
 
     return () => {
@@ -1075,7 +1079,7 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
   }, [historyBus, workflow.nodes, canvasOperations]);
 
   const isNDVV2 = useMemo(() => {
-    return false; // Placeholder experiment gating
+    return usePostHog().isVariantEnabled('ndv-ui-overhaul', 'enabled');
   }, []);
 
   // Debug mode flags
