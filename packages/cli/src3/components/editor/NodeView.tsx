@@ -10,6 +10,7 @@ import RightPanel from './SidePanels/RightPanel';
 import { usePushStore } from '../../src3/stores/push';
 import Tooltip from '../ui/Tooltip';
 import { useModal } from '../ui/ModalManager';
+import { useWorkflowStore } from '../../src3/stores/workflows';
 
 type WorkflowId = string;
 
@@ -55,7 +56,17 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
 
   useEffect(() => {
     const off = usePushStore.getState().subscribeExecutions();
-    return () => off?.();
+    const onBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (useWorkflowStore.getState().dirty) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+    window.addEventListener('beforeunload', onBeforeUnload);
+    return () => {
+      window.removeEventListener('beforeunload', onBeforeUnload);
+      off?.();
+    };
   }, []);
 
   const canSave = useMemo(() => workflow.name.trim().length > 0, [workflow.name]);
@@ -97,6 +108,8 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
 
   useKeyboardShortcuts({
     onSave: () => (workflow.id ? void updateExisting() : void saveNew()),
+    onUndo: () => useWorkflowStore.getState().undo(),
+    onRedo: () => useWorkflowStore.getState().redo(),
     onDelete: async () => {
       if (!selectedNodeId) return;
       const ok = await useModal().confirm('Delete selected node?');
@@ -114,6 +127,7 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
         ...w,
         nodes: w.nodes.map((n, i) => ({ ...n, position: { x: 100 + (i % 4) * 180, y: 100 + Math.floor(i / 4) * 140 } })),
       }));
+      useWorkflowStore.getState().pushHistory();
     },
     onAlign: () => {
       // simple align: align selected to top-left if any selected
@@ -123,6 +137,7 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
         ...w,
         nodes: w.nodes.map((n) => (n.id === selectedNodeId ? n : { ...n, position: { x: base.x, y: n.position?.y ?? 100 } })),
       }));
+      useWorkflowStore.getState().pushHistory();
     },
   });
 
@@ -180,6 +195,7 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
         return acc;
       }, {}),
     }));
+    useWorkflowStore.getState().pushHistory();
   }, []);
 
   if (loading) return <div style={{ padding: 16 }}>Loading…</div>;
@@ -238,7 +254,10 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
             </Tooltip>
           </div>
         </div>
-        <div style={{ border: '1px solid #ddd', borderRadius: 8, padding: 0, minHeight: '100%' }}>
+        <div style={{ border: '1px solid #ddd', borderRadius: 8, padding: 0, minHeight: '100%' }} onContextMenu={(e) => {
+          e.preventDefault();
+          // TODO: open context menu with actions (duplicate, delete, align)
+        }}>
           <Canvas nodes={canvasNodes} edges={canvasEdges} onChange={onCanvasChange} onSelectNode={setSelectedNodeId} />
         </div>
       </section>

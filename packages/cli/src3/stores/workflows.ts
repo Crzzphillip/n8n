@@ -28,6 +28,9 @@ type State = {
   current?: Workflow;
   loading: boolean;
   error?: string;
+  dirty: boolean;
+  history: Workflow[];
+  historyIndex: number;
   load: (id: string) => Promise<void>;
   create: (payload: Omit<Workflow, 'id'>) => Promise<string>;
   update: () => Promise<void>;
@@ -35,17 +38,29 @@ type State = {
   addNode: (node: WorkflowNode) => void;
   setNodePosition: (id: string, pos: { x: number; y: number }) => void;
   connect: (fromId: string, toId: string) => void;
+  removeNode: (id: string) => void;
+  pushHistory: () => void;
+  undo: () => void;
+  redo: () => void;
+  markSaved: () => void;
 };
+
+function clone(wf?: Workflow): Workflow | undefined {
+  return wf ? JSON.parse(JSON.stringify(wf)) : undefined;
+}
 
 export const useWorkflowStore = create<State>((set, get) => ({
   current: undefined,
   loading: false,
+  dirty: false,
+  history: [],
+  historyIndex: -1,
   error: undefined,
   async load(id) {
     set({ loading: true, error: undefined });
     try {
       const wf = await fetchJson<Workflow>(`/api/rest/workflows/${id}`);
-      set({ current: wf });
+      set({ current: wf, dirty: false, history: [clone(wf)!], historyIndex: 0 });
     } catch (e: any) {
       set({ error: e?.message || 'Failed to load' });
     } finally {
@@ -58,7 +73,8 @@ export const useWorkflowStore = create<State>((set, get) => ({
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify(payload),
     });
-    set({ current: { ...payload, id: created.id } });
+    const wf = { ...payload, id: created.id } as Workflow;
+    set({ current: wf, dirty: false, history: [clone(wf)!], historyIndex: 0 });
     return created.id;
   },
   async update() {
@@ -69,26 +85,28 @@ export const useWorkflowStore = create<State>((set, get) => ({
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ name: wf.name, nodes: wf.nodes, connections: wf.connections, settings: wf.settings }),
     });
+    set({ dirty: false });
   },
   setName(name) {
     const wf = get().current;
     if (!wf) return;
-    set({ current: { ...wf, name } });
+    const next = { ...wf, name };
+    set({ current: next, dirty: true });
   },
   addNode(node) {
     const wf = get().current;
     if (!wf) return;
-    set({ current: { ...wf, nodes: [...wf.nodes, node] } });
+    const next = { ...wf, nodes: [...wf.nodes, node] };
+    set({ current: next, dirty: true });
   },
   setNodePosition(id, pos) {
     const wf = get().current;
     if (!wf) return;
-    set({
-      current: {
-        ...wf,
-        nodes: wf.nodes.map((n) => (n.id === id ? { ...n, position: pos } : n)),
-      },
-    });
+    const next = {
+      ...wf,
+      nodes: wf.nodes.map((n) => (n.id === id ? { ...n, position: pos } : n)),
+    };
+    set({ current: next, dirty: true });
   },
   connect(fromId, toId) {
     const wf = get().current;
@@ -96,6 +114,39 @@ export const useWorkflowStore = create<State>((set, get) => ({
     const conns = { ...wf.connections };
     conns[fromId] = conns[fromId] || [];
     conns[fromId].push({ node: toId, type: 'main', index: 0 });
-    set({ current: { ...wf, connections: conns } });
+    const next = { ...wf, connections: conns };
+    set({ current: next, dirty: true });
+  },
+  removeNode(id) {
+    const wf = get().current;
+    if (!wf) return;
+    const next = {
+      ...wf,
+      nodes: wf.nodes.filter((n) => n.id !== id),
+      connections: Object.fromEntries(Object.entries(wf.connections).map(([k, arr]: any) => [k, (arr as any[]).filter((c) => c.node !== id)])),
+    } as Workflow;
+    set({ current: next, dirty: true });
+  },
+  pushHistory() {
+    const wf = clone(get().current);
+    if (!wf) return;
+    const history = get().history.slice(0, get().historyIndex + 1);
+    history.push(wf);
+    set({ history, historyIndex: history.length - 1 });
+  },
+  undo() {
+    const { historyIndex, history } = get();
+    if (historyIndex <= 0) return;
+    const idx = historyIndex - 1;
+    set({ historyIndex: idx, current: clone(history[idx]), dirty: true });
+  },
+  redo() {
+    const { historyIndex, history } = get();
+    if (historyIndex >= history.length - 1) return;
+    const idx = historyIndex + 1;
+    set({ historyIndex: idx, current: clone(history[idx]), dirty: true });
+  },
+  markSaved() {
+    set({ dirty: false });
   },
 }));
