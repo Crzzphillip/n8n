@@ -1,0 +1,186 @@
+## src2/evaluation.ee/test-runner/__tests__/mock-data/execution-data-renamed-nodes.json
+
+Overview: src2/evaluation.ee/test-runner/__tests__/mock-data/execution-data-renamed-nodes.json is a core component within the sv CLI runtime.
+
+How it works: Integrates with neighbors via DI, typed configs, and shared types to fulfill its responsibility.
+
+Why: Clear modular boundaries and typed contracts keep the code maintainable.
+
+### Recreate
+
+Place this file at `src2/evaluation.ee/test-runner/__tests__/mock-data/execution-data-renamed-nodes.json` and use the following source:
+
+```json
+{
+	"startData": {},
+	"resultData": {
+		"runData": {
+			"Manual Run": [
+				{
+					"hints": [],
+					"startTime": 1731079118048,
+					"executionTime": 0,
+					"source": [],
+					"executionStatus": "success",
+					"data": {
+						"main": [
+							[
+								{
+									"json": {
+										"query": "First item"
+									},
+									"pairedItem": {
+										"item": 0
+									}
+								},
+								{
+									"json": {
+										"query": "Second item"
+									},
+									"pairedItem": {
+										"item": 0
+									}
+								},
+								{
+									"json": {
+										"query": "Third item"
+									},
+									"pairedItem": {
+										"item": 0
+									}
+								}
+							]
+						]
+					}
+				}
+			],
+			"Set Attribute": [
+				{
+					"hints": [],
+					"startTime": 1731079118049,
+					"executionTime": 0,
+					"source": [
+						{
+							"previousNode": "Manual Run"
+						}
+					],
+					"executionStatus": "success",
+					"data": {
+						"main": [
+							[
+								{
+									"json": {
+										"foo": "bar"
+									},
+									"pairedItem": {
+										"item": 0
+									}
+								},
+								{
+									"json": {
+										"foo": "bar"
+									},
+									"pairedItem": {
+										"item": 1
+									}
+								},
+								{
+									"json": {
+										"foo": "bar"
+									},
+									"pairedItem": {
+										"item": 2
+									}
+								}
+							]
+						]
+					}
+				}
+			],
+			"Code": [
+				{
+					"hints": [],
+					"startTime": 1731079118049,
+					"executionTime": 3,
+					"source": [
+						{
+							"previousNode": "Set Attribute"
+						}
+					],
+					"executionStatus": "success",
+					"data": {
+						"main": [
+							[
+								{
+									"json": {
+										"foo": "bar",
+										"random": 0.6315509336851373
+									},
+									"pairedItem": {
+										"item": 0
+									}
+								},
+								{
+									"json": {
+										"foo": "bar",
+										"random": 0.3336315687359024
+									},
+									"pairedItem": {
+										"item": 1
+									}
+								},
+								{
+									"json": {
+										"foo": "bar",
+										"random": 0.4241870158917733
+									},
+									"pairedItem": {
+										"item": 2
+									}
+								}
+							]
+						]
+					}
+				}
+			]
+		},
+		"pinData": {
+			"Manual Run": [
+				{
+					"json": {
+						"query": "First item"
+					},
+					"pairedItem": {
+						"item": 0
+					}
+				},
+				{
+					"json": {
+						"query": "Second item"
+					},
+					"pairedItem": {
+						"item": 0
+					}
+				},
+				{
+					"json": {
+						"query": "Third item"
+					},
+					"pairedItem": {
+						"item": 0
+					}
+				}
+			]
+		},
+		"lastNodeExecuted": "Code"
+	},
+	"executionData": {
+		"contextData": {},
+		"nodeExecutionStack": [],
+		"metadata": {},
+		"waitingExecution": {},
+		"waitingExecutionSource": {}
+	}
+}
+
+```
