@@ -1,13 +1,22 @@
 "use client";
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect, KeyboardEvent } from 'react';
 import { useWorkflowStore } from '../../../src3/stores/workflows';
 import SchemaForm from './SchemaForm';
 import CredentialSelector from './CredentialSelector';
 
-export default function NodeDetailsView(props: { selectedNodeId?: string }) {
+export default function NodeDetailsView(props: {
+  selectedNodeId?: string;
+  onOpenConnectionNodeCreator?: (nodeId: string, connectionType: string, connectionIndex?: number) => void;
+  onSwitchSelectedNode?: (nodeName: string) => void;
+  onSaveKeyboardShortcut?: () => void;
+}) {
   const { current } = useWorkflowStore();
   const node = useMemo(() => current?.nodes.find((n) => n.id === props.selectedNodeId), [current, props.selectedNodeId]);
   const [raw, setRaw] = useState<string>(() => JSON.stringify(node?.parameters || {}, null, 2));
+
+  useEffect(() => {
+    setRaw(JSON.stringify(node?.parameters || {}, null, 2));
+  }, [node?.id]);
 
   if (!node) return <div style={{ padding: 12 }}>No node selected</div>;
 
@@ -37,9 +46,20 @@ export default function NodeDetailsView(props: { selectedNodeId?: string }) {
     setRaw(JSON.stringify(params, null, 2));
   };
 
+  const onKeyDown = (e: KeyboardEvent) => {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+      e.preventDefault();
+      if (props.onSaveKeyboardShortcut) props.onSaveKeyboardShortcut();
+    }
+  };
+
   return (
-    <div style={{ padding: 12, borderLeft: '1px solid #eee', height: '100%' }}>
+    <div style={{ padding: 12, borderLeft: '1px solid #eee', height: '100%' }} onKeyDown={onKeyDown} tabIndex={0}>
       <h4>Node: {node.name}</h4>
+      <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+        <button onClick={() => props.onOpenConnectionNodeCreator?.(node.id, 'outputs', 0)}>Open connection node creator</button>
+        <button onClick={() => props.onSwitchSelectedNode?.(node.name)}>Switch selected node</button>
+      </div>
       <div style={{ marginBottom: 8 }}>
         <label>Credential <CredentialSelector value={node.parameters?.credentials} onChange={(id) => onSchemaChange({ ...(node.parameters || {}), credentials: id })} /></label>
       </div>

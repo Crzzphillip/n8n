@@ -1181,9 +1181,17 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
       {/* NDV */}
       <div style={{ gridColumn: '1 / -1', display: 'flex' }}>
         {!isNDVV2 ? (
-          <NDV selectedNodeId={selectedNodeId} />
+          <NDV 
+            selectedNodeId={selectedNodeId} 
+            onOpenConnectionNodeCreator={(nodeId) => nodeCreatorStore.getState().openNodeCreatorForConnectingNode({ connection: { source: nodeId, sourceHandle: 'outputs-main-0' }, eventSource: NODE_CREATOR_OPEN_SOURCES.PLUS_ENDPOINT })}
+            onSwitchSelectedNode={(nodeName) => {
+              const node = workflow.nodes.find((n) => n.name === nodeName);
+              if (node) setSelectedNodeId(node.id);
+            }}
+            onSaveKeyboardShortcut={workflowSaving.saveCurrentWorkflow}
+          />
         ) : (
-          <NDV selectedNodeId={selectedNodeId} />
+          <NDV selectedNodeId={selectedNodeId} onSaveKeyboardShortcut={workflowSaving.saveCurrentWorkflow} />
         )}
       </div>
     </div>
