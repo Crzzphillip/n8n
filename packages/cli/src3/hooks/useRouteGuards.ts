@@ -45,9 +45,22 @@ export function useRouteGuards(router: {
 		await guardedNavigate(() => router.back());
 	}, [guardedNavigate, router]);
 
+	const guardedNavigateIfDirty = useCallback(
+		async (fn: () => void | Promise<void>) => {
+			await promptSaveUnsavedWorkflowChanges(
+				() => {
+					void fn();
+				},
+				{ confirm: async () => true },
+			);
+		},
+		[promptSaveUnsavedWorkflowChanges],
+	);
+
 	return {
 		guardedPush,
 		guardedReplace,
 		guardedBack,
+		guardedNavigateIfDirty,
 	};
 }

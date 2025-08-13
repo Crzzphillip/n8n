@@ -333,6 +333,9 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
     useClipboard({
       onPaste: async (plainTextData: string) => {
         try {
+          // Only allow paste on Workflow tab
+          const tab = getNodeViewTab(params);
+          if (tab !== MAIN_HEADER_TABS.WORKFLOW) return;
           if (VALID_WORKFLOW_IMPORT_URL_REGEX.test(plainTextData)) {
             const confirmed = await message.confirm(`Import workflow from URL?\n${plainTextData}`, 'Import');
             if (!confirmed) return;
@@ -1113,6 +1116,9 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
   }, [showFallbackNodes, isReadOnlyEnv]);
 
   if (loading) return <div style={{ padding: 16 }}>Loading…</div>;
+
+  // Block access to new workflow route in read-only env
+  if (isReadOnlyEnv && mode === 'new') return <div style={{ padding: 16 }}>Read-only environment</div>;
 
   return (
     <div style={{ display: 'grid', gridTemplateColumns: '280px 1fr 320px', minHeight: 'calc(100vh - 32px)' }}>
