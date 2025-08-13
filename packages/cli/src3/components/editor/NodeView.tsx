@@ -13,6 +13,45 @@ import { useModal } from '../ui/ModalManager';
 import { useWorkflowStore } from '../../src3/stores/workflows';
 import ExecutionsTab from './Executions/ExecutionsTab';
 
+// New imports for enhanced functionality
+import { useCanvasOperations } from '../../src3/hooks/useCanvasOperations';
+import { useWorkflowHelpers } from '../../src3/hooks/useWorkflowHelpers';
+import { useTelemetry } from '../../src3/hooks/useTelemetry';
+import { useClipboard } from '../../src3/hooks/useClipboard';
+import { useBeforeUnload } from '../../src3/hooks/useBeforeUnload';
+import { useWorkflowSaving } from '../../src3/hooks/useWorkflowSaving';
+import { useRunWorkflow } from '../../src3/hooks/useRunWorkflow';
+
+// New stores
+import { useHistoryStore } from '../../src3/stores/history';
+import { useNDVStore } from '../../src3/stores/ndv';
+import { useNodeCreatorStore } from '../../src3/stores/nodeCreator';
+import { useLogsStore } from '../../src3/stores/logs';
+import { useFocusPanelStore } from '../../src3/stores/focusPanel';
+import { useTemplatesStore } from '../../src3/stores/templates';
+import { useBuilderStore } from '../../src3/stores/builder';
+import { useAgentRequestStore } from '../../src3/stores/agentRequest';
+import { useExecutionsStore } from '../../src3/stores/executions';
+import { useCanvasStore } from '../../src3/stores/canvas';
+
+// New components
+import CanvasRunWorkflowButton from './canvas/buttons/CanvasRunWorkflowButton';
+import CanvasStopCurrentExecutionButton from './canvas/buttons/CanvasStopCurrentExecutionButton';
+import CanvasStopWaitingForWebhookButton from './canvas/buttons/CanvasStopWaitingForWebhookButton';
+import CanvasChatButton from './canvas/buttons/CanvasChatButton';
+import FocusPanel from './FocusPanel';
+import KeyboardShortcutTooltip from '../ui/KeyboardShortcutTooltip';
+import NodeViewUnfinishedWorkflowMessage from './NodeViewUnfinishedWorkflowMessage';
+import SetupWorkflowCredentialsButton from './SetupWorkflowCredentialsButton';
+
+// Event buses
+import { historyBus } from '../../src3/event-bus/history';
+import { canvasEventBus } from '../../src3/event-bus/canvas';
+import { nodeViewEventBus } from '../../src3/event-bus/nodeView';
+
+// Types
+import type { INodeUi, XYPosition, ViewportTransform, Dimensions, ViewportBoundaries } from '../../src3/types/Interface';
+
 type WorkflowId = string;
 
 type Workflow = {
@@ -39,6 +78,7 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
   const mode = props.mode;
   const workflowId = params.get('id') || undefined;
 
+  // Enhanced state management
   const [workflow, setWorkflow] = useState<Workflow>({ name: 'New workflow', nodes: [], connections: {} });
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -47,6 +87,31 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
   const [selectedNodeIds, setSelectedNodeIds] = useState<Set<string>>(new Set());
   const [clipboard, setClipboard] = useState<any[]>([]);
   const [showExecutions, setShowExecutions] = useState(false);
+  const [isStoppingExecution, setIsStoppingExecution] = useState(false);
+  const [viewportTransform, setViewportTransform] = useState<ViewportTransform>({ x: 0, y: 0, zoom: 1 });
+  const [viewportDimensions, setViewportDimensions] = useState<Dimensions>({ width: 0, height: 0 });
+
+  // Enhanced hooks
+  const canvasOperations = useCanvasOperations();
+  const workflowHelpers = useWorkflowHelpers();
+  const telemetry = useTelemetry();
+  const workflowSaving = useWorkflowSaving({ router });
+  const runWorkflow = useRunWorkflow({ router });
+  const { addBeforeUnloadEventBindings, removeBeforeUnloadEventBindings } = useBeforeUnload({ route: params });
+
+  // Enhanced stores
+  const historyStore = useHistoryStore();
+  const ndvStore = useNDVStore();
+  const nodeCreatorStore = useNodeCreatorStore();
+  const logsStore = useLogsStore();
+  const focusPanelStore = useFocusPanelStore();
+  const templatesStore = useTemplatesStore();
+  const builderStore = useBuilderStore();
+  const agentRequestStore = useAgentRequestStore();
+  const executionsStore = useExecutionsStore();
+  const canvasStore = useCanvasStore();
+  const workflowStore = useWorkflowStore();
+  const pushStore = usePushStore();
 
   useEffect(() => {
     if (mode === 'existing' && workflowId) {
@@ -58,20 +123,67 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
     }
   }, [mode, workflowId]);
 
+  // Enhanced useEffect hooks
   useEffect(() => {
-    const off = usePushStore.getState().subscribeExecutions();
-    const onBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (useWorkflowStore.getState().dirty) {
-        e.preventDefault();
-        e.returnValue = '';
-      }
-    };
-    window.addEventListener('beforeunload', onBeforeUnload);
+    const off = pushStore.getState().subscribeExecutions();
+    addBeforeUnloadEventBindings();
+    
+    // Initialize stores
+    historyStore.getState().reset();
+    ndvStore.getState().resetNDVPushRef();
+    
     return () => {
-      window.removeEventListener('beforeunload', onBeforeUnload);
+      removeBeforeUnloadEventBindings();
       off?.();
     };
-  }, []);
+  }, [pushStore, addBeforeUnloadEventBindings, removeBeforeUnloadEventBindings, historyStore, ndvStore]);
+
+  // Event bus bindings
+  useEffect(() => {
+    const handleHistoryEvents = {
+      nodeMove: ({ nodeName, position }: { nodeName: string; position: XYPosition }) => {
+        const node = workflow.nodes.find(n => n.name === nodeName);
+        if (node) {
+          canvasOperations.updateNodePosition(node.id, { x: position[0], y: position[1] });
+        }
+      },
+      revertAddNode: ({ node }: { node: any }) => {
+        canvasOperations.deleteNode(node.id, { trackHistory: false });
+      },
+      revertRemoveNode: ({ node }: { node: any }) => {
+        canvasOperations.addNodes([{ type: node.type, position: node.position, parameters: node.parameters }], { trackHistory: false });
+      },
+      revertAddConnection: ({ connection }: { connection: [any, any] }) => {
+        canvasOperations.deleteConnection({ source: connection[0].node, target: connection[1].node }, { trackHistory: false });
+      },
+      revertRemoveConnection: ({ connection }: { connection: [any, any] }) => {
+        canvasOperations.createConnection({ source: connection[0].node, target: connection[1].node }, { trackHistory: false });
+      },
+      revertRenameNode: ({ currentName, newName }: { currentName: string; newName: string }) => {
+        canvasOperations.renameNode(newName, currentName, { trackHistory: false });
+      },
+      revertReplaceNodeParameters: ({ nodeId, currentProperties, newProperties }: { nodeId: string; currentProperties: any; newProperties: any }) => {
+        canvasOperations.setNodeParameters(nodeId, currentProperties);
+      },
+      enableNodeToggle: ({ nodeName, isDisabled }: { nodeName: string; isDisabled: boolean }) => {
+        const node = workflow.nodes.find(n => n.name === nodeName);
+        if (node) {
+          canvasOperations.toggleNodesDisabled([node.id]);
+        }
+      },
+    };
+
+    // Bind history events
+    Object.entries(handleHistoryEvents).forEach(([event, handler]) => {
+      historyBus.on(event as any, handler);
+    });
+
+    return () => {
+      Object.entries(handleHistoryEvents).forEach(([event, handler]) => {
+        historyBus.off(event as any, handler);
+      });
+    };
+  }, [workflow.nodes, canvasOperations]);
 
   const canSave = useMemo(() => workflow.name.trim().length > 0, [workflow.name]);
 
@@ -110,61 +222,106 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
     }
   }, [workflow]);
 
+  // Enhanced keyboard shortcuts with new functionality
   useKeyboardShortcuts({
-    onSave: () => (workflow.id ? void updateExisting() : void saveNew()),
-    onUndo: () => useWorkflowStore.getState().undo(),
-    onRedo: () => useWorkflowStore.getState().redo(),
+    onSave: () => workflowSaving.saveCurrentWorkflow(),
+    onUndo: () => {
+      const undoable = historyStore.getState().popUndoableToUndo();
+      if (undoable) {
+        undoable.revert();
+        historyStore.getState().pushUndoableToRedo(undoable);
+      }
+    },
+    onRedo: () => {
+      const redoable = historyStore.getState().popUndoableToRedo();
+      if (redoable) {
+        redoable.revert();
+        historyStore.getState().pushCommandToUndo(redoable as any);
+      }
+    },
     onCopy: () => {
       const items = workflow.nodes.filter((n) => selectedNodeIds.has(n.id));
       setClipboard(JSON.parse(JSON.stringify(items)));
+      telemetry.track('User copied nodes', { count: items.length });
     },
     onPaste: () => {
       if (clipboard.length === 0) return;
       const offset = 20;
       const pasted = clipboard.map((n) => ({ ...n, id: uuid(), position: { x: (n.position?.x || 100) + offset, y: (n.position?.y || 100) + offset } }));
       setWorkflow((w) => ({ ...w, nodes: [...w.nodes, ...pasted] }));
-      useWorkflowStore.getState().pushHistory();
+      historyStore.getState().pushCommandToUndo(new (require('../../src3/models/history').AddNodeCommand)(pasted[0], Date.now()));
+      telemetry.track('User pasted nodes', { count: pasted.length });
     },
     onDelete: async () => {
       if (!selectedNodeId) return;
       const ok = await useModal().confirm('Delete selected node?');
       if (!ok) return;
-      setWorkflow((w) => ({
-        ...w,
-        nodes: w.nodes.filter((n) => n.id !== selectedNodeId),
-        connections: Object.fromEntries(Object.entries(w.connections).map(([k, arr]: any) => [k, (arr as any[]).filter((c) => c.node !== selectedNodeId)])),
-      }));
+      canvasOperations.deleteNode(selectedNodeId, { trackHistory: true });
       setSelectedNodeId(undefined);
+      telemetry.track('User deleted node');
     },
     onTidy: () => {
-      // simple tidy: grid positions
-      setWorkflow((w) => ({
-        ...w,
-        nodes: w.nodes.map((n, i) => ({ ...n, position: { x: 100 + (i % 4) * 180, y: 100 + Math.floor(i / 4) * 140 } })),
-      }));
-      useWorkflowStore.getState().pushHistory();
+      canvasOperations.tidyUp({ source: 'keyboard-shortcut' });
+      telemetry.track('User tidied up workflow');
     },
     onAlign: () => {
-      // simple align: align selected to top-left if any selected
       if (!selectedNodeId) return;
       const base = workflow.nodes.find((n) => n.id === selectedNodeId)?.position || { x: 100, y: 100 };
       setWorkflow((w) => ({
         ...w,
         nodes: w.nodes.map((n) => (n.id === selectedNodeId ? n : { ...n, position: { x: base.x, y: n.position?.y ?? 100 } })),
       }));
-      useWorkflowStore.getState().pushHistory();
+      historyStore.getState().pushCommandToUndo(new (require('../../src3/models/history').MoveNodeCommand)('', [0, 0], [0, 0], Date.now()));
+      telemetry.track('User aligned nodes');
     },
   });
 
+  // Enhanced computed values
+  const viewportBoundaries = useMemo<ViewportBoundaries>(() => ({
+    minX: viewportTransform.x,
+    maxX: viewportTransform.x + viewportDimensions.width,
+    minY: viewportTransform.y,
+    maxY: viewportTransform.y + viewportDimensions.height,
+  }), [viewportTransform, viewportDimensions]);
+
+  const triggerNodes = useMemo(() => {
+    return workflow.nodes.filter(node => 
+      node.type === 'start' || node.type?.includes('Trigger')
+    );
+  }, [workflow.nodes]);
+
+  const containsTriggerNodes = useMemo(() => triggerNodes.length > 0, [triggerNodes]);
+  const allTriggerNodesDisabled = useMemo(() => {
+    const disabledTriggerNodes = triggerNodes.filter(node => node.disabled);
+    return disabledTriggerNodes.length === triggerNodes.length;
+  }, [triggerNodes]);
+
+  const isWorkflowRunning = useMemo(() => {
+    return executionsStore.getState().activeExecution?.status === 'running';
+  }, [executionsStore]);
+
+  const isExecutionWaitingForWebhook = useMemo(() => {
+    return executionsStore.getState().activeExecution?.status === 'waiting';
+  }, [executionsStore]);
+
+  const isExecutionDisabled = useMemo(() => {
+    return !containsTriggerNodes || allTriggerNodesDisabled;
+  }, [containsTriggerNodes, allTriggerNodesDisabled]);
+
+  // Enhanced event handlers
   const addNode = useCallback((name: string) => {
     const id = uuid();
+    const newNode = { id, name, position: { x: 100 + Math.random() * 200, y: 100 + Math.random() * 200 } };
     setWorkflow((w) => ({
       ...w,
-      nodes: [...w.nodes, { id, name, position: { x: 100 + Math.random() * 200, y: 100 + Math.random() * 200 } }],
+      nodes: [...w.nodes, newNode],
     }));
-  }, []);
+    canvasOperations.addNodes([{ type: 'custom', position: [newNode.position.x, newNode.position.y] }], { trackHistory: true });
+    telemetry.track('User added node', { nodeType: 'custom' });
+  }, [canvasOperations, telemetry]);
 
   const connectNodes = useCallback((fromId: string, toId: string) => {
+    canvasOperations.createConnection({ source: fromId, target: toId }, { trackHistory: true });
     setWorkflow((w) => ({
       ...w,
       connections: {
@@ -172,7 +329,8 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
         [fromId]: [{ node: toId, type: 'main', index: 0 }],
       },
     }));
-  }, []);
+    telemetry.track('User connected nodes');
+  }, [canvasOperations, telemetry]);
 
   const canvasNodes: CanvasNode[] = useMemo(
     () =>
@@ -197,6 +355,7 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
     return edges;
   }, [workflow.connections]);
 
+  // Enhanced canvas event handlers
   const onCanvasChange = useCallback((nodes: CanvasNode[], edges: CanvasEdge[]) => {
     setWorkflow((w) => ({
       ...w,
@@ -211,8 +370,57 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
       }, {}),
     }));
     setSelectedNodeIds(new Set(nodes.filter((n) => n.selected).map((n) => n.id)));
-    useWorkflowStore.getState().pushHistory();
+    historyStore.getState().pushCommandToUndo(new (require('../../src3/models/history').MoveNodeCommand)('', [0, 0], [0, 0], Date.now()));
+  }, [historyStore]);
+
+  const onViewportChange = useCallback((viewport: ViewportTransform, dimensions: Dimensions) => {
+    setViewportTransform(viewport);
+    setViewportDimensions(dimensions);
   }, []);
+
+  const onRunWorkflow = useCallback(async () => {
+    try {
+      await runWorkflow.runEntireWorkflow('main');
+      telemetry.track('User ran workflow');
+    } catch (error) {
+      console.error('Failed to run workflow:', error);
+    }
+  }, [runWorkflow, telemetry]);
+
+  const onStopExecution = useCallback(async () => {
+    setIsStoppingExecution(true);
+    try {
+      const activeExecution = executionsStore.getState().activeExecution;
+      if (activeExecution) {
+        await runWorkflow.stopCurrentExecution(activeExecution.id);
+        telemetry.track('User stopped execution');
+      }
+    } catch (error) {
+      console.error('Failed to stop execution:', error);
+    } finally {
+      setIsStoppingExecution(false);
+    }
+  }, [runWorkflow, executionsStore, telemetry]);
+
+  const onStopWaitingForWebhook = useCallback(async () => {
+    try {
+      await runWorkflow.stopWaitingForWebhook();
+      telemetry.track('User stopped waiting for webhook');
+    } catch (error) {
+      console.error('Failed to stop waiting for webhook:', error);
+    }
+  }, [runWorkflow, telemetry]);
+
+  const onOpenChat = useCallback(() => {
+    // In a real implementation, this would open the chat interface
+    console.log('Opening chat...');
+    telemetry.track('User opened chat');
+  }, [telemetry]);
+
+  const onToggleFocusPanel = useCallback(() => {
+    focusPanelStore.getState().toggleFocusPanel();
+    telemetry.track('User toggled focus panel');
+  }, [focusPanelStore, telemetry]);
 
   if (loading) return <div style={{ padding: 16 }}>Loading…</div>;
 
@@ -256,50 +464,109 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
           <p>Add at least two nodes to enable demo connect</p>
         )}
       </aside>
-      <section style={{ padding: 0 }}>
+      
+      <section style={{ padding: 0, position: 'relative' }}>
         <div style={{ padding: '8px 12px', borderBottom: '1px solid #eee' }}>
           <TopBar />
         </div>
+        
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <h2 style={{ margin: 0 }}>{workflow.name}</h2>
             {workflow.id && <small style={{ color: '#666' }}>id: {workflow.id}</small>}
           </div>
-          {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
-          {/* @ts-ignore */}
+          
           <div style={{ display: 'flex', gap: 8 }}>
             <Tooltip content="Toggle executions tab">
               <button onClick={() => setShowExecutions((v) => !v)}>Executions</button>
+            </Tooltip>
+            <Tooltip content="Toggle focus panel">
+              <button onClick={onToggleFocusPanel}>Focus Panel</button>
             </Tooltip>
             <Tooltip content="Run or stop this workflow">
               {(await import('./RunControls')).default({ workflowId: workflow.id })}
             </Tooltip>
           </div>
         </div>
-        <div style={{ border: '1px solid #ddd', borderRadius: 8, padding: 0, minHeight: '60%' }} onContextMenu={(e) => {
-          e.preventDefault();
-          // TODO: open context menu with actions (duplicate, delete, align)
-        }} onDrop={(e) => {
-          const data = e.dataTransfer.getData('application/x-sv-node');
-          if (data) {
-            const item = JSON.parse(data);
-            const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-            const pos = { x: e.clientX - rect.left, y: e.clientY - rect.top };
-            setWorkflow((w) => ({ ...w, nodes: [...w.nodes, { id: uuid(), name: item.name || 'Node', position: pos }] }));
-            useWorkflowStore.getState().pushHistory();
-          }
-        }} onDragOver={(e) => e.preventDefault()}>
-          <Canvas nodes={canvasNodes} edges={canvasEdges} onChange={onCanvasChange} onSelectNode={setSelectedNodeId} />
+        
+        <div 
+          style={{ border: '1px solid #ddd', borderRadius: 8, padding: 0, minHeight: '60%' }} 
+          onContextMenu={(e) => {
+            e.preventDefault();
+            // TODO: open context menu with actions (duplicate, delete, align)
+          }} 
+          onDrop={(e) => {
+            const data = e.dataTransfer.getData('application/x-sv-node');
+            if (data) {
+              const item = JSON.parse(data);
+              const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+              const pos = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+              setWorkflow((w) => ({ ...w, nodes: [...w.nodes, { id: uuid(), name: item.name || 'Node', position: pos }] }));
+              historyStore.getState().pushCommandToUndo(new (require('../../src3/models/history').AddNodeCommand)({ id: uuid(), name: item.name || 'Node', position: pos }, Date.now()));
+            }
+          }} 
+          onDragOver={(e) => e.preventDefault()}
+        >
+          <Canvas 
+            nodes={canvasNodes} 
+            edges={canvasEdges} 
+            onChange={onCanvasChange} 
+            onSelectNode={setSelectedNodeId}
+            onViewportChange={onViewportChange}
+          />
         </div>
+        
+        {/* Enhanced Execution Controls */}
+        <div style={{ position: 'absolute', bottom: '16px', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '8px' }}>
+          <CanvasRunWorkflowButton
+            waitingForWebhook={isExecutionWaitingForWebhook}
+            disabled={isExecutionDisabled}
+            executing={isWorkflowRunning}
+            triggerNodes={triggerNodes}
+            onExecute={onRunWorkflow}
+          />
+          
+          {isWorkflowRunning && !isExecutionWaitingForWebhook && (
+            <CanvasStopCurrentExecutionButton
+              stopping={isStoppingExecution}
+              onClick={onStopExecution}
+            />
+          )}
+          
+          {isWorkflowRunning && isExecutionWaitingForWebhook && (
+            <CanvasStopWaitingForWebhookButton onClick={onStopWaitingForWebhook} />
+          )}
+          
+          <KeyboardShortcutTooltip label="Open Chat" shortcut={{ keys: ['c'] }}>
+            <CanvasChatButton
+              type="secondary"
+              label="Chat"
+              onClick={onOpenChat}
+            />
+          </KeyboardShortcutTooltip>
+        </div>
+        
+        {/* Setup Credentials Button */}
+        <div style={{ position: 'absolute', top: '16px', left: '16px' }}>
+          <SetupWorkflowCredentialsButton />
+        </div>
+        
         {showExecutions && (
           <div style={{ border: '1px solid #ddd', borderRadius: 8, padding: 0, minHeight: '40%', marginTop: 8 }}>
             <ExecutionsTab workflowId={workflow.id} />
           </div>
         )}
       </section>
+      
       <aside>
         <RightPanel selectedNodeId={selectedNodeId} />
       </aside>
+      
+      {/* Focus Panel */}
+      <FocusPanel 
+        isCanvasReadOnly={false}
+        onSaveKeyboardShortcut={workflowSaving.saveCurrentWorkflow}
+      />
     </div>
   );
 }
