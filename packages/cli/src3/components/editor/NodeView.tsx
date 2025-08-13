@@ -59,6 +59,7 @@ import FocusPanel from './FocusPanel';
 import KeyboardShortcutTooltip from '../ui/KeyboardShortcutTooltip';
 import NodeViewUnfinishedWorkflowMessage from './NodeViewUnfinishedWorkflowMessage';
 import SetupWorkflowCredentialsButton from './SetupWorkflowCredentialsButton';
+import RunControls from './RunControls';
 
 // Event buses
 import { historyBus } from '../../src3/event-bus/history';
@@ -135,6 +136,7 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
   const [isStoppingExecution, setIsStoppingExecution] = useState(false);
   const [viewportTransform, setViewportTransform] = useState<ViewportTransform>({ x: 0, y: 0, zoom: 1 });
   const [viewportDimensions, setViewportDimensions] = useState<Dimensions>({ width: 0, height: 0 });
+  const [selectedTriggerNodeName, setSelectedTriggerNodeName] = useState<string | undefined>(undefined);
 
   // Enhanced hooks
   const canvasOperations = useCanvasOperations();
@@ -156,7 +158,8 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
   const historyStore = useHistoryStore();
   const ndvStore = useNDVStore();
   const nodeCreatorStore = useNodeCreatorStore();
-  const logsStore = useLogsStore();
+     const logsStore = useLogsStore();
+   const isLogsPanelOpen = useLogsStore((s) => s.isOpen);
   const focusPanelStore = useFocusPanelStore();
   const templatesStore = useTemplatesStore();
   const builderStore = useBuilderStore();
@@ -415,7 +418,7 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
   }), [viewportTransform, viewportDimensions]);
 
   const triggerNodes = useMemo(() => {
-    return workflow.nodes.filter(node => 
+    return workflow.nodes.filter((node: any) => 
       nodeHelpers.isTriggerNode(node.type || '') || 
       node.type === START_NODE_TYPE ||
       node.type?.includes('Trigger')
@@ -437,6 +440,7 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
   }, [executionsStore]);
 
   const isExecutionDisabled = useMemo(() => {
+    // TODO: extend with chat-trigger gating when chat trigger logic is implemented
     return !containsTriggerNodes || allTriggerNodesDisabled;
   }, [containsTriggerNodes, allTriggerNodesDisabled]);
 
@@ -508,7 +512,10 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
   const onViewportChange = useCallback((viewport: ViewportTransform, dimensions: Dimensions) => {
     setViewportTransform(viewport);
     setViewportDimensions(dimensions);
-  }, []);
+    try {
+      uiStore.getState().setNodeViewOffsetPosition([viewport.x, viewport.y]);
+    } catch {}
+  }, [uiStore]);
 
   const onRunWorkflow = useCallback(async () => {
     try {
@@ -544,10 +551,9 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
   }, [runWorkflow, telemetry]);
 
   const onOpenChat = useCallback(() => {
-    // In a real implementation, this would open the chat interface
-    console.log('Opening chat...');
+    logsStore.getState().toggleOpen(true);
     telemetry.track('User opened chat');
-  }, [telemetry]);
+  }, [logsStore, telemetry]);
 
   const onToggleFocusPanel = useCallback(() => {
     focusPanelStore.getState().toggleFocusPanel();
@@ -672,7 +678,7 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
               <button onClick={onToggleFocusPanel}>Focus Panel</button>
             </Tooltip>
             <Tooltip content="Run or stop this workflow">
-              {(await import('./RunControls')).default({ workflowId: workflow.id })}
+              <RunControls workflowId={workflow.id} />
             </Tooltip>
           </div>
         </div>
@@ -706,13 +712,18 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
         
         {/* Enhanced Execution Controls */}
         <div style={{ position: 'absolute', bottom: '16px', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '8px' }}>
-          <CanvasRunWorkflowButton
-            waitingForWebhook={isExecutionWaitingForWebhook}
-            disabled={isExecutionDisabled}
-            executing={isWorkflowRunning}
-            triggerNodes={triggerNodes}
-            onExecute={onRunWorkflow}
-          />
+          <div onMouseEnter={() => nodeViewEventBus.emit('runWorkflowButton:mouseenter')} onMouseLeave={() => nodeViewEventBus.emit('runWorkflowButton:mouseleave')}>
+            <CanvasRunWorkflowButton
+              waitingForWebhook={isExecutionWaitingForWebhook}
+              disabled={isExecutionDisabled}
+              executing={isWorkflowRunning}
+              triggerNodes={triggerNodes}
+              onExecute={onRunWorkflow}
+              getNodeType={nodeTypesStore.getNodeType}
+              selectedTriggerNodeName={selectedTriggerNodeName}
+              onSelectTriggerNode={setSelectedTriggerNodeName}
+            />
+          </div>
           
           {isWorkflowRunning && !isExecutionWaitingForWebhook && (
             <CanvasStopCurrentExecutionButton
@@ -725,13 +736,21 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
             <CanvasStopWaitingForWebhookButton onClick={onStopWaitingForWebhook} />
           )}
           
-          <KeyboardShortcutTooltip label="Open Chat" shortcut={{ keys: ['c'] }}>
+          {isLogsPanelOpen ? (
             <CanvasChatButton
-              type="secondary"
-              label="Chat"
-              onClick={onOpenChat}
+              type="tertiary"
+              label="Hide Chat"
+              onClick={() => logsStore.getState().toggleOpen(false)}
             />
-          </KeyboardShortcutTooltip>
+          ) : (
+            <KeyboardShortcutTooltip label="Open Chat" shortcut={{ keys: ['c'] }}>
+              <CanvasChatButton
+                type={isExecutionDisabled ? 'primary' : 'secondary'}
+                label="Chat"
+                onClick={onOpenChat}
+              />
+            </KeyboardShortcutTooltip>
+          )}
         </div>
         
         {/* Setup Credentials Button */}
