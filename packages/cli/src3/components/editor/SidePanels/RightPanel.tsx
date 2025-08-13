@@ -3,11 +3,13 @@ import { useState } from 'react';
 import NDV from '../NDV/NodeDetailsView';
 import { useCredentialsStore } from '../../../src3/stores/credentials';
 import { useTagsStore } from '../../../src3/stores/tags';
+import { useLogsStore } from '../../../src3/stores/logs';
 
 export default function RightPanel(props: { selectedNodeId?: string }) {
-  const [tab, setTab] = useState<'ndv' | 'credentials' | 'tags'>('ndv');
+  const [tab, setTab] = useState<'ndv' | 'credentials' | 'tags' | 'logs'>('ndv');
   const { items: creds, list: listCreds } = useCredentialsStore();
   const { items: tags, list: listTags } = useTagsStore();
+  const logs = useLogsStore((s) => (props.selectedNodeId ? s.byNode[props.selectedNodeId] || [] : []));
 
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
@@ -15,6 +17,7 @@ export default function RightPanel(props: { selectedNodeId?: string }) {
         <button onClick={() => setTab('ndv')}>Node</button>
         <button onClick={() => { setTab('credentials'); void listCreds(); }}>Credentials</button>
         <button onClick={() => { setTab('tags'); void listTags(); }}>Tags</button>
+        <button onClick={() => setTab('logs')}>Logs</button>
       </div>
       <div style={{ flex: 1, overflow: 'auto' }}>
         {tab === 'ndv' && <NDV selectedNodeId={props.selectedNodeId} />}
@@ -32,6 +35,15 @@ export default function RightPanel(props: { selectedNodeId?: string }) {
             <ul>
               {tags.map((t) => (
                 <li key={t.id}>{t.name}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+        {tab === 'logs' && (
+          <div style={{ padding: 12 }}>
+            <ul>
+              {logs.map((l, i) => (
+                <li key={i}><small>{new Date(l.ts).toLocaleTimeString()}</small> [{l.level}] {l.message}</li>
               ))}
             </ul>
           </div>

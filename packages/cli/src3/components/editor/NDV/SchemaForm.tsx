@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useMemo, useState } from 'react';
+import CredentialSelector from './CredentialSelector';
 
 async function fetchJson<T>(url: string, init?: RequestInit): Promise<T> {
   const res = await fetch(url, init);
@@ -7,12 +8,13 @@ async function fetchJson<T>(url: string, init?: RequestInit): Promise<T> {
   return (await res.json()) as T;
 }
 
-type Option = { name: string; value: string };
+type Option = { name: string; value: string; description?: string; options?: Param[] };
 
 type Param = {
   name: string;
   displayName: string;
-  type: 'string' | 'number' | 'boolean' | 'options' | 'collection' | 'fixedCollection';
+  description?: string;
+  type: 'string' | 'number' | 'boolean' | 'options' | 'collection' | 'fixedCollection' | 'credentials';
   default?: any;
   options?: Option[]; // for options
   // For collection/fixedCollection
@@ -66,17 +68,21 @@ export default function SchemaForm(props: { nodeType: string; value: Record<stri
     props.onChange({ ...props.value, [name]: val });
   };
 
+  const renderGroup = (params: Param[], pathPrefix = '') => (
+    params.map((child) => renderParam(child, pathPrefix))
+  );
+
   const renderParam = (p: Param, pathPrefix = '') => {
     if (!shouldShow(p, props.value)) return null;
     const name = pathPrefix ? `${pathPrefix}.${p.name}` : p.name;
     const label = p.displayName;
     const value = props.value[p.name];
 
-    // Resource/operation convenience: if options and known pairs
+    // Resource/operation convenience: options
     if (p.type === 'options' && (p.name === 'resource' || p.name === 'operation')) {
       return (
         <div key={name} style={{ marginBottom: 8 }}>
-          <label>{label}
+          <label title={p.description || ''}>{label}
             <select value={value ?? ''} onChange={(e) => set(p.name, e.target.value)}>
               <option value="">Select</option>
               {p.options?.map((o) => <option key={o.value} value={o.value}>{o.name}</option>)}
@@ -85,31 +91,45 @@ export default function SchemaForm(props: { nodeType: string; value: Record<stri
         </div>
       );
     }
+
     if (p.type === 'string') return (
       <div key={name} style={{ marginBottom: 8 }}>
-        <label>{label}<input value={value ?? ''} onChange={(e) => set(p.name, e.target.value)} /></label>
+        <label title={p.description || ''}>{label}<input value={value ?? ''} onChange={(e) => set(p.name, e.target.value)} /></label>
       </div>
     );
     if (p.type === 'number') return (
       <div key={name} style={{ marginBottom: 8 }}>
-        <label>{label}<input type="number" value={value ?? ''} onChange={(e) => set(p.name, Number(e.target.value))} /></label>
+        <label title={p.description || ''}>{label}<input type="number" value={value ?? ''} onChange={(e) => set(p.name, Number(e.target.value))} /></label>
       </div>
     );
     if (p.type === 'boolean') return (
       <div key={name} style={{ marginBottom: 8 }}>
-        <label>{label}<input type="checkbox" checked={!!value} onChange={(e) => set(p.name, e.target.checked)} /></label>
+        <label title={p.description || ''}>{label}<input type="checkbox" checked={!!value} onChange={(e) => set(p.name, e.target.checked)} /></label>
       </div>
     );
-    if (p.type === 'options') return (
+    if (p.type === 'credentials') return (
       <div key={name} style={{ marginBottom: 8 }}>
-        <label>{label}
-          <select value={value ?? ''} onChange={(e) => set(p.name, e.target.value)}>
-            <option value="">Select</option>
-            {p.options?.map((o) => <option key={o.value} value={o.value}>{o.name}</option>)}
-          </select>
-        </label>
+        <label title={p.description || ''}>{label} <CredentialSelector value={value} onChange={(id) => set(p.name, id)} /></label>
       </div>
     );
+    if (p.type === 'options') {
+      return (
+        <div key={name} style={{ marginBottom: 8 }}>
+          <label title={p.description || ''}>{label}
+            <select value={value ?? ''} onChange={(e) => set(p.name, e.target.value)}>
+              <option value="">Select</option>
+              {p.options?.map((o) => <option key={o.value} value={o.value}>{o.name}</option>)}
+            </select>
+          </label>
+          {/* Option-dependent children */}
+          {p.options?.find((o) => o.value === value)?.options && (
+            <div style={{ marginLeft: 12, marginTop: 8 }}>
+              {renderGroup(p.options!.find((o) => o.value === value)!.options!, name)}
+            </div>
+          )}
+        </div>
+      );
+    }
     if (p.type === 'collection') return (
       <fieldset key={name} style={{ marginBottom: 8 }}>
         <legend>{label}</legend>
@@ -120,9 +140,11 @@ export default function SchemaForm(props: { nodeType: string; value: Record<stri
       <fieldset key={name} style={{ marginBottom: 8 }}>
         <legend>{label}</legend>
         {p.typeOptions?.options?.map((group) => (
-          <details key={group.name}>
+          <details key={group.name} open>
             <summary>{group.displayName}</summary>
-            {group.values.map((child) => renderParam(child, name))}
+            <div style={{ marginLeft: 12 }}>
+              {group.values.map((child) => renderParam(child, name))}
+            </div>
           </details>
         ))}
       </fieldset>
