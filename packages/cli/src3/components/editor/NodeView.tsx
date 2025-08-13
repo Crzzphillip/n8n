@@ -95,6 +95,7 @@ import { createCanvasConnectionHandleString, parseCanvasConnectionHandleString }
 import { isValidNodeConnectionType, isVueFlowConnection } from '../../src3/utils/typeGuards';
 import { tryToParseNumber } from '../../src3/utils/typesUtils';
 import { getNodeViewTab } from '../../src3/utils/nodeViewUtils';
+import { getNodesWithNormalizedPosition } from '../../src3/utils/nodeViewUtils';
 
 // Types
 import type { INodeUi, XYPosition, ViewportTransform, Dimensions, ViewportBoundaries } from '../../src3/types/Interface';
@@ -347,6 +348,74 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
       });
     };
   }, [workflow.nodes, canvasOperations, onImportWorkflowData, onImportWorkflowUrl, onOpenChat, onSourceControlPull, telemetry]);
+
+  // PostMessage preview mode and saved events
+  useEffect(() => {
+    const onPostMessageReceived = async (messageEvent: MessageEvent) => {
+      try {
+        if (!messageEvent || typeof messageEvent.data !== 'string' || !messageEvent.data.includes('"command"')) return;
+        const json = JSON.parse(messageEvent.data);
+        if (json?.command === 'openWorkflow') {
+          try {
+            await importWorkflowExact(json);
+          } catch (e) {
+            toast.showError(e, 'Failed to import workflow');
+          }
+        } else if (json?.command === 'openExecution') {
+          try {
+            await onOpenExecution(json.executionId, json.nodeId);
+          } catch (e) {
+            toast.showError(e, 'Failed to open execution');
+          }
+        } else if (json?.command === 'setActiveExecution') {
+          try {
+            const exec = await executionsStore.getState().fetchExecution(json.executionId);
+            executionsStore.getState().setActiveExecution(exec);
+          } catch (e) {
+            toast.showError(e, 'Failed to set active execution');
+          }
+        }
+      } catch {}
+    };
+
+    window.addEventListener('message', onPostMessageReceived);
+
+    try {
+      // Inform parent frame we're ready
+      if (window.parent) {
+        window.parent.postMessage(JSON.stringify({ command: 'n8nReady', version: 'cli-src3' }), '*');
+      }
+    } catch {}
+
+    const offSaved = canvasEventBus.on('saved:workflow', () => {
+      toast.showSuccess('Workflow saved');
+    });
+
+    return () => {
+      window.removeEventListener('message', onPostMessageReceived);
+      offSaved?.();
+    };
+  }, [executionsStore, onOpenExecution, toast]);
+
+  // Import workflow exactly (replace current)
+  const importWorkflowExact = useCallback(async (data: any) => {
+    if (!data?.workflow && !(data?.nodes && data?.connections)) {
+      throw new Error('Invalid workflow object');
+    }
+    const wfData = data.workflow ?? data;
+    const normalizedNodes = getNodesWithNormalizedPosition(
+      (wfData.nodes || []).map((n: any) => ({ ...n, position: n.position || { x: 100, y: 100 } }))
+    );
+    setWorkflow((w) => ({
+      id: wfData.id ?? w.id,
+      name: wfData.name || w.name || 'Imported workflow',
+      nodes: normalizedNodes,
+      connections: wfData.connections || {},
+      settings: wfData.settings || {},
+    }));
+    // Fit view after next tick
+    setTimeout(() => canvasEventBus.emit('fitView'));
+  }, []);
 
   // Sync NDV active node to URL and vice versa
   useEffect(() => {
