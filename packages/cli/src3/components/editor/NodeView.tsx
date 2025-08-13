@@ -272,8 +272,12 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
             const res = await fetch(`/api/rest/templates/${templateId}`);
             if (!res.ok) throw new Error('Failed to fetch template');
             const data = await res.json();
+            // Telemetry template.requested with previousSessionId if available
+            telemetry.track('template.requested', { template_id: templateId, wf_template_repo_session_id: templatesStore.previousSessionId });
             workflowHelpers.resetWorkspace();
             workflowHelpers.initializeWorkspace({ workflow: data.workflow, name: data.name });
+            // Reset executions state on import
+            executionsStore.setState({ activeExecution: null, items: [] } as any);
             telemetry.track('template.open', { template_id: templateId });
             setTimeout(() => canvasEventBus.emit('fitView'));
           } catch (e) {
@@ -1306,20 +1310,20 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
         
         {/* Enhanced Execution Controls */}
         <div style={{ position: 'absolute', bottom: '16px', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '8px' }}>
-          <div onMouseEnter={() => nodeViewEventBus.emit('runWorkflowButton:mouseenter')} onMouseLeave={() => nodeViewEventBus.emit('runWorkflowButton:mouseleave')}>
-            {isRunWorkflowButtonVisible && (
-              <CanvasRunWorkflowButton
-                waitingForWebhook={isExecutionWaitingForWebhook}
-                disabled={isExecutionDisabled || isReadOnlyEnv}
-                executing={isWorkflowRunning}
-                triggerNodes={triggerNodes}
-                onExecute={onRunWorkflow}
-                getNodeType={nodeTypesStore.getNodeType}
-                selectedTriggerNodeName={selectedTriggerNodeName}
-                onSelectTriggerNode={setSelectedTriggerNodeName}
-              />
-            )}
-          </div>
+                      <div onMouseEnter={() => nodeViewEventBus.emit('runWorkflowButton:mouseenter')} onMouseLeave={() => nodeViewEventBus.emit('runWorkflowButton:mouseleave')}>
+              {isRunWorkflowButtonVisible && !isProductionExecutionPreview && (
+                <CanvasRunWorkflowButton
+                  waitingForWebhook={isExecutionWaitingForWebhook}
+                  disabled={isExecutionDisabled || isReadOnlyEnv}
+                  executing={isWorkflowRunning}
+                  triggerNodes={triggerNodes}
+                  onExecute={onRunWorkflow}
+                  getNodeType={nodeTypesStore.getNodeType}
+                  selectedTriggerNodeName={selectedTriggerNodeName}
+                  onSelectTriggerNode={setSelectedTriggerNodeName}
+                />
+              )}
+            </div>
           
           {isWorkflowRunning && !isExecutionWaitingForWebhook && (
             <CanvasStopCurrentExecutionButton
@@ -1368,7 +1372,7 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
       </aside>
       
       {/* Focus Panel */}
-      {uiStore.focusPanelEnabled && (
+      {usePostHog().isVariantEnabled('focus-panel', 'enabled') && uiStore.focusPanelEnabled && (
         <FocusPanel 
           isCanvasReadOnly={false}
           onSaveKeyboardShortcut={workflowSaving.saveCurrentWorkflow}
