@@ -8,6 +8,8 @@ export function useKeyboardShortcuts(handlers: {
   onDelete?: () => void;
   onTidy?: () => void;
   onAlign?: () => void;
+  onCopy?: () => void;
+  onPaste?: () => void;
 }) {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -27,6 +29,16 @@ export function useKeyboardShortcuts(handlers: {
       if (mod && (key === 'y' || (key === 'z' && e.shiftKey))) {
         e.preventDefault();
         handlers.onRedo?.();
+        return;
+      }
+      if (mod && key === 'c') {
+        e.preventDefault();
+        handlers.onCopy?.();
+        return;
+      }
+      if (mod && key === 'v') {
+        e.preventDefault();
+        handlers.onPaste?.();
         return;
       }
       if (key === 'delete' || key === 'backspace') {

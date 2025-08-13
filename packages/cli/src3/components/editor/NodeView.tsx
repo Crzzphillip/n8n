@@ -43,6 +43,8 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedNodeId, setSelectedNodeId] = useState<string | undefined>(undefined);
+  const [selectedNodeIds, setSelectedNodeIds] = useState<Set<string>>(new Set());
+  const [clipboard, setClipboard] = useState<any[]>([]);
 
   useEffect(() => {
     if (mode === 'existing' && workflowId) {
@@ -110,6 +112,17 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
     onSave: () => (workflow.id ? void updateExisting() : void saveNew()),
     onUndo: () => useWorkflowStore.getState().undo(),
     onRedo: () => useWorkflowStore.getState().redo(),
+    onCopy: () => {
+      const items = workflow.nodes.filter((n) => selectedNodeIds.has(n.id));
+      setClipboard(JSON.parse(JSON.stringify(items)));
+    },
+    onPaste: () => {
+      if (clipboard.length === 0) return;
+      const offset = 20;
+      const pasted = clipboard.map((n) => ({ ...n, id: uuid(), position: { x: (n.position?.x || 100) + offset, y: (n.position?.y || 100) + offset } }));
+      setWorkflow((w) => ({ ...w, nodes: [...w.nodes, ...pasted] }));
+      useWorkflowStore.getState().pushHistory();
+    },
     onDelete: async () => {
       if (!selectedNodeId) return;
       const ok = await useModal().confirm('Delete selected node?');
@@ -187,7 +200,7 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
       ...w,
       nodes: w.nodes.map((n) => {
         const cn = nodes.find((m) => m.id === n.id);
-        return cn ? { ...n, position: cn.position } : n;
+        return cn ? { ...n, position: cn.position, selected: cn.selected } as any : n as any;
       }),
       connections: edges.reduce<Record<string, any[]>>((acc, e) => {
         acc[e.source] = acc[e.source] || [];
@@ -195,6 +208,7 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
         return acc;
       }, {}),
     }));
+    setSelectedNodeIds(new Set(nodes.filter((n) => n.selected).map((n) => n.id)));
     useWorkflowStore.getState().pushHistory();
   }, []);
 
@@ -226,7 +240,10 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
         {error && <p style={{ color: 'red' }}>{error}</p>}
         <hr style={{ margin: '16px 0' }} />
         <h4>Browse nodes</h4>
-        <div style={{ maxHeight: 360, overflow: 'auto' }}>
+        <div style={{ maxHeight: 360, overflow: 'auto' }} draggable onDragStart={(e) => {
+          const payload = JSON.stringify({ type: 'node', name: 'Custom Node' });
+          e.dataTransfer.setData('application/x-sv-node', payload);
+        }}>
           <NodeCreator />
         </div>
         <hr style={{ margin: '16px 0' }} />
@@ -257,7 +274,16 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
         <div style={{ border: '1px solid #ddd', borderRadius: 8, padding: 0, minHeight: '100%' }} onContextMenu={(e) => {
           e.preventDefault();
           // TODO: open context menu with actions (duplicate, delete, align)
-        }}>
+        }} onDrop={(e) => {
+          const data = e.dataTransfer.getData('application/x-sv-node');
+          if (data) {
+            const item = JSON.parse(data);
+            const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+            const pos = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+            setWorkflow((w) => ({ ...w, nodes: [...w.nodes, { id: uuid(), name: item.name || 'Node', position: pos }] }));
+            useWorkflowStore.getState().pushHistory();
+          }
+        }} onDragOver={(e) => e.preventDefault()}>
           <Canvas nodes={canvasNodes} edges={canvasEdges} onChange={onCanvasChange} onSelectNode={setSelectedNodeId} />
         </div>
       </section>

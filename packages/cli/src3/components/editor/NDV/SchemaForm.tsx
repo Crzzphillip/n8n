@@ -65,8 +65,37 @@ export default function SchemaForm(props: { nodeType: string; value: Record<stri
   }, [props.nodeType]);
 
   const set = (name: string, val: any) => {
-    props.onChange({ ...props.value, [name]: val });
+    const next = { ...props.value, [name]: val };
+    props.onChange(next);
   };
+
+  const [dynamicOptions, setDynamicOptions] = useState<Record<string, Option[]>>({});
+
+  const resolveOptions = async (param: Param) => {
+    // Example: param.typeOptions?.optionsMeta to indicate loadOptions; real metadata shape depends on backend
+    if ((param as any).loadOptions) {
+      try {
+        const body = {
+          nodeTypeAndVersion: { name: props.nodeType, version: 1 },
+          currentNodeParameters: props.value,
+          credentials: props.value.credentials ? { id: props.value.credentials } : undefined,
+          loadOptions: (param as any).loadOptions,
+          path: param.name,
+        };
+        const res = await fetch('/api/rest/dynamic-node-parameters/options', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
+        if (res.ok) {
+          const list = await res.json();
+          setDynamicOptions((prev) => ({ ...prev, [param.name]: list.map((x: any) => ({ name: x.name, value: x.value })) }));
+        }
+      } catch {}
+    }
+  };
+
+  useEffect(() => {
+    // Recompute dynamic options when values change (debounced in real impl)
+    schema.forEach((p) => void resolveOptions(p));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [props.value, props.nodeType]);
 
   const renderGroup = (params: Param[], pathPrefix = '') => (
     params.map((child) => renderParam(child, pathPrefix))
@@ -80,12 +109,13 @@ export default function SchemaForm(props: { nodeType: string; value: Record<stri
 
     // Resource/operation convenience: options
     if (p.type === 'options' && (p.name === 'resource' || p.name === 'operation')) {
+      const options = dynamicOptions[p.name] || p.options || [];
       return (
         <div key={name} style={{ marginBottom: 8 }}>
           <label title={p.description || ''}>{label}
             <select value={value ?? ''} onChange={(e) => set(p.name, e.target.value)}>
               <option value="">Select</option>
-              {p.options?.map((o) => <option key={o.value} value={o.value}>{o.name}</option>)}
+              {options.map((o) => <option key={o.value} value={o.value}>{o.name}</option>)}
             </select>
           </label>
         </div>
@@ -113,12 +143,13 @@ export default function SchemaForm(props: { nodeType: string; value: Record<stri
       </div>
     );
     if (p.type === 'options') {
+      const options = dynamicOptions[p.name] || p.options || [];
       return (
         <div key={name} style={{ marginBottom: 8 }}>
           <label title={p.description || ''}>{label}
             <select value={value ?? ''} onChange={(e) => set(p.name, e.target.value)}>
               <option value="">Select</option>
-              {p.options?.map((o) => <option key={o.value} value={o.value}>{o.name}</option>)}
+              {options.map((o) => <option key={o.value} value={o.value}>{o.name}</option>)}
             </select>
           </label>
           {/* Option-dependent children */}
