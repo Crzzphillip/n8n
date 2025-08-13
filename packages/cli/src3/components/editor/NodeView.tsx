@@ -634,7 +634,10 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
     uiStore.getState().setLastInteractedWithNodeHandle(start.handleId);
     uiStore.getState().setLastCancelledConnectionPosition([position.x, position.y]);
     // Open node creator for connecting node
-    nodeCreatorStore.getState().openNodeCreatorForActions('regular', NODE_CREATOR_OPEN_SOURCES.NODE_CONNECTION_DROP);
+    nodeCreatorStore.getState().openNodeCreatorForConnectingNode({
+      connection: { source: start.nodeId, sourceHandle: start.handleId },
+      eventSource: NODE_CREATOR_OPEN_SOURCES.NODE_CONNECTION_DROP,
+    });
   }, [uiStore, nodeCreatorStore]);
 
   const canvasNodes: CanvasNode[] = useMemo(
@@ -912,6 +915,7 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
           <button onClick={() => canvasOperations.tidyUp({ source: 'button' })}>Tidy up</button>
           <button onClick={() => onExtractWorkflow(Array.from(selectedNodeIds))} disabled={selectedNodeIds.size === 0}>Extract workflow</button>
           <button onClick={() => nodeCreatorStore.getState().openNodeCreatorForTriggerNodes(NODE_CREATOR_OPEN_SOURCES.PLUS_ENDPOINT)}>Add node</button>
+          <button onClick={() => {/* TODO: delete selected connection(s) UI */}}>Delete connection</button>
         </div>
         
         {/* Read-only callout */}

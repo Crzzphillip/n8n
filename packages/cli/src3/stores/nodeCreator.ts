@@ -24,6 +24,10 @@ interface NodeCreatorStore extends NodeCreatorState {
 		creatorView?: string;
 		connectionIndex?: number;
 	}) => void;
+	openNodeCreatorForConnectingNode: (options: {
+		connection: { source: string; sourceHandle: string };
+		eventSource: string;
+	}) => void;
 }
 
 export const useNodeCreatorStore = create<NodeCreatorStore>((set, get) => ({
@@ -74,6 +78,16 @@ export const useNodeCreatorStore = create<NodeCreatorStore>((set, get) => ({
 			isCreateNodeActive: true,
 			selectedView: creatorView || 'regular',
 			openSource: 'selective',
+		});
+	},
+
+	openNodeCreatorForConnectingNode: ({ connection, eventSource }) => {
+		// In a real implementation we would pass connection info to the modal
+		set({
+			isCreateNodeActive: true,
+			selectedView: 'regular',
+			openSource: eventSource,
+			showScrim: true,
 		});
 	},
 }));
