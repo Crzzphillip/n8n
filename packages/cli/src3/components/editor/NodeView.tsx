@@ -1213,7 +1213,7 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
             onSelectEdge={setSelectedEdge}
             onViewportChange={onViewportChange}
             onPaneClick={(pos) => {
-              // Track last click position equivalent if needed; for now, just clear selection
+              uiStore.getState().setLastClickPosition([pos.x, pos.y]);
               setSelectedNodeId(undefined);
               setSelectedEdge(undefined);
             }}
