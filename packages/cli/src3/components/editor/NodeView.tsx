@@ -29,6 +29,7 @@ import { useToast } from '../../src3/hooks/useToast';
 import { useMessage } from '../../src3/hooks/useMessage';
 import { useDocumentTitle } from '../../src3/hooks/useDocumentTitle';
 import { useExternalHooks } from '../../src3/hooks/useExternalHooks';
+import { useRouteGuards } from '../../src3/hooks/useRouteGuards';
 
 // New stores
 import { useHistoryStore } from '../../src3/stores/history';
@@ -125,6 +126,7 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
   const params = useSearchParams();
   const mode = props.mode;
   const workflowId = params.get('id') || undefined;
+  const { guardedPush, guardedReplace } = useRouteGuards(router as any);
 
   // Enhanced state management
   const [workflow, setWorkflow] = useState<Workflow>({ name: 'New workflow', nodes: [], connections: {} });
@@ -208,7 +210,17 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
     };
 
     initializeData();
-  }, [nodeTypesStore, credentialsStore, projectsStore, usersStore, tagsStore, settingsStore, toast]);
+
+    // If settings=true in query, open settings modal and clean URL
+    if (params.get('settings') === 'true') {
+      uiStore.getState().openModal(WORKFLOW_SETTINGS_MODAL_KEY);
+      try {
+        const sp = new URLSearchParams(Array.from(params.entries()));
+        sp.delete('settings');
+        guardedReplace(`${window.location.pathname}?${sp.toString()}`);
+      } catch {}
+    }
+  }, [nodeTypesStore, credentialsStore, projectsStore, usersStore, tagsStore, settingsStore, toast, params, uiStore, guardedReplace]);
 
   useEffect(() => {
     if (mode === 'existing' && workflowId) {
@@ -749,6 +761,8 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
 
   if (loading) return <div style={{ padding: 16 }}>Loading…</div>;
 
+  const isReadOnly = false; // TODO: compute via permissions and environment
+
   return (
     <div style={{ display: 'grid', gridTemplateColumns: '280px 1fr 320px', minHeight: 'calc(100vh - 32px)' }}>
       <aside style={{ borderRight: '1px solid #e5e5e5', padding: 16 }}>
@@ -844,6 +858,13 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
             }}
           />
         </div>
+        
+        {/* Read-only callout placeholder */}
+        {isReadOnly && (
+          <div style={{ position: 'absolute', bottom: 16, left: '50%', transform: 'translateX(-50%)', background: '#fff7e6', border: '1px solid #ffe58f', padding: '8px 12px', borderRadius: 6 }}>
+            Canvas is read-only in this environment
+          </div>
+        )}
         
         {/* Enhanced Execution Controls */}
         <div style={{ position: 'absolute', bottom: '16px', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '8px' }}>
