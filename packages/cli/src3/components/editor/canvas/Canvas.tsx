@@ -189,6 +189,10 @@ export default function Canvas(props: {
             <button onClick={() => canvasEventBus.emit('create:sticky')}>Sticky</button>
             <button onClick={() => canvasEventBus.emit('create:node', { source: 'plus' })}>+</button>
             <button onClick={() => canvasEventBus.emit('click:connection:add', { source: 'node', target: undefined })}>Add Conn</button>
+            <button onClick={() => canvasEventBus.emit('logs:open')}>Logs Open</button>
+            <button onClick={() => canvasEventBus.emit('logs:close')}>Logs Close</button>
+            <button onClick={() => canvasEventBus.emit('logs:input-open')}>Logs Input</button>
+            <button onClick={() => canvasEventBus.emit('logs:output-open')}>Logs Output</button>
           </Panel>
         </ReactFlow>
       </ReactFlowProvider>

@@ -855,6 +855,7 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
   const onOpenChat = useCallback(() => {
     logsStore.getState().toggleOpen(true);
     telemetry.track('User opened chat');
+    canvasOperations.startChat('main');
   }, [logsStore, telemetry]);
 
   const onToggleFocusPanel = useCallback(() => {
@@ -1118,6 +1119,10 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
     const offOpenSubworkflow = canvasEventBus.on('open:subworkflow', ({ nodeId }) => {
       telemetry.track('Subworkflow open', { nodeId });
     });
+    const offLogsOpen = canvasEventBus.on('logs:open', () => logsStore.getState().toggleOpen(true));
+    const offLogsClose = canvasEventBus.on('logs:close', () => logsStore.getState().toggleOpen(false));
+    const offLogsInputOpen = canvasEventBus.on('logs:input-open', () => logsStore.getState().toggleInputOpen());
+    const offLogsOutputOpen = canvasEventBus.on('logs:output-open', () => logsStore.getState().toggleOutputOpen());
     return () => {
       offFitView?.();
       offToggleFocus?.();
@@ -1128,8 +1133,12 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
       offUpdateInputs?.();
       offUpdateOutputs?.();
       offOpenSubworkflow?.();
+      offLogsOpen?.();
+      offLogsClose?.();
+      offLogsInputOpen?.();
+      offLogsOutputOpen?.();
     };
-  }, [focusPanelStore, canvasOperations, nodeCreatorStore, runWorkflow, telemetry]);
+  }, [focusPanelStore, canvasOperations, nodeCreatorStore, runWorkflow, telemetry, logsStore]);
 
   useEffect(() => {
     const execId = params.get('executionId');

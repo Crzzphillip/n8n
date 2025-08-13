@@ -17,4 +17,8 @@ export interface CanvasEvents {
 	'create:node': { source: string };
 	'click:connection:add': { source: string; target?: string };
 	'open:subworkflow': { nodeId: string };
+	'logs:open': void;
+	'logs:close': void;
+	'logs:input-open': void;
+	'logs:output-open': void;
 }
