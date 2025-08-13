@@ -99,7 +99,7 @@ import { getNodeViewTab } from '../../src3/utils/nodeViewUtils';
 import { getNodesWithNormalizedPosition } from '../../src3/utils/nodeViewUtils';
 
 // Types
-import type { INodeUi, XYPosition, ViewportTransform, Dimensions, ViewportBoundaries } from '../../src3/types/Interface';
+import type { INodeUi, XYPosition, ViewportTransform, Dimensions, ViewportBoundaries, AddedNodesAndConnections } from '../../src3/types/Interface';
 
 type WorkflowId = string;
 
@@ -661,6 +661,25 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
     setSelectedEdge(undefined);
   }, [selectedEdge, canvasOperations, checkIfEditingIsAllowed]);
 
+  const onAddNodesAndConnections = useCallback(async (payload: AddedNodesAndConnections, position?: XYPosition) => {
+    if (!checkIfEditingIsAllowed()) return;
+    // Add nodes
+    const nodesToAdd = payload.nodes.map((n) => ({ type: n.type, position: n.position ?? position, parameters: n.parameters }));
+    const added = await canvasOperations.addNodes(nodesToAdd as any, { dragAndDrop: !!position, position, trackHistory: true });
+    // Map connections using newly added nodes order: connect by index
+    const offsetIndex = workflow.nodes.length; // prior to addition
+    if (payload.connections?.length) {
+      const connections = payload.connections.map((c) => {
+        const from = workflow.nodes[offsetIndex + c.from.nodeIndex] || added[c.from.nodeIndex];
+        const to = workflow.nodes[offsetIndex + c.to.nodeIndex] || added[c.to.nodeIndex];
+        return { source: from?.id || '', target: to?.id || '' };
+      }).filter((c) => c.source && c.target);
+      if (connections.length) {
+        await canvasOperations.addConnections(connections as any, { trackHistory: true });
+      }
+    }
+  }, [canvasOperations, workflow.nodes, checkIfEditingIsAllowed]);
+
   const canvasNodes: CanvasNode[] = useMemo(
     () =>
       workflow.nodes.map((n) => ({
@@ -836,6 +855,27 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
     return false;
   }, [isReadOnlyEnv, readOnlyNotified, toast]);
 
+  // Register global link actions
+  useEffect(() => {
+    globalLinkActions.registerCustomAction('openNodeDetail', () => {
+      if (selectedNodeId) canvasOperations.setNodeActive(selectedNodeId);
+    });
+    globalLinkActions.registerCustomAction('showNodeCreator', () => {
+      nodeCreatorStore.getState().openNodeCreatorForTriggerNodes(NODE_CREATOR_OPEN_SOURCES.PLUS_ENDPOINT);
+    });
+    globalLinkActions.registerCustomAction('openSelectiveNodeCreator', () => {
+      nodeCreatorStore.getState().openNodeCreatorForConnectingNode({
+        connection: { source: selectedNodeId || '', sourceHandle: 'outputs-main-0' },
+        eventSource: NODE_CREATOR_OPEN_SOURCES.PLUS_ENDPOINT,
+      });
+    });
+    return () => {
+      globalLinkActions.unregisterCustomAction('openNodeDetail');
+      globalLinkActions.unregisterCustomAction('showNodeCreator');
+      globalLinkActions.unregisterCustomAction('openSelectiveNodeCreator');
+    };
+  }, [globalLinkActions, selectedNodeId, canvasOperations, nodeCreatorStore]);
+
   if (loading) return <div style={{ padding: 16 }}>Loading…</div>;
 
   return (
@@ -905,13 +945,20 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
           }} 
           onDrop={(e) => {
             if (!checkIfEditingIsAllowed()) return;
-            const data = e.dataTransfer.getData('application/x-sv-node');
+            const data = e.dataTransfer.getData(DRAG_EVENT_DATA_KEY);
+            const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+            const pos = { x: e.clientX - rect.left, y: e.clientY - rect.top };
             if (data) {
-              const item = JSON.parse(data);
-              const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-              const pos = { x: e.clientX - rect.left, y: e.clientY - rect.top };
-              setWorkflow((w) => ({ ...w, nodes: [...w.nodes, { id: uuid(), name: item.name || 'Node', position: pos }] }));
-              historyStore.getState().pushCommandToUndo(new (require('../../src3/models/history').AddNodeCommand)({ id: uuid(), name: item.name || 'Node', position: pos }, Date.now()));
+              try {
+                const payload = JSON.parse(data) as AddedNodesAndConnections;
+                void onAddNodesAndConnections(payload, [pos.x, pos.y]);
+              } catch {
+                // Fallback: single node payload
+                try {
+                  const item = JSON.parse(data);
+                  void onAddNodesAndConnections({ nodes: [{ type: item.type || 'custom', position: [pos.x, pos.y] }], connections: [] } as any, [pos.x, pos.y]);
+                } catch {}
+              }
             }
           }} 
           onDragOver={(e) => e.preventDefault()}
