@@ -876,6 +876,89 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
     };
   }, [globalLinkActions, selectedNodeId, canvasOperations, nodeCreatorStore]);
 
+  // Copy/Cut/Duplicate/Pin actions
+  const onCopyNodes = useCallback(async (ids: string[]) => {
+    const nodesToCopy = workflow.nodes.filter((n) => ids.includes(n.id));
+    setClipboard(JSON.parse(JSON.stringify(nodesToCopy)));
+    toast.showMessage({ title: 'Copied to clipboard', message: `${nodesToCopy.length} node(s)`, type: 'success' });
+  }, [workflow.nodes, toast]);
+
+  const onCutNodes = useCallback(async (ids: string[]) => {
+    if (!checkIfEditingIsAllowed()) return;
+    await onCopyNodes(ids);
+    ids.forEach((id) => canvasOperations.deleteNode(id, { trackHistory: true }));
+  }, [onCopyNodes, canvasOperations, checkIfEditingIsAllowed]);
+
+  const onDuplicateNodes = useCallback(async (ids: string[]) => {
+    if (!checkIfEditingIsAllowed()) return;
+    const offset = 30;
+    const toDuplicate = workflow.nodes.filter((n) => ids.includes(n.id));
+    const duplicated = toDuplicate.map((n) => ({ ...n, id: uuid(), position: { x: (n.position?.x || 100) + offset, y: (n.position?.y || 100) + offset } }));
+    setWorkflow((w) => ({ ...w, nodes: [...w.nodes, ...duplicated] }));
+    if (duplicated[0]) historyStore.getState().pushCommandToUndo(new (require('../../src3/models/history').AddNodeCommand)(duplicated[0], Date.now()));
+  }, [workflow.nodes, checkIfEditingIsAllowed, historyStore]);
+
+  const onPinNodes = useCallback((ids: string[]) => {
+    // Placeholder: toggling a custom flag
+    if (!checkIfEditingIsAllowed()) return;
+    setWorkflow((w) => ({ ...w, nodes: w.nodes.map((n) => (ids.includes(n.id) ? { ...n, pinned: !(n as any).pinned } : n)) as any }));
+  }, [checkIfEditingIsAllowed]);
+
+  // Full history revert bindings
+  useEffect(() => {
+    const onRevertNodePosition = ({ nodeName, position }: { nodeName: string; position: XYPosition }) => {
+      const node = workflow.nodes.find((n) => n.name === nodeName);
+      if (node) canvasOperations.updateNodePosition(node.id, { x: position[0], y: position[1] });
+    };
+    const onRevertAddNode = ({ node }: { node: INodeUi }) => {
+      const n = workflow.nodes.find((x) => x.id === node.id);
+      if (n) canvasOperations.deleteNode(n.id);
+    };
+    const onRevertRemoveNode = ({ node }: { node: INodeUi }) => {
+      void canvasOperations.addNodes([{ type: node.type, position: node.position as any, parameters: node.parameters }]);
+    };
+    const onRevertAddConnection = ({ connection }: { connection: [any, any] }) => {
+      const src = workflow.nodes.find((n) => n.name === connection[0].node);
+      const dst = workflow.nodes.find((n) => n.name === connection[1].node);
+      if (src && dst) canvasOperations.deleteConnection({ source: src.id, target: dst.id });
+    };
+    const onRevertRemoveConnection = ({ connection }: { connection: [any, any] }) => {
+      const src = workflow.nodes.find((n) => n.name === connection[0].node);
+      const dst = workflow.nodes.find((n) => n.name === connection[1].node);
+      if (src && dst) canvasOperations.createConnection({ source: src.id, target: dst.id });
+    };
+    const onRevertRenameNode = ({ currentName, newName }: { currentName: string; newName: string }) => {
+      void canvasOperations.renameNode(newName, currentName);
+    };
+    const onRevertReplaceNodeParameters = ({ nodeId, currentProperties }: { nodeId: string; currentProperties: any }) => {
+      canvasOperations.setNodeParameters(nodeId, currentProperties);
+    };
+    const onEnableNodeToggle = ({ nodeName }: { nodeName: string }) => {
+      const node = workflow.nodes.find((n) => n.name === nodeName);
+      if (node) canvasOperations.toggleNodesDisabled([node.id]);
+    };
+
+    historyBus.on('nodeMove', onRevertNodePosition as any);
+    historyBus.on('revertAddNode', onRevertAddNode as any);
+    historyBus.on('revertRemoveNode', onRevertRemoveNode as any);
+    historyBus.on('revertAddConnection', onRevertAddConnection as any);
+    historyBus.on('revertRemoveConnection', onRevertRemoveConnection as any);
+    historyBus.on('revertRenameNode', onRevertRenameNode as any);
+    historyBus.on('revertReplaceNodeParameters', onRevertReplaceNodeParameters as any);
+    historyBus.on('enableNodeToggle', onEnableNodeToggle as any);
+
+    return () => {
+      historyBus.off('nodeMove', onRevertNodePosition as any);
+      historyBus.off('revertAddNode', onRevertAddNode as any);
+      historyBus.off('revertRemoveNode', onRevertRemoveNode as any);
+      historyBus.off('revertAddConnection', onRevertAddConnection as any);
+      historyBus.off('revertRemoveConnection', onRevertRemoveConnection as any);
+      historyBus.off('revertRenameNode', onRevertRenameNode as any);
+      historyBus.off('revertReplaceNodeParameters', onRevertReplaceNodeParameters as any);
+      historyBus.off('enableNodeToggle', onEnableNodeToggle as any);
+    };
+  }, [historyBus, workflow.nodes, canvasOperations]);
+
   if (loading) return <div style={{ padding: 16 }}>Loading…</div>;
 
   return (
@@ -986,6 +1069,10 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
           <button onClick={() => onExtractWorkflow(Array.from(selectedNodeIds))} disabled={selectedNodeIds.size === 0}>Extract workflow</button>
           <button onClick={() => nodeCreatorStore.getState().openNodeCreatorForTriggerNodes(NODE_CREATOR_OPEN_SOURCES.PLUS_ENDPOINT)}>Add node</button>
           <button onClick={onDeleteSelectedConnection} disabled={!selectedEdge}>Delete connection</button>
+          <button onClick={() => onCopyNodes(Array.from(selectedNodeIds))} disabled={selectedNodeIds.size === 0}>Copy</button>
+          <button onClick={() => onCutNodes(Array.from(selectedNodeIds))} disabled={selectedNodeIds.size === 0}>Cut</button>
+          <button onClick={() => onDuplicateNodes(Array.from(selectedNodeIds))} disabled={selectedNodeIds.size === 0}>Duplicate</button>
+          <button onClick={() => onPinNodes(Array.from(selectedNodeIds))} disabled={selectedNodeIds.size === 0}>Pin/Unpin</button>
         </div>
         
         {/* Read-only callout */}
