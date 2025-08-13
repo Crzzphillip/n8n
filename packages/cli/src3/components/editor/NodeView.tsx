@@ -220,9 +220,9 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
     if (params.get('settings') === 'true') {
       uiStore.getState().openModal(WORKFLOW_SETTINGS_MODAL_KEY);
       try {
-        const sp = new URLSearchParams(Array.from(params.entries()));
-        sp.delete('settings');
-        guardedReplace(`${window.location.pathname}?${sp.toString()}`);
+              const sp = new URLSearchParams(Array.from(params.entries()));
+      sp.delete('settings');
+      await guardedReplace(`${window.location.pathname}?${sp.toString()}`);
       } catch {}
     }
   }, [nodeTypesStore, credentialsStore, projectsStore, usersStore, tagsStore, settingsStore, toast, params, uiStore, guardedReplace, environmentsStore, externalSecretsStore]);
@@ -489,7 +489,7 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
       try {
         const sp = new URLSearchParams(Array.from(params.entries()));
         sp.set('nodeId', ndvStore.activeNode.id);
-        router.replace(`${window.location.pathname}?${sp.toString()}`);
+        await guardedReplace(`${window.location.pathname}?${sp.toString()}`);
       } catch {}
     }
   }, [ndvStore.activeNode, params, router]);
@@ -506,7 +506,7 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
         body: JSON.stringify({ name: workflow.name, nodes: workflow.nodes, connections: workflow.connections, settings: workflow.settings }),
       });
       setWorkflow((w) => ({ ...w, id: created.id }));
-      router.replace(`/workflow/new?id=${created.id}`);
+      await guardedReplace(`/workflow/new?id=${created.id}`);
       canvasEventBus.emit('saved:workflow');
     } catch (e: any) {
       setError(e?.message || 'Failed to save');
@@ -1021,9 +1021,9 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
       // Simulate redirect back to workflow view after save
       const sp = new URLSearchParams(Array.from(params.entries()));
       sp.delete('executionId');
-      router.replace(`${window.location.pathname}?${sp.toString()}`);
+      await guardedReplace(`${window.location.pathname}?${sp.toString()}`);
     });
-  }, [executionDebugging, workflow.name, params, router, workflowHelpers]);
+  }, [executionDebugging, workflow.name, params, guardedReplace, workflowHelpers]);
 
   useEffect(() => {
     const execId = params.get('executionId');
@@ -1031,6 +1031,8 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
     if (execId && debug === 'true') {
       void initializeDebugMode(execId);
     }
+    // Guarded navigation usage example: ensure back/forward respects save prompt (wrapped inside useRouteGuards when wiring interactive UI)
+
   }, [params, initializeDebugMode]);
 
   const showFallbackNodes = useMemo(() => triggerNodes.length === 0, [triggerNodes]);
