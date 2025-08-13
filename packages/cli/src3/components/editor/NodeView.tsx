@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Canvas, { CanvasNode, CanvasEdge } from './canvas/Canvas';
 import NDV from './NDV/NodeDetailsView';
+import NodeCreator from './NodeCreator/NodeCreator';
 
 type WorkflowId = string;
 
@@ -174,6 +175,11 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
         <button onClick={() => addNode('Set')} style={{ marginLeft: 8 }}>
           Add Set
         </button>
+        <hr style={{ margin: '16px 0' }} />
+        <h4>Browse nodes</h4>
+        <div style={{ maxHeight: 360, overflow: 'auto' }}>
+          <NodeCreator />
+        </div>
         <hr style={{ margin: '16px 0' }} />
         <h4>Connect (demo)</h4>
         {workflow.nodes.length >= 2 ? (
