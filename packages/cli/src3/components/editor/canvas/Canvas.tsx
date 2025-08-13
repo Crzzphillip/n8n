@@ -15,6 +15,8 @@ import ReactFlow, {
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import { useCanvasStore } from '../../../src3/stores/canvas';
+import { useLogsStore } from '../../../src3/stores/logs';
+import Tooltip from '../../ui/Tooltip';
 
 export type CanvasNode = Node;
 export type CanvasEdge = Edge;
@@ -28,17 +30,24 @@ export default function Canvas(props: {
   const [nodes, setNodes, onNodesChange] = useNodesState(props.nodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(props.edges);
   const nodeStatus = useCanvasStore((s) => s.nodeStatus);
+  const logsByNode = useLogsStore((s) => s.byNode);
 
   const displayNodes = useMemo(() => {
     return nodes.map((n) => {
       const status = nodeStatus[n.id] || 'idle';
       const color = status === 'running' ? '#0af' : status === 'success' ? '#0a0' : status === 'error' ? '#f33' : status === 'waiting' ? '#fa0' : '#999';
+      const recent = (logsByNode[n.id] || []).slice(-1)[0]?.message;
+      const label = (
+        <Tooltip content={recent || `Status: ${status}`}>
+          <span>{n.data?.label} <span style={{ color, fontSize: 10, marginLeft: 6 }}>●</span></span>
+        </Tooltip>
+      );
       return {
         ...n,
-        data: { label: (<span>{n.data?.label} <span style={{ color, fontSize: 10, marginLeft: 6 }}>●</span></span>) },
+        data: { label },
       } as CanvasNode;
     });
-  }, [nodes, nodeStatus]);
+  }, [nodes, nodeStatus, logsByNode]);
 
   const onConnect = useCallback((connection: Connection) => {
     setEdges((eds) => addEdge(connection, eds));
