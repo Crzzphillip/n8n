@@ -5,6 +5,8 @@ import Canvas, { CanvasNode, CanvasEdge } from './canvas/Canvas';
 import NDV from './NDV/NodeDetailsView';
 import NodeCreator from './NodeCreator/NodeCreator';
 import { useKeyboardShortcuts } from '../../src3/hooks/useKeyboardShortcuts';
+import TopBar from './Header/TopBar';
+import RightPanel from './SidePanels/RightPanel';
 
 type WorkflowId = string;
 
@@ -170,15 +172,6 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
         </div>
         {error && <p style={{ color: 'red' }}>{error}</p>}
         <hr style={{ margin: '16px 0' }} />
-        <h4>Add node</h4>
-        <button onClick={() => addNode('Start')}>Add Start</button>
-        <button onClick={() => addNode('HTTP Request')} style={{ marginLeft: 8 }}>
-          Add HTTP Request
-        </button>
-        <button onClick={() => addNode('Set')} style={{ marginLeft: 8 }}>
-          Add Set
-        </button>
-        <hr style={{ margin: '16px 0' }} />
         <h4>Browse nodes</h4>
         <div style={{ maxHeight: 360, overflow: 'auto' }}>
           <NodeCreator />
@@ -192,6 +185,9 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
         )}
       </aside>
       <section style={{ padding: 0 }}>
+        <div style={{ padding: '8px 12px', borderBottom: '1px solid #eee' }}>
+          <TopBar />
+        </div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <h2 style={{ margin: 0 }}>{workflow.name}</h2>
@@ -208,7 +204,7 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
         </div>
       </section>
       <aside>
-        <NDV selectedNodeId={selectedNodeId} />
+        <RightPanel selectedNodeId={selectedNodeId} />
       </aside>
     </div>
   );
