@@ -189,6 +189,17 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
         )}
       </aside>
       <section style={{ padding: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <h2 style={{ margin: 0 }}>{workflow.name}</h2>
+            {workflow.id && <small style={{ color: '#666' }}>id: {workflow.id}</small>}
+          </div>
+          {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
+          {/* @ts-ignore */}
+          <div>
+            {(await import('./RunControls')).default({ workflowId: workflow.id })}
+          </div>
+        </div>
         <div style={{ border: '1px solid #ddd', borderRadius: 8, padding: 0, minHeight: '100%' }}>
           <Canvas nodes={canvasNodes} edges={canvasEdges} onChange={onCanvasChange} />
         </div>
