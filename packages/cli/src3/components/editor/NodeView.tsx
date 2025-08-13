@@ -493,6 +493,15 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
   }, [workflow]);
 
   // Enhanced keyboard shortcuts with new functionality
+  const onOpenRenameNodeModal = useCallback(async (id: string) => {
+    const node = workflow.nodes.find((n) => n.id === id);
+    if (!node) return;
+    // For now use window.prompt as placeholder; integrate useMessage prompt when available
+    const nextName = window.prompt('Rename node:', node.name) || '';
+    if (!nextName.trim()) return;
+    await canvasOperations.renameNode(node.name, nextName, { trackHistory: true });
+  }, [workflow.nodes, canvasOperations]);
+
   useKeyboardShortcuts({
     onSave: () => workflowSaving.saveCurrentWorkflow(),
     onUndo: () => {
@@ -543,6 +552,10 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
       }));
       historyStore.getState().pushCommandToUndo(new (require('../../src3/models/history').MoveNodeCommand)('', [0, 0], [0, 0], Date.now()));
       telemetry.track('User aligned nodes');
+    },
+    onRename: () => {
+      if (!selectedNodeId) return;
+      void onOpenRenameNodeModal(selectedNodeId);
     },
   });
 
