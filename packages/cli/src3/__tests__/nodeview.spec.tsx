@@ -1,11 +1,112 @@
 import React from 'react';
-import { render } from '@testing-library/react';
+import { render, act } from '@testing-library/react';
 import NodeView from '../components/editor/NodeView';
+import { canvasEventBus } from '../event-bus/canvas';
+import { historyBus } from '../event-bus/history';
+import { useNDVStore } from '../stores/ndv';
+import { useNodeCreatorStore } from '../stores/nodeCreator';
+
+jest.mock('next/navigation', () => {
+  const params = new URLSearchParams();
+  return {
+    useRouter: () => ({ replace: jest.fn(), push: jest.fn(), back: jest.fn() }),
+    useSearchParams: () => params,
+  };
+});
+
+const mockCreateConnection = jest.fn();
+const mockUpdateNodePosition = jest.fn();
+
+jest.mock('../hooks/useCanvasOperations', () => ({
+  useCanvasOperations: () => ({
+    createConnection: mockCreateConnection,
+    updateNodePosition: mockUpdateNodePosition,
+    addNodes: jest.fn(async () => []),
+    addConnections: jest.fn(async () => {}),
+    deleteConnection: jest.fn(),
+    deleteNode: jest.fn(),
+    renameNode: jest.fn(),
+    setNodeParameters: jest.fn(),
+    toggleNodesDisabled: jest.fn(),
+    setNodeActive: jest.fn(),
+    tidyUp: jest.fn(),
+  }),
+}));
+
+const mockUseKeyboardShortcuts = jest.fn();
+jest.mock('../hooks/useKeyboardShortcuts', () => ({
+  useKeyboardShortcuts: (...args: any[]) => mockUseKeyboardShortcuts(...args),
+}));
+
+const CanvasMock = jest.fn(() => null);
+jest.mock('../components/editor/canvas/Canvas', () => ({
+  __esModule: true,
+  default: (props: any) => CanvasMock(props),
+}));
 
 describe('NodeView', () => {
-  it('renders without crashing (new workflow)', () => {
-    // Minimal smoke test; in real tests, mock stores and router
-    const { getByText } = render(<NodeView mode="new" /> as any);
-    expect(getByText(/Loading|Workflow|Save/i)).toBeTruthy();
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('imports template and emits fitView', async () => {
+    const params = (require('next/navigation') as any).useSearchParams();
+    params.set('templateId', 'tpl-1');
+    (global as any).fetch = jest.fn(async (url: string) => ({ ok: true, json: async () => ({ name: 'Tpl', workflow: { nodes: [], connections: {} } }) }));
+    const fitSpy = jest.spyOn(canvasEventBus, 'emit');
+    await act(async () => {
+      render(<NodeView mode="new" /> as any);
+    });
+    // allow async effect to run
+    await act(async () => {});
+    expect(fitSpy).toHaveBeenCalledWith('fitView');
+  });
+
+  it('binds history revert nodeMove to update node position', async () => {
+    const params = (require('next/navigation') as any).useSearchParams();
+    params.set('id', 'wf-1');
+    (global as any).fetch = jest.fn(async (url: string) => ({ ok: true, json: async () => ({ id: 'wf-1', name: 'WF', nodes: [{ id: 'n1', name: 'Node 1', position: { x: 0, y: 0 } }], connections: {} }) }));
+    await act(async () => {
+      render(<NodeView mode="existing" /> as any);
+    });
+    await act(async () => {});
+    act(() => {
+      (historyBus as any).emit('nodeMove', { nodeName: 'Node 1', position: [10, 20] });
+    });
+    expect(mockUpdateNodePosition).toHaveBeenCalledWith('n1', { x: 10, y: 20 });
+  });
+
+  it('opens node creator for connecting node on connection cancel', async () => {
+    const params = (require('next/navigation') as any).useSearchParams();
+    params.delete('templateId');
+    (global as any).fetch = jest.fn(async () => ({ ok: true, json: async () => ({ id: 'wf', name: 'WF', nodes: [], connections: {} }) }));
+    await act(async () => {
+      render(<NodeView mode="new" /> as any);
+    });
+    const openCreatorSpy = jest.spyOn(useNodeCreatorStore.getState(), 'openNodeCreatorForConnectingNode');
+    // Invoke Canvas onCreateConnectionCancelled prop
+    const lastCall = CanvasMock.mock.calls[CanvasMock.mock.calls.length - 1];
+    const props = lastCall?.[0] || {};
+    act(() => {
+      props.onCreateConnectionCancelled({ nodeId: 'n1', handleId: 'h1' }, { x: 5, y: 6 });
+    });
+    expect(openCreatorSpy).toHaveBeenCalled();
+  });
+
+  it('disables keyboard shortcuts when NDV is open', async () => {
+    const params = (require('next/navigation') as any).useSearchParams();
+    params.delete('templateId');
+    (global as any).fetch = jest.fn(async () => ({ ok: true, json: async () => ({ id: 'wf', name: 'WF', nodes: [], connections: {} }) }));
+    await act(async () => {
+      render(<NodeView mode="new" /> as any);
+    });
+    act(() => useNDVStore.getState().setActiveNodeName('node-x'));
+    // Re-render to apply memo deps
+    await act(async () => {
+      render(<NodeView mode="new" /> as any);
+    });
+    // The hook should be called with enabled=false as second argument
+    const lastArgs = mockUseKeyboardShortcuts.mock.calls[mockUseKeyboardShortcuts.mock.calls.length - 1];
+    expect(lastArgs?.[1]).toBe(false);
   });
 });
