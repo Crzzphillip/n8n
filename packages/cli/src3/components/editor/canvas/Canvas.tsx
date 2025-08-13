@@ -34,6 +34,8 @@ export default function Canvas(props: {
   fitViewOptions?: FitViewOptions;
   onViewportChange?: (viewport: { x: number; y: number; zoom: number }, dimensions: { width: number; height: number }) => void;
   onPaneClick?: (position: { x: number; y: number }) => void;
+  onCreateConnection?: (connection: { source: string; target: string }) => void;
+  onCreateConnectionCancelled?: (start: { nodeId: string; handleId: string }, position: { x: number; y: number }, event?: MouseEvent | TouchEvent) => void;
 }) {
   const [nodes, setNodes, onNodesChange] = useNodesState(props.nodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(props.edges);
@@ -41,6 +43,7 @@ export default function Canvas(props: {
   const logsByNode = useLogsStore((s) => s.byNode);
   const rf = useReactFlow();
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const connectStartRef = useRef<{ nodeId: string; handleId: string } | null>(null);
 
   useEffect(() => {
     if (props.fitViewOptions) rf.fitView(props.fitViewOptions);
@@ -85,7 +88,10 @@ export default function Canvas(props: {
 
   const onConnect = useCallback((connection: Connection) => {
     setEdges((eds) => addEdge(connection, eds));
-  }, [setEdges]);
+    if (props.onCreateConnection && connection.source && connection.target) {
+      props.onCreateConnection({ source: String(connection.source), target: String(connection.target) });
+    }
+  }, [setEdges, props]);
 
   const onNodesChangeWrapped = useCallback((changes: any) => {
     onNodesChange(changes);
@@ -119,6 +125,24 @@ export default function Canvas(props: {
     } catch {}
   }, [props.onPaneClick, rf]);
 
+  const onConnectStart = useCallback((event: any, params: any) => {
+    connectStartRef.current = { nodeId: String(params.nodeId), handleId: String(params.handleId) };
+  }, []);
+
+  const onConnectEnd = useCallback((event: MouseEvent | TouchEvent) => {
+    try {
+      const target = event.target as HTMLElement;
+      const isPane = target?.classList?.contains('react-flow__pane');
+      if (isPane && props.onCreateConnectionCancelled && connectStartRef.current) {
+        const pt = 'clientX' in event ? { x: (event as MouseEvent).clientX, y: (event as MouseEvent).clientY } : { x: (event as TouchEvent).changedTouches[0].clientX, y: (event as TouchEvent).changedTouches[0].clientY };
+        const pos = rf.screenToFlowPosition(pt);
+        props.onCreateConnectionCancelled(connectStartRef.current, pos as any, event);
+      }
+    } finally {
+      connectStartRef.current = null;
+    }
+  }, [props, rf]);
+
   return (
     <div ref={containerRef} style={{ width: '100%', height: '100%' }} onMouseLeave={syncUp} onBlur={syncUp} onContextMenu={props.onContextMenu}>
       <ReactFlowProvider>
@@ -128,6 +152,8 @@ export default function Canvas(props: {
           onNodesChange={onNodesChangeWrapped}
           onEdgesChange={onEdgesChangeWrapped}
           onConnect={onConnect}
+          onConnectStart={onConnectStart}
+          onConnectEnd={onConnectEnd}
           onSelectionChange={onSelectionChange}
           onMove={handleMove}
           onPaneClick={handlePaneClick}

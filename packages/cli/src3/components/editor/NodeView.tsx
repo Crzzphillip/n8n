@@ -619,6 +619,20 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
     telemetry.track('User connected nodes');
   }, [canvasOperations, telemetry]);
 
+  const onCreateConnection = useCallback((connection: { source: string; target: string }) => {
+    if (!checkIfEditingIsAllowed()) return;
+    canvasOperations.createConnection({ source: connection.source, target: connection.target }, { trackHistory: true });
+  }, [canvasOperations, checkIfEditingIsAllowed]);
+
+  const onCreateConnectionCancelled = useCallback((start: { nodeId: string; handleId: string }, position: { x: number; y: number }) => {
+    // Store last interaction for future placement
+    uiStore.getState().setLastInteractedWithNodeId(start.nodeId);
+    uiStore.getState().setLastInteractedWithNodeHandle(start.handleId);
+    uiStore.getState().setLastCancelledConnectionPosition([position.x, position.y]);
+    // Open node creator for connecting node
+    nodeCreatorStore.getState().openNodeCreatorForActions('regular', NODE_CREATOR_OPEN_SOURCES.NODE_CONNECTION_DROP);
+  }, [uiStore, nodeCreatorStore]);
+
   const canvasNodes: CanvasNode[] = useMemo(
     () =>
       workflow.nodes.map((n) => ({
@@ -882,6 +896,8 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
               // Track last click position equivalent if needed; for now, just clear selection
               setSelectedNodeId(undefined);
             }}
+            onCreateConnection={onCreateConnection}
+            onCreateConnectionCancelled={onCreateConnectionCancelled}
           />
         </div>
         
