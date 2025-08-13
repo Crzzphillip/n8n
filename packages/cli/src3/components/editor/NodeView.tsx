@@ -559,9 +559,23 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
 
   const containsTriggerNodes = useMemo(() => triggerNodes.length > 0, [triggerNodes]);
   const allTriggerNodesDisabled = useMemo(() => {
-    const disabledTriggerNodes = triggerNodes.filter(node => node.disabled);
+    const disabledTriggerNodes = triggerNodes.filter((node: any) => node.disabled);
     return disabledTriggerNodes.length === triggerNodes.length;
   }, [triggerNodes]);
+
+  // Chat trigger gating
+  const chatTriggerNode = useMemo(() => workflow.nodes.find((n: any) => n.type === CHAT_TRIGGER_NODE_TYPE), [workflow.nodes]);
+  const containsChatTriggerNodes = useMemo(() => {
+    if (executionsStore.getState().activeExecution?.status === 'waiting') return false;
+    return workflow.nodes.some((n: any) => [MANUAL_CHAT_TRIGGER_NODE_TYPE, CHAT_TRIGGER_NODE_TYPE].includes(n.type) && n.disabled !== true);
+  }, [workflow.nodes, executionsStore]);
+  const isOnlyChatTriggerNodeActive = useMemo(() => {
+    return triggerNodes.every((node: any) => node.disabled || node.type === CHAT_TRIGGER_NODE_TYPE);
+  }, [triggerNodes]);
+  const chatTriggerNodePinnedData = useMemo(() => {
+    // Placeholder: in real impl, get from workflows store pin data
+    return chatTriggerNode ? {} : null;
+  }, [chatTriggerNode]);
 
   const isWorkflowRunning = useMemo(() => {
     return executionsStore.getState().activeExecution?.status === 'running';
@@ -572,9 +586,14 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
   }, [executionsStore]);
 
   const isExecutionDisabled = useMemo(() => {
-    // TODO: extend with chat-trigger gating when chat trigger logic is implemented
+    // Disable when only chat trigger active without pinned data
+    if (containsChatTriggerNodes && isOnlyChatTriggerNodeActive && !chatTriggerNodePinnedData) return true;
     return !containsTriggerNodes || allTriggerNodesDisabled;
-  }, [containsTriggerNodes, allTriggerNodesDisabled]);
+  }, [containsChatTriggerNodes, isOnlyChatTriggerNodeActive, chatTriggerNodePinnedData, containsTriggerNodes, allTriggerNodesDisabled]);
+
+  const isRunWorkflowButtonVisible = useMemo(() => {
+    return !isOnlyChatTriggerNodeActive || !!chatTriggerNodePinnedData;
+  }, [isOnlyChatTriggerNodeActive, chatTriggerNodePinnedData]);
 
   // Enhanced event handlers
   const addNode = useCallback((name: string) => {
@@ -863,16 +882,18 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
         {/* Enhanced Execution Controls */}
         <div style={{ position: 'absolute', bottom: '16px', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '8px' }}>
           <div onMouseEnter={() => nodeViewEventBus.emit('runWorkflowButton:mouseenter')} onMouseLeave={() => nodeViewEventBus.emit('runWorkflowButton:mouseleave')}>
-            <CanvasRunWorkflowButton
-              waitingForWebhook={isExecutionWaitingForWebhook}
-              disabled={isExecutionDisabled}
-              executing={isWorkflowRunning}
-              triggerNodes={triggerNodes}
-              onExecute={onRunWorkflow}
-              getNodeType={nodeTypesStore.getNodeType}
-              selectedTriggerNodeName={selectedTriggerNodeName}
-              onSelectTriggerNode={setSelectedTriggerNodeName}
-            />
+            {isRunWorkflowButtonVisible && (
+              <CanvasRunWorkflowButton
+                waitingForWebhook={isExecutionWaitingForWebhook}
+                disabled={isExecutionDisabled}
+                executing={isWorkflowRunning}
+                triggerNodes={triggerNodes}
+                onExecute={onRunWorkflow}
+                getNodeType={nodeTypesStore.getNodeType}
+                selectedTriggerNodeName={selectedTriggerNodeName}
+                onSelectTriggerNode={setSelectedTriggerNodeName}
+              />
+            )}
           </div>
           
           {isWorkflowRunning && !isExecutionWaitingForWebhook && (
@@ -886,20 +907,22 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
             <CanvasStopWaitingForWebhookButton onClick={onStopWaitingForWebhook} />
           )}
           
-          {isLogsPanelOpen ? (
-            <CanvasChatButton
-              type="tertiary"
-              label="Hide Chat"
-              onClick={() => logsStore.getState().toggleOpen(false)}
-            />
-          ) : (
-            <KeyboardShortcutTooltip label="Open Chat" shortcut={{ keys: ['c'] }}>
+          {containsChatTriggerNodes && (
+            isLogsPanelOpen ? (
               <CanvasChatButton
-                type={isExecutionDisabled ? 'primary' : 'secondary'}
-                label="Chat"
-                onClick={onOpenChat}
+                type="tertiary"
+                label="Hide Chat"
+                onClick={() => logsStore.getState().toggleOpen(false)}
               />
-            </KeyboardShortcutTooltip>
+            ) : (
+              <KeyboardShortcutTooltip label="Open Chat" shortcut={{ keys: ['c'] }}>
+                <CanvasChatButton
+                  type={isRunWorkflowButtonVisible ? 'secondary' : 'primary'}
+                  label="Chat"
+                  onClick={onOpenChat}
+                />
+              </KeyboardShortcutTooltip>
+            )
           )}
         </div>
         
