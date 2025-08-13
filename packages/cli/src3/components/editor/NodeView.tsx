@@ -94,6 +94,7 @@ import {
 import { createCanvasConnectionHandleString, parseCanvasConnectionHandleString } from '../../src3/utils/canvasUtils';
 import { isValidNodeConnectionType, isVueFlowConnection } from '../../src3/utils/typeGuards';
 import { tryToParseNumber } from '../../src3/utils/typesUtils';
+import { getNodeViewTab } from '../../src3/utils/nodeViewUtils';
 
 // Types
 import type { INodeUi, XYPosition, ViewportTransform, Dimensions, ViewportBoundaries } from '../../src3/types/Interface';
@@ -224,7 +225,20 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
     } else if (mode === 'new') {
       documentTitle.setWorkflowTitle('New Workflow');
     }
-  }, [mode, workflowId, documentTitle, toast]);
+
+    // Handle route-driven actions (e.g., add evaluation trigger, run evaluation)
+    const action = params.get('action');
+    if (action === 'addEvaluationTrigger') {
+      nodeCreatorStore.getState().openNodeCreatorForTriggerNodes(NODE_CREATOR_OPEN_SOURCES.ADD_EVALUATION_TRIGGER_BUTTON);
+    } else if (action === 'addEvaluationNode') {
+      nodeCreatorStore.getState().openNodeCreatorForActions(EVALUATION_NODE_TYPE, NODE_CREATOR_OPEN_SOURCES.ADD_EVALUATION_NODE_BUTTON);
+    } else if (action === 'executeEvaluation') {
+      const evalTrigger = workflow.nodes.find((n) => n.type === EVALUATION_TRIGGER_NODE_TYPE);
+      if (evalTrigger) {
+        void runWorkflow.runEntireWorkflow('node');
+      }
+    }
+  }, [mode, workflowId, documentTitle, toast, params, nodeCreatorStore, runWorkflow, workflow.nodes]);
 
   // Enhanced useEffect hooks
   useEffect(() => {
@@ -234,12 +248,28 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
     // Initialize stores
     historyStore.getState().reset();
     ndvStore.getState().resetNDVPushRef();
+
+    // Clipboard paste handling
+    useClipboard({
+      onPaste: async (plainTextData: string) => {
+        try {
+          if (VALID_WORKFLOW_IMPORT_URL_REGEX.test(plainTextData)) {
+            await onImportWorkflowUrl(plainTextData);
+            return;
+          }
+          const data = JSON.parse(plainTextData);
+          if (data && (data.nodes || data.connections)) {
+            await onImportWorkflowData(data);
+          }
+        } catch {}
+      },
+    });
     
     return () => {
       removeBeforeUnloadEventBindings();
       off?.();
     };
-  }, [pushStore, addBeforeUnloadEventBindings, removeBeforeUnloadEventBindings, historyStore, ndvStore]);
+  }, [pushStore, addBeforeUnloadEventBindings, removeBeforeUnloadEventBindings, historyStore, ndvStore, onImportWorkflowUrl, onImportWorkflowData]);
 
   // Enhanced event bus bindings
   useEffect(() => {
@@ -318,6 +348,25 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
     };
   }, [workflow.nodes, canvasOperations, onImportWorkflowData, onImportWorkflowUrl, onOpenChat, onSourceControlPull, telemetry]);
 
+  // Sync NDV active node to URL and vice versa
+  useEffect(() => {
+    const nodeId = params.get('nodeId');
+    if (nodeId && workflow.nodes.some((n) => n.id === nodeId)) {
+      canvasOperations.setNodeActive(nodeId);
+      setSelectedNodeId(nodeId);
+    }
+  }, [params, workflow.nodes, canvasOperations]);
+
+  useEffect(() => {
+    if (ndvStore.activeNode) {
+      try {
+        const sp = new URLSearchParams(Array.from(params.entries()));
+        sp.set('nodeId', ndvStore.activeNode.id);
+        router.replace(`${window.location.pathname}?${sp.toString()}`);
+      } catch {}
+    }
+  }, [ndvStore.activeNode, params, router]);
+
   const canSave = useMemo(() => workflow.name.trim().length > 0, [workflow.name]);
 
   const saveNew = useCallback(async () => {
@@ -331,6 +380,7 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
       });
       setWorkflow((w) => ({ ...w, id: created.id }));
       router.replace(`/workflow/new?id=${created.id}`);
+      canvasEventBus.emit('saved:workflow');
     } catch (e: any) {
       setError(e?.message || 'Failed to save');
     } finally {
@@ -348,6 +398,7 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ name: workflow.name, nodes: workflow.nodes, connections: workflow.connections, settings: workflow.settings }),
       });
+      canvasEventBus.emit('saved:workflow');
     } catch (e: any) {
       setError(e?.message || 'Failed to update');
     } finally {
@@ -582,12 +633,23 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
   const onSourceControlPull = useCallback(async () => {
     try {
       await sourceControlStore.getState().pull();
+      // Refresh related data
+      await Promise.all([
+        credentialsStore.getState().fetchAllCredentials(),
+        tagsStore.getState().fetchTags(),
+      ]);
+      // Reload workflow if applicable
+      if (workflow.id) {
+        const wf = await fetchJson<Workflow>(`/api/rest/workflows/${workflow.id}`);
+        setWorkflow(wf);
+        documentTitle.setWorkflowTitle(wf.name);
+      }
       toast.showSuccess('Successfully pulled latest changes');
       telemetry.track('User pulled source control changes');
     } catch (error) {
       toast.showError(error, 'Failed to pull changes');
     }
-  }, [sourceControlStore, toast, telemetry]);
+  }, [sourceControlStore, toast, telemetry, workflow.id, credentialsStore, tagsStore, documentTitle]);
 
   const onImportWorkflowData = useCallback(async (data: any) => {
     try {
