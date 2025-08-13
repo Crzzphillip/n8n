@@ -10,6 +10,7 @@ interface UIState {
 	lastCancelledConnectionPosition: [number, number] | null;
 	nodeViewOffsetPosition: [number, number];
 	addFirstStepOnLoad: boolean;
+	focusPanelEnabled: boolean;
 }
 
 interface UIStore extends UIState {
@@ -24,6 +25,7 @@ interface UIStore extends UIState {
 	setNodeViewOffsetPosition: (position: [number, number]) => void;
 	setAddFirstStepOnLoad: (add: boolean) => void;
 	resetLastInteractedWith: () => void;
+	toggleFocusPanel: () => void;
 }
 
 export const useUIStore = create<UIStore>((set) => ({
@@ -36,6 +38,7 @@ export const useUIStore = create<UIStore>((set) => ({
 	lastCancelledConnectionPosition: null,
 	nodeViewOffsetPosition: [0, 0],
 	addFirstStepOnLoad: false,
+	focusPanelEnabled: true,
 
 	setStateIsDirty: (dirty: boolean) => {
 		set({ stateIsDirty: dirty });
@@ -87,5 +90,9 @@ export const useUIStore = create<UIStore>((set) => ({
 			lastInteractedWithNodeHandle: null,
 			lastCancelledConnectionPosition: null,
 		});
+	},
+
+	toggleFocusPanel: () => {
+		set((s) => ({ focusPanelEnabled: !s.focusPanelEnabled }));
 	},
 }));

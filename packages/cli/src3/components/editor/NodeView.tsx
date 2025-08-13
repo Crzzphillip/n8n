@@ -1264,10 +1264,12 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
       </aside>
       
       {/* Focus Panel */}
-      <FocusPanel 
-        isCanvasReadOnly={false}
-        onSaveKeyboardShortcut={workflowSaving.saveCurrentWorkflow}
-      />
+      {uiStore.focusPanelEnabled && (
+        <FocusPanel 
+          isCanvasReadOnly={false}
+          onSaveKeyboardShortcut={workflowSaving.saveCurrentWorkflow}
+        />
+      )}
 
       {/* NDV */}
       <div style={{ gridColumn: '1 / -1', display: 'flex' }}>
