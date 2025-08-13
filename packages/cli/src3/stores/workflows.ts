@@ -2,11 +2,13 @@ import { create } from 'zustand';
 
 export type WorkflowId = string;
 
+export type XYPosition = [number, number];
+
 export type WorkflowNode = {
   id: string;
   name: string;
   type?: string;
-  position?: { x: number; y: number };
+  position?: XYPosition;
   parameters?: Record<string, any>;
 };
 
@@ -36,7 +38,7 @@ type State = {
   update: () => Promise<void>;
   setName: (name: string) => void;
   addNode: (node: WorkflowNode) => void;
-  setNodePosition: (id: string, pos: { x: number; y: number }) => void;
+  setNodePosition: (id: string, pos: XYPosition) => void;
   connect: (fromId: string, toId: string) => void;
   removeNode: (id: string) => void;
   pushHistory: () => void;
