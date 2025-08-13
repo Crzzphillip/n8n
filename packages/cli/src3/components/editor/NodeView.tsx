@@ -959,6 +959,33 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
     };
   }, [historyBus, workflow.nodes, canvasOperations]);
 
+  const isNDVV2 = useMemo(() => {
+    return false; // Placeholder experiment gating
+  }, []);
+
+  // Debug mode flags
+  const [isInDebugMode, setIsInDebugMode] = useState(false);
+
+  const initializeDebugMode = useCallback(async (executionId: string) => {
+    workflowHelpers.setDocumentTitle(workflow.name, 'DEBUG');
+    await executionDebugging.debugExecution(executionId);
+    setIsInDebugMode(true);
+    canvasEventBus.on('saved:workflow', async () => {
+      // Simulate redirect back to workflow view after save
+      const sp = new URLSearchParams(Array.from(params.entries()));
+      sp.delete('executionId');
+      router.replace(`${window.location.pathname}?${sp.toString()}`);
+    });
+  }, [executionDebugging, workflow.name, params, router, workflowHelpers]);
+
+  useEffect(() => {
+    const execId = params.get('executionId');
+    const debug = params.get('debug');
+    if (execId && debug === 'true') {
+      void initializeDebugMode(execId);
+    }
+  }, [params, initializeDebugMode]);
+
   if (loading) return <div style={{ padding: 16 }}>Loading…</div>;
 
   return (
@@ -1150,6 +1177,15 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
         isCanvasReadOnly={false}
         onSaveKeyboardShortcut={workflowSaving.saveCurrentWorkflow}
       />
+
+      {/* NDV */}
+      <div style={{ gridColumn: '1 / -1', display: 'flex' }}>
+        {!isNDVV2 ? (
+          <NDV selectedNodeId={selectedNodeId} />
+        ) : (
+          <NDV selectedNodeId={selectedNodeId} />
+        )}
+      </div>
     </div>
   );
 }
