@@ -1,5 +1,5 @@
 "use client";
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo, useRef, useEffect } from 'react';
 import ReactFlow, {
   Background,
   Controls,
@@ -12,6 +12,9 @@ import ReactFlow, {
   Edge,
   Node,
   OnSelectionChangeParams,
+  useReactFlow,
+  Panel,
+  FitViewOptions,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import { useCanvasStore } from '../../../src3/stores/canvas';
@@ -26,26 +29,36 @@ export default function Canvas(props: {
   edges: CanvasEdge[];
   onChange: (nodes: CanvasNode[], edges: CanvasEdge[]) => void;
   onSelectNode?: (nodeId?: string) => void;
+  onContextMenu?: (e: React.MouseEvent) => void;
+  fitViewOptions?: FitViewOptions;
 }) {
   const [nodes, setNodes, onNodesChange] = useNodesState(props.nodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(props.edges);
   const nodeStatus = useCanvasStore((s) => s.nodeStatus);
   const logsByNode = useLogsStore((s) => s.byNode);
+  const rf = useReactFlow();
+
+  useEffect(() => {
+    if (props.fitViewOptions) rf.fitView(props.fitViewOptions);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [props.fitViewOptions]);
 
   const displayNodes = useMemo(() => {
     return nodes.map((n) => {
       const status = nodeStatus[n.id] || 'idle';
       const color = status === 'running' ? '#0af' : status === 'success' ? '#0a0' : status === 'error' ? '#f33' : status === 'waiting' ? '#fa0' : '#999';
       const recent = (logsByNode[n.id] || []).slice(-1)[0]?.message;
-      const label = (
+      const isSticky = (n as any).data?.sticky === true;
+      const label = isSticky ? (
+        <div style={{ background: '#fffa9c', padding: 8, border: '1px solid #e0d76b', borderRadius: 6, maxWidth: 220 }}>
+          {n.data?.label}
+        </div>
+      ) : (
         <Tooltip content={recent || `Status: ${status}`}>
           <span>{n.data?.label} <span style={{ color, fontSize: 10, marginLeft: 6 }}>●</span></span>
         </Tooltip>
       );
-      return {
-        ...n,
-        data: { label },
-      } as CanvasNode;
+      return { ...n, data: { ...n.data, label } } as CanvasNode;
     });
   }, [nodes, nodeStatus, logsByNode]);
 
@@ -71,7 +84,7 @@ export default function Canvas(props: {
   }, [props.onSelectNode]);
 
   return (
-    <div style={{ width: '100%', height: '100%' }} onMouseLeave={syncUp} onBlur={syncUp}>
+    <div style={{ width: '100%', height: '100%' }} onMouseLeave={syncUp} onBlur={syncUp} onContextMenu={props.onContextMenu}>
       <ReactFlowProvider>
         <ReactFlow
           nodes={displayNodes}
@@ -81,10 +94,16 @@ export default function Canvas(props: {
           onConnect={onConnect}
           onSelectionChange={onSelectionChange}
           fitView
+          proOptions={{ hideAttribution: true }}
         >
           <MiniMap />
-          <Controls />
+          <Controls showInteractive />
           <Background gap={16} />
+          <Panel position="top-right">
+            <button onClick={() => rf.zoomIn()}>+</button>
+            <button onClick={() => rf.zoomOut()}>-</button>
+            <button onClick={() => rf.fitView()}>Fit</button>
+          </Panel>
         </ReactFlow>
       </ReactFlowProvider>
     </div>
