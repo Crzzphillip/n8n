@@ -200,7 +200,7 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
           </div>
         </div>
         <div style={{ border: '1px solid #ddd', borderRadius: 8, padding: 0, minHeight: '100%' }}>
-          <Canvas nodes={canvasNodes} edges={canvasEdges} onChange={onCanvasChange} />
+          <Canvas nodes={canvasNodes} edges={canvasEdges} onChange={onCanvasChange} onSelectNode={setSelectedNodeId} />
         </div>
       </section>
       <aside>

@@ -2,6 +2,7 @@
 import { useMemo, useState } from 'react';
 import { useWorkflowStore } from '../../../src3/stores/workflows';
 import SchemaForm from './SchemaForm';
+import CredentialSelector from './CredentialSelector';
 
 export default function NodeDetailsView(props: { selectedNodeId?: string }) {
   const { current } = useWorkflowStore();
@@ -39,6 +40,9 @@ export default function NodeDetailsView(props: { selectedNodeId?: string }) {
   return (
     <div style={{ padding: 12, borderLeft: '1px solid #eee', height: '100%' }}>
       <h4>Node: {node.name}</h4>
+      <div style={{ marginBottom: 8 }}>
+        <label>Credential <CredentialSelector value={node.parameters?.credentials} onChange={(id) => onSchemaChange({ ...(node.parameters || {}), credentials: id })} /></label>
+      </div>
       {node.type ? (
         <SchemaForm nodeType={node.type} value={node.parameters || {}} onChange={onSchemaChange} />
       ) : (
