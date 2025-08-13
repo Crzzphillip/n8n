@@ -345,7 +345,7 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
           const tab = getNodeViewTab(params);
           if (tab !== MAIN_HEADER_TABS.WORKFLOW) return;
           if (VALID_WORKFLOW_IMPORT_URL_REGEX.test(plainTextData)) {
-            const confirmed = await message.confirm(`Import workflow from URL?\n${plainTextData}`, 'Import');
+            const confirmed = await message.confirm(t('nodeView.import.confirmMessage', { url: plainTextData }), t('nodeView.import.confirmTitle'));
             if (!confirmed) return;
             await onImportWorkflowUrl(plainTextData);
             return;
@@ -1172,10 +1172,11 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
     }
   }, [showFallbackNodes, isReadOnlyEnv]);
 
-  if (loading) return <div style={{ padding: 16 }}>Loading…</div>;
+  const { t } = (require('../../src3/hooks/useI18n') as any);
+  if (loading) return <div style={{ padding: 16 }}>{t('nodeView.loading')}</div>;
 
   // Block access to new workflow route in read-only env
-  if (isReadOnlyEnv && mode === 'new') return <div style={{ padding: 16 }}>Read-only environment</div>;
+  if (isReadOnlyEnv && mode === 'new') return <div style={{ padding: 16 }}>{t('nodeView.readOnlyEnv')}</div>;
 
   return (
     <div style={{ display: 'grid', gridTemplateColumns: '280px 1fr 320px', minHeight: 'calc(100vh - 32px)' }}>

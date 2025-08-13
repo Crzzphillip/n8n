@@ -20,7 +20,8 @@ export default function NodeDetailsView(props: {
     setRaw(JSON.stringify(node?.parameters || {}, null, 2));
   }, [node?.id]);
 
-  if (!node) return <div style={{ padding: 12 }}>No node selected</div>;
+  const { t } = (require('../../../src3/hooks/useI18n') as any);
+  if (!node) return <div style={{ padding: 12 }}>{t('ndv.noNodeSelected')}</div>;
 
   const save = () => {
     if (props.readOnly) return;
@@ -61,17 +62,17 @@ export default function NodeDetailsView(props: {
     <div style={{ padding: 12, borderLeft: '1px solid #eee', height: '100%' }} onKeyDown={onKeyDown} tabIndex={0}>
       {props.isProductionExecutionPreview && (
         <div style={{ background: '#fff7e6', border: '1px solid #ffe58f', padding: 8, borderRadius: 6, marginBottom: 8 }}>
-          This is a production execution preview
+          {t('ndv.preview.banner')}
         </div>
       )}
       <h4>Node: {node.name}</h4>
       <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
-        <button onClick={() => props.onOpenConnectionNodeCreator?.(node.id, 'outputs', 0)} disabled={props.readOnly}>Open connection node creator</button>
-        <button onClick={() => props.onSwitchSelectedNode?.(node.name)}>Switch selected node</button>
+        <button onClick={() => props.onOpenConnectionNodeCreator?.(node.id, 'outputs', 0)} disabled={props.readOnly}>{t('ndv.openConnectionCreator')}</button>
+        <button onClick={() => props.onSwitchSelectedNode?.(node.name)}>{t('ndv.switchSelectedNode')}</button>
       </div>
       {!props.readOnly && (
         <div style={{ marginBottom: 8 }}>
-          <label>Credential <CredentialSelector value={node.parameters?.credentials} onChange={(id) => onSchemaChange({ ...(node.parameters || {}), credentials: id })} /></label>
+          <label>{t('ndv.credential')} <CredentialSelector value={node.parameters?.credentials} onChange={(id) => onSchemaChange({ ...(node.parameters || {}), credentials: id })} /></label>
         </div>
       )}
       {node.type ? (
@@ -80,7 +81,7 @@ export default function NodeDetailsView(props: {
         <>
           <textarea value={raw} onChange={(e) => setRaw(e.target.value)} style={{ width: '100%', height: 240 }} disabled={props.readOnly} />
           <div style={{ marginTop: 8 }}>
-            <button onClick={save} disabled={props.readOnly}>Save parameters</button>
+            <button onClick={save} disabled={props.readOnly}>{t('ndv.saveParameters')}</button>
           </div>
         </>
       )}
