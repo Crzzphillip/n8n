@@ -890,8 +890,10 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
 
   const onOpenExecution = useCallback(async (executionId: string, nodeId?: string) => {
     try {
-      workflowHelpers.resetWorkspace();
-      await executionDebugging.debugExecution(executionId);
+      const data = await executionDebugging.debugExecution(executionId);
+      if (data?.workflowData) {
+        workflowHelpers.openWorkflow(data.workflowData);
+      }
       if (nodeId) {
         canvasOperations.setNodeActive(nodeId);
       }

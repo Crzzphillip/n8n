@@ -115,6 +115,15 @@ export function useWorkflowHelpers() {
 		[workflowStore, ndvStore],
 	);
 
+	const openWorkflow = useCallback(
+		(workflowData: any) => {
+			resetWorkspace();
+			initializeWorkspace(workflowData);
+			if (workflowData?.name) setDocumentTitle(workflowData.name, 'IDLE');
+		},
+		[resetWorkspace, initializeWorkspace, setDocumentTitle],
+	);
+
 	return {
 		setDocumentTitle,
 		getWorkflowName,
@@ -127,5 +136,6 @@ export function useWorkflowHelpers() {
 		importWorkflow,
 		resetWorkspace,
 		initializeWorkspace,
+		openWorkflow,
 	};
 }
