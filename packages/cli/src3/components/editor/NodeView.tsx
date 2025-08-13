@@ -644,6 +644,7 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
 
   // Enhanced canvas event handlers
   const onCanvasChange = useCallback((nodes: CanvasNode[], edges: CanvasEdge[]) => {
+    if (!checkIfEditingIsAllowed()) return;
     setWorkflow((w) => ({
       ...w,
       nodes: w.nodes.map((n) => {
@@ -658,7 +659,7 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
     }));
     setSelectedNodeIds(new Set(nodes.filter((n) => n.selected).map((n) => n.id)));
     historyStore.getState().pushCommandToUndo(new (require('../../src3/models/history').MoveNodeCommand)('', [0, 0], [0, 0], Date.now()));
-  }, [historyStore]);
+  }, [historyStore, checkIfEditingIsAllowed]);
 
   const onViewportChange = useCallback((viewport: ViewportTransform, dimensions: Dimensions) => {
     setViewportTransform(viewport);
@@ -669,13 +670,14 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
   }, [uiStore]);
 
   const onRunWorkflow = useCallback(async () => {
+    if (!checkIfEditingIsAllowed()) return;
     try {
       await runWorkflow.runEntireWorkflow('main');
       telemetry.track('User ran workflow');
     } catch (error) {
       console.error('Failed to run workflow:', error);
     }
-  }, [runWorkflow, telemetry]);
+  }, [runWorkflow, telemetry, checkIfEditingIsAllowed]);
 
   const onStopExecution = useCallback(async () => {
     setIsStoppingExecution(true);
@@ -778,9 +780,19 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
     }
   }, [onImportWorkflowData, toast]);
 
-  if (loading) return <div style={{ padding: 16 }}>Loading…</div>;
+  const isReadOnlyEnv = sourceControlStore.preferences.branchReadOnly;
+  const [readOnlyNotified, setReadOnlyNotified] = useState(false);
 
-  const isReadOnly = false; // TODO: compute via permissions and environment
+  const checkIfEditingIsAllowed = useCallback(() => {
+    if (!isReadOnlyEnv) return true;
+    if (!readOnlyNotified) {
+      toast.showMessage({ title: 'Read-only environment', message: 'You cannot edit or run workflows on this branch.', type: 'info' });
+      setReadOnlyNotified(true);
+    }
+    return false;
+  }, [isReadOnlyEnv, readOnlyNotified, toast]);
+
+  if (loading) return <div style={{ padding: 16 }}>Loading…</div>;
 
   return (
     <div style={{ display: 'grid', gridTemplateColumns: '280px 1fr 320px', minHeight: 'calc(100vh - 32px)' }}>
@@ -848,6 +860,7 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
             // TODO: open context menu with actions (duplicate, delete, align)
           }} 
           onDrop={(e) => {
+            if (!checkIfEditingIsAllowed()) return;
             const data = e.dataTransfer.getData('application/x-sv-node');
             if (data) {
               const item = JSON.parse(data);
@@ -872,10 +885,10 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
           />
         </div>
         
-        {/* Read-only callout placeholder */}
-        {isReadOnly && (
+        {/* Read-only callout */}
+        {isReadOnlyEnv && (
           <div style={{ position: 'absolute', bottom: 16, left: '50%', transform: 'translateX(-50%)', background: '#fff7e6', border: '1px solid #ffe58f', padding: '8px 12px', borderRadius: 6 }}>
-            Canvas is read-only in this environment
+            You cannot edit or run workflows in read-only environment
           </div>
         )}
         
@@ -885,7 +898,7 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
             {isRunWorkflowButtonVisible && (
               <CanvasRunWorkflowButton
                 waitingForWebhook={isExecutionWaitingForWebhook}
-                disabled={isExecutionDisabled}
+                disabled={isExecutionDisabled || isReadOnlyEnv}
                 executing={isWorkflowRunning}
                 triggerNodes={triggerNodes}
                 onExecute={onRunWorkflow}
