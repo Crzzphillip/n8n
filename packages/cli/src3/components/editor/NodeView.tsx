@@ -849,6 +849,7 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
 
   const onOpenExecution = useCallback(async (executionId: string, nodeId?: string) => {
     try {
+      workflowHelpers.resetWorkspace();
       await executionDebugging.debugExecution(executionId);
       if (nodeId) {
         canvasOperations.setNodeActive(nodeId);
@@ -859,7 +860,7 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
     } catch (error) {
       toast.showError(error, 'Failed to open execution');
     }
-  }, [executionDebugging, canvasOperations, telemetry, toast, externalHooks]);
+  }, [executionDebugging, canvasOperations, telemetry, toast, externalHooks, workflowHelpers]);
 
   const onSourceControlPull = useCallback(async () => {
     try {
@@ -910,6 +911,29 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
       toast.showError(error, 'Failed to import workflow from URL');
     }
   }, [onImportWorkflowData, toast]);
+
+  const onRunWorkflowToSelectedNode = useCallback(async () => {
+    if (!selectedNodeId) return;
+    try {
+      await runWorkflow.runWorkflowToNode(selectedNodeId);
+      telemetry.track('User clicked execute node button', { node_id: selectedNodeId });
+    } catch (e) {}
+  }, [selectedNodeId, runWorkflow, telemetry]);
+
+  const onOpenNodeCreatorFromCanvas = useCallback(() => {
+    nodeCreatorStore.getState().setNodeCreatorState({ createNodeActive: true, source: NODE_CREATOR_OPEN_SOURCES.PLUS_ENDPOINT });
+  }, [nodeCreatorStore]);
+
+  const onClickConnectionAdd = useCallback((connection: { source: string; target?: string }) => {
+    nodeCreatorStore.getState().openNodeCreatorForConnectingNode({
+      connection: { source: connection.source, sourceHandle: 'outputs-main-0' },
+      eventSource: NODE_CREATOR_OPEN_SOURCES.NODE_CONNECTION_ACTION,
+    });
+  }, [nodeCreatorStore]);
+
+  const onCreateSticky = useCallback(() => {
+    void canvasOperations.addNodes([{ type: STICKY_NODE_TYPE }], { trackHistory: true });
+  }, [canvasOperations]);
 
   const isReadOnlyEnv = sourceControlStore.preferences.branchReadOnly;
   const [readOnlyNotified, setReadOnlyNotified] = useState(false);
@@ -1184,11 +1208,14 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
           <button onClick={() => canvasOperations.tidyUp({ source: 'button' })}>Tidy up</button>
           <button onClick={() => onExtractWorkflow(Array.from(selectedNodeIds))} disabled={selectedNodeIds.size === 0}>Extract workflow</button>
           <button onClick={() => nodeCreatorStore.getState().openNodeCreatorForTriggerNodes(NODE_CREATOR_OPEN_SOURCES.PLUS_ENDPOINT)}>Add node</button>
+          <button onClick={onOpenNodeCreatorFromCanvas}>Open Creator (+)</button>
+          <button onClick={onCreateSticky}>Add Sticky</button>
           <button onClick={onDeleteSelectedConnection} disabled={!selectedEdge}>Delete connection</button>
           <button onClick={() => onCopyNodes(Array.from(selectedNodeIds))} disabled={selectedNodeIds.size === 0}>Copy</button>
           <button onClick={() => onCutNodes(Array.from(selectedNodeIds))} disabled={selectedNodeIds.size === 0}>Cut</button>
           <button onClick={() => onDuplicateNodes(Array.from(selectedNodeIds))} disabled={selectedNodeIds.size === 0}>Duplicate</button>
           <button onClick={() => onPinNodes(Array.from(selectedNodeIds))} disabled={selectedNodeIds.size === 0}>Pin/Unpin</button>
+          <button onClick={onRunWorkflowToSelectedNode} disabled={!selectedNodeId}>Run node</button>
           <button onClick={() => logsStore.getState().toggleInputOpen()}>{logsStore.getState().detailsState === 'both' || logsStore.getState().detailsState === 'input' ? 'Hide' : 'Show'} Input</button>
           <button onClick={() => logsStore.getState().toggleOutputOpen()}>{logsStore.getState().detailsState === 'both' || logsStore.getState().detailsState === 'output' ? 'Hide' : 'Show'} Output</button>
         </div>

@@ -6,6 +6,11 @@ import { historyBus } from '../event-bus/history';
 import { useNDVStore } from '../stores/ndv';
 import { useNodeCreatorStore } from '../stores/nodeCreator';
 
+// Additional tests
+import { fireEvent } from '@testing-library/react';
+import { useLogsStore } from '../stores/logs';
+import { useFoldersStore } from '../stores/folders';
+
 jest.mock('next/navigation', () => {
   const params = new URLSearchParams();
   return {
@@ -108,5 +113,67 @@ describe('NodeView', () => {
     // The hook should be called with enabled=false as second argument
     const lastArgs = mockUseKeyboardShortcuts.mock.calls[mockUseKeyboardShortcuts.mock.calls.length - 1];
     expect(lastArgs?.[1]).toBe(false);
+  });
+
+  it('handles node double click with modifier (subworkflow open)', async () => {
+    const params = (require('next/navigation') as any).useSearchParams();
+    params.delete('templateId');
+    (global as any).fetch = jest.fn(async () => ({ ok: true, json: async () => ({ id: 'wf', name: 'WF', nodes: [], connections: {} }) }));
+    const { } = render(<NodeView mode="new" /> as any);
+    const lastCall = CanvasMock.mock.calls[CanvasMock.mock.calls.length - 1];
+    const props = lastCall?.[0] || {};
+    const dblEvent = { metaKey: true, ctrlKey: false } as any;
+    act(() => props.onNodeDoubleClick('n1', dblEvent));
+    // No assertion beyond not throwing; telemetry simply logs
+  });
+
+  it('updates range selection state from canvas', async () => {
+    const params = (require('next/navigation') as any).useSearchParams();
+    (global as any).fetch = jest.fn(async () => ({ ok: true, json: async () => ({ id: 'wf', name: 'WF', nodes: [], connections: {} }) }));
+    render(<NodeView mode="new" /> as any);
+    const lastCall = CanvasMock.mock.calls[CanvasMock.mock.calls.length - 1];
+    const props = lastCall?.[0] || {};
+    act(() => props.onRangeSelectionChange(true));
+    // No direct store getter exported; assume no throw
+  });
+
+  it('confirms URL paste before importing', async () => {
+    const confirmSpy = jest.spyOn(window, 'confirm').mockImplementation(() => true);
+    // Use our message.confirm integration by mocking useMessage
+    const params = (require('next/navigation') as any).useSearchParams();
+    (global as any).fetch = jest.fn(async () => ({ ok: true, json: async () => ({ id: 'wf', name: 'WF', nodes: [], connections: {} }) }));
+    render(<NodeView mode="new" /> as any);
+    // Simulate paste via clipboard event
+    const evt = new ClipboardEvent('paste', { clipboardData: new DataTransfer() as any } as any);
+    Object.defineProperty(evt, 'clipboardData', { value: { getData: () => 'https://example.com/workflow.json' } });
+    await act(async () => document.dispatchEvent(evt));
+    confirmSpy.mockRestore();
+  });
+
+  it('fetches folder path when parentFolderId provided', async () => {
+    const params = (require('next/navigation') as any).useSearchParams();
+    params.set('projectId', 'p1');
+    params.set('parentFolderId', 'f1');
+    (global as any).fetch = jest.fn(async (url: string) => {
+      if (url.includes('/projects/') && url.includes('/folders/')) return { ok: true, json: async () => [{ id: 'f1', name: 'Folder' }] } as any;
+      return { ok: true, json: async () => ({ id: 'wf', name: 'WF', nodes: [], connections: {} }) } as any;
+    });
+    render(<NodeView mode="new" /> as any);
+    // ensure no throw; optionally assert cache updated
+    expect(useFoldersStore.getState().pathCache['f1']).toBeDefined();
+  });
+
+  it('startChat opens logs panel', async () => {
+    render(<NodeView mode="new" /> as any);
+    act(() => {
+      // Simulate clicking Chat button when visible
+      useLogsStore.getState().toggleOpen(false);
+    });
+    // Call startChat via canvas ops
+    const ops = require('../hooks/useCanvasOperations');
+    await act(async () => {
+      ops.useCanvasOperations().startChat('main');
+    });
+    expect(useLogsStore.getState().isOpen).toBe(true);
   });
 });

@@ -1,8 +1,11 @@
 import { useCallback } from 'react';
 import { useWorkflowStore } from '../stores/workflows';
+import { useNDVStore } from '../stores/ndv';
+import { canvasEventBus } from '../event-bus/canvas';
 
 export function useWorkflowHelpers() {
 	const workflowStore = useWorkflowStore();
+	const ndvStore = useNDVStore();
 
 	const setDocumentTitle = useCallback((workflowName: string, status: string) => {
 		const title = status === 'IDLE' ? workflowName : `${workflowName} (${status})`;
@@ -49,20 +52,23 @@ export function useWorkflowHelpers() {
 		}
 	}, [workflowStore]);
 
-	const loadWorkflow = useCallback(async (id: string) => {
-		try {
-			const response = await fetch(`/api/rest/workflows/${id}`);
-			if (!response.ok) {
-				throw new Error('Failed to load workflow');
+	const loadWorkflow = useCallback(
+		async (id: string) => {
+			try {
+				const response = await fetch(`/api/rest/workflows/${id}`);
+				if (!response.ok) {
+					throw new Error('Failed to load workflow');
+				}
+				const workflow = await response.json();
+				workflowStore.getState().setWorkflow(workflow);
+				return workflow;
+			} catch (error) {
+				console.error('Failed to load workflow:', error);
+				throw error;
 			}
-			const workflow = await response.json();
-			workflowStore.getState().setWorkflow(workflow);
-			return workflow;
-		} catch (error) {
-			console.error('Failed to load workflow:', error);
-			throw error;
-		}
-	}, [workflowStore]);
+		},
+		[workflowStore],
+	);
 
 	const createNewWorkflow = useCallback(() => {
 		workflowStore.getState().resetWorkflow();
@@ -80,16 +86,34 @@ export function useWorkflowHelpers() {
 		URL.revokeObjectURL(url);
 	}, [workflowStore]);
 
-	const importWorkflow = useCallback(async (workflowData: any) => {
-		try {
+	const importWorkflow = useCallback(
+		async (workflowData: any) => {
+			try {
+				workflowStore.getState().setWorkflow(workflowData);
+				workflowStore.getState().setDirty(true);
+				return true;
+			} catch (error) {
+				console.error('Failed to import workflow:', error);
+				return false;
+			}
+		},
+		[workflowStore],
+	);
+
+	const resetWorkspace = useCallback(() => {
+		// Clear selections and NDV, and reset logs/executions UI if needed
+		ndvStore.getState().setActiveNode(null);
+		canvasEventBus.emit('nodes:select', { ids: [] });
+	}, [ndvStore]);
+
+	const initializeWorkspace = useCallback(
+		(workflowData: any) => {
 			workflowStore.getState().setWorkflow(workflowData);
-			workflowStore.getState().setDirty(true);
-			return true;
-		} catch (error) {
-			console.error('Failed to import workflow:', error);
-			return false;
-		}
-	}, [workflowStore]);
+			ndvStore.getState().setActiveNode(null);
+			setTimeout(() => canvasEventBus.emit('fitView'));
+		},
+		[workflowStore, ndvStore],
+	);
 
 	return {
 		setDocumentTitle,
@@ -101,5 +125,7 @@ export function useWorkflowHelpers() {
 		createNewWorkflow,
 		exportWorkflow,
 		importWorkflow,
+		resetWorkspace,
+		initializeWorkspace,
 	};
 }
