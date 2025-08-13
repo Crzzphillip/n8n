@@ -253,6 +253,10 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
     }
   }, [mode, workflowId, documentTitle, toast, params, nodeCreatorStore, runWorkflow, workflow.nodes]);
 
+  useEffect(() => {
+    void externalHooks.run('nodeView.mount');
+  }, [externalHooks]);
+
   // Enhanced useEffect hooks
   useEffect(() => {
     const off = pushStore.getState().subscribeExecutions();
@@ -741,10 +745,12 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
         canvasOperations.setNodeActive(nodeId);
       }
       telemetry.track('User opened execution', { executionId, nodeId });
+      void externalHooks.run('execution.open', { executionId });
+      setTimeout(() => canvasEventBus.emit('fitView'));
     } catch (error) {
       toast.showError(error, 'Failed to open execution');
     }
-  }, [executionDebugging, canvasOperations, telemetry, toast]);
+  }, [executionDebugging, canvasOperations, telemetry, toast, externalHooks]);
 
   const onSourceControlPull = useCallback(async () => {
     try {
@@ -899,6 +905,13 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
             onCreateConnection={onCreateConnection}
             onCreateConnectionCancelled={onCreateConnectionCancelled}
           />
+        </div>
+        
+        {/* Canvas Actions Row */}
+        <div style={{ display: 'flex', gap: 8, padding: '8px 12px' }}>
+          <button onClick={() => canvasOperations.tidyUp({ source: 'button' })}>Tidy up</button>
+          <button onClick={() => onExtractWorkflow(Array.from(selectedNodeIds))} disabled={selectedNodeIds.size === 0}>Extract workflow</button>
+          <button onClick={() => nodeCreatorStore.getState().openNodeCreatorForTriggerNodes(NODE_CREATOR_OPEN_SOURCES.PLUS_ENDPOINT)}>Add node</button>
         </div>
         
         {/* Read-only callout */}
