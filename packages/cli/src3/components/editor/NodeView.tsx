@@ -11,6 +11,7 @@ import { usePushStore } from '../../src3/stores/push';
 import Tooltip from '../ui/Tooltip';
 import { useModal } from '../ui/ModalManager';
 import { useWorkflowStore } from '../../src3/stores/workflows';
+import ExecutionsTab from './Executions/ExecutionsTab';
 
 type WorkflowId = string;
 
@@ -45,6 +46,7 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
   const [selectedNodeId, setSelectedNodeId] = useState<string | undefined>(undefined);
   const [selectedNodeIds, setSelectedNodeIds] = useState<Set<string>>(new Set());
   const [clipboard, setClipboard] = useState<any[]>([]);
+  const [showExecutions, setShowExecutions] = useState(false);
 
   useEffect(() => {
     if (mode === 'existing' && workflowId) {
@@ -265,13 +267,16 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
           </div>
           {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
           {/* @ts-ignore */}
-          <div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <Tooltip content="Toggle executions tab">
+              <button onClick={() => setShowExecutions((v) => !v)}>Executions</button>
+            </Tooltip>
             <Tooltip content="Run or stop this workflow">
               {(await import('./RunControls')).default({ workflowId: workflow.id })}
             </Tooltip>
           </div>
         </div>
-        <div style={{ border: '1px solid #ddd', borderRadius: 8, padding: 0, minHeight: '100%' }} onContextMenu={(e) => {
+        <div style={{ border: '1px solid #ddd', borderRadius: 8, padding: 0, minHeight: '60%' }} onContextMenu={(e) => {
           e.preventDefault();
           // TODO: open context menu with actions (duplicate, delete, align)
         }} onDrop={(e) => {
@@ -286,6 +291,11 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
         }} onDragOver={(e) => e.preventDefault()}>
           <Canvas nodes={canvasNodes} edges={canvasEdges} onChange={onCanvasChange} onSelectNode={setSelectedNodeId} />
         </div>
+        {showExecutions && (
+          <div style={{ border: '1px solid #ddd', borderRadius: 8, padding: 0, minHeight: '40%', marginTop: 8 }}>
+            <ExecutionsTab workflowId={workflow.id} />
+          </div>
+        )}
       </section>
       <aside>
         <RightPanel selectedNodeId={selectedNodeId} />
