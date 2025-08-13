@@ -4,6 +4,7 @@ import { useHistoryStore } from '../stores/history';
 import { useNDVStore } from '../stores/ndv';
 import { useCanvasStore } from '../stores/canvas';
 import { useExecutionsStore } from '../stores/executions';
+import { useLogsStore } from '../stores/logs';
 import type {
 	INodeUi,
 	XYPosition,
@@ -304,6 +305,20 @@ export function useCanvasOperations() {
 		[workflowStore, updateNodePosition],
 	);
 
+	const revalidateNodeInputConnections = useCallback((id: string) => {
+		// no-op placeholder
+	}, []);
+
+	const revalidateNodeOutputConnections = useCallback((id: string) => {
+		// no-op placeholder
+	}, []);
+
+	const startChat = useCallback((source: string = 'main') => {
+		try {
+			useLogsStore.getState().toggleOpen(true);
+		} catch {}
+	}, []);
+
 	return {
 		updateNodePosition,
 		updateNodesPosition,
@@ -321,5 +336,8 @@ export function useCanvasOperations() {
 		runWorkflow,
 		stopCurrentExecution,
 		tidyUp,
+		revalidateNodeInputConnections,
+		revalidateNodeOutputConnections,
+		startChat,
 	};
 }

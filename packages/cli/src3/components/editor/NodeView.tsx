@@ -52,6 +52,7 @@ import { useUsersStore } from '../../src3/stores/users';
 import { useTagsStore } from '../../src3/stores/tags';
 import { useEnvironmentsStore } from '../../src3/stores/environments';
 import { useExternalSecretsStore } from '../../src3/stores/externalSecrets';
+import { useFoldersStore } from '../../src3/stores/folders';
 
 // New components
 import CanvasRunWorkflowButton from './canvas/buttons/CanvasRunWorkflowButton';
@@ -185,6 +186,7 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
   const tagsStore = useTagsStore();
   const environmentsStore = useEnvironmentsStore();
   const externalSecretsStore = useExternalSecretsStore();
+  const foldersStore = useFoldersStore();
 
   // Enhanced initialization
   useEffect(() => {
@@ -271,6 +273,18 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
           } catch {}
         })();
       }
+      // Set parent folder if provided
+      const parentFolderId = params.get('parentFolderId');
+      if (projectId && parentFolderId) {
+        (async () => {
+          try {
+            const path = await foldersStore.getState().getFolderPath(projectId, parentFolderId);
+            if (path?.length) {
+              foldersStore.getState().setPath(parentFolderId, path);
+            }
+          } catch {}
+        })();
+      }
     }
 
     // Handle route-driven actions (e.g., add evaluation trigger, run evaluation)
@@ -305,6 +319,8 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
       onPaste: async (plainTextData: string) => {
         try {
           if (VALID_WORKFLOW_IMPORT_URL_REGEX.test(plainTextData)) {
+            const confirmed = await message.confirm(`Import workflow from URL?\n${plainTextData}`, 'Import');
+            if (!confirmed) return;
             await onImportWorkflowUrl(plainTextData);
             return;
           }
@@ -408,6 +424,8 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
   }, [workflow.nodes, canvasOperations, onImportWorkflowData, onImportWorkflowUrl, onOpenChat, onSourceControlPull, telemetry]);
 
   // PostMessage preview mode and saved events
+  const [isProductionExecutionPreview, setIsProductionExecutionPreview] = useState(false);
+  const [isExecutionPreview, setIsExecutionPreview] = useState(false);
   useEffect(() => {
     const onPostMessageReceived = async (messageEvent: MessageEvent) => {
       try {
@@ -421,6 +439,9 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
           }
         } else if (json?.command === 'openExecution') {
           try {
+            // Track preview flags
+            setIsProductionExecutionPreview(json.executionMode !== 'manual' && json.executionMode !== 'evaluation');
+            setIsExecutionPreview(true);
             await onOpenExecution(json.executionId, json.nodeId);
           } catch (e) {
             toast.showError(e, 'Failed to open execution');
@@ -1153,6 +1174,8 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
             }}
             onCreateConnection={onCreateConnection}
             onCreateConnectionCancelled={onCreateConnectionCancelled}
+            onRangeSelectionChange={onRangeSelectionChange}
+            onNodeDoubleClick={onNodeDoubleClick}
           />
         </div>
         

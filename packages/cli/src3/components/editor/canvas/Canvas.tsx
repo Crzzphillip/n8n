@@ -37,6 +37,8 @@ export default function Canvas(props: {
   onPaneClick?: (position: { x: number; y: number }) => void;
   onCreateConnection?: (connection: { source: string; target: string }) => void;
   onCreateConnectionCancelled?: (start: { nodeId: string; handleId: string }, position: { x: number; y: number }, event?: MouseEvent | TouchEvent) => void;
+  onNodeDoubleClick?: (nodeId: string, event: MouseEvent) => void;
+  onRangeSelectionChange?: (active: boolean) => void;
 }) {
   const [nodes, setNodes, onNodesChange] = useNodesState(props.nodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(props.edges);
@@ -96,7 +98,11 @@ export default function Canvas(props: {
 
   const onNodesChangeWrapped = useCallback((changes: any) => {
     onNodesChange(changes);
-  }, [onNodesChange]);
+    if (props.onRangeSelectionChange) {
+      const hasSelection = Array.isArray(changes) && changes.some((c: any) => c.type === 'select' && c.selected === true);
+      props.onRangeSelectionChange(hasSelection);
+    }
+  }, [onNodesChange, props]);
 
   const onEdgesChangeWrapped = useCallback((changes: any) => {
     onEdgesChange(changes);
@@ -164,6 +170,7 @@ export default function Canvas(props: {
           onSelectionChange={onSelectionChange}
           onMove={handleMove}
           onPaneClick={handlePaneClick}
+          onNodeDoubleClick={(e, node) => props.onNodeDoubleClick?.(String((node as any).id), e as any)}
           fitView
           proOptions={{ hideAttribution: true }}
         >
