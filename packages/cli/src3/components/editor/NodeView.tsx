@@ -1,6 +1,7 @@
 "use client";
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import Canvas, { CanvasNode, CanvasEdge } from './canvas/Canvas';
 
 type WorkflowId = string;
 
@@ -98,6 +99,43 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
     }));
   }, []);
 
+  const canvasNodes: CanvasNode[] = useMemo(
+    () =>
+      workflow.nodes.map((n) => ({
+        id: n.id,
+        data: { label: n.name },
+        position: { x: n.position?.x ?? 100, y: n.position?.y ?? 100 },
+      })),
+    [workflow.nodes],
+  );
+
+  const canvasEdges: CanvasEdge[] = useMemo(() => {
+    const edges: CanvasEdge[] = [];
+    Object.entries(workflow.connections || {}).forEach(([fromId, conns]) => {
+      if (Array.isArray(conns)) {
+        conns.forEach((c: any, idx: number) => {
+          if (c?.node) edges.push({ id: `${fromId}-${c.node}-${idx}`, source: fromId, target: c.node });
+        });
+      }
+    });
+    return edges;
+  }, [workflow.connections]);
+
+  const onCanvasChange = useCallback((nodes: CanvasNode[], edges: CanvasEdge[]) => {
+    setWorkflow((w) => ({
+      ...w,
+      nodes: w.nodes.map((n) => {
+        const cn = nodes.find((m) => m.id === n.id);
+        return cn ? { ...n, position: cn.position } : n;
+      }),
+      connections: edges.reduce<Record<string, any[]>>((acc, e) => {
+        acc[e.source] = acc[e.source] || [];
+        acc[e.source].push({ node: e.target, type: 'main', index: 0 });
+        return acc;
+      }, {}),
+    }));
+  }, []);
+
   if (loading) return <div style={{ padding: 16 }}>Loading…</div>;
 
   return (
@@ -146,16 +184,8 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
           <h2 style={{ margin: 0 }}>{workflow.name}</h2>
           {workflow.id && <small style={{ color: '#666' }}>id: {workflow.id}</small>}
         </div>
-        <div style={{ border: '1px solid #ddd', borderRadius: 8, padding: 12, minHeight: 480 }}>
-          <p style={{ color: '#666' }}>Canvas placeholder. Nodes:</p>
-          <ul>
-            {workflow.nodes.map((n) => (
-              <li key={n.id}>
-                {n.name} ({n.id}) — pos {n.position?.x?.toFixed?.(0)},{' '}
-                {n.position?.y?.toFixed?.(0)}
-              </li>
-            ))}
-          </ul>
+        <div style={{ border: '1px solid #ddd', borderRadius: 8, padding: 0, minHeight: 600 }}>
+          <Canvas nodes={canvasNodes} edges={canvasEdges} onChange={onCanvasChange} />
         </div>
       </section>
     </div>
