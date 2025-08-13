@@ -72,6 +72,19 @@ export default function SchemaForm(props: { nodeType: string; value: Record<stri
     const label = p.displayName;
     const value = props.value[p.name];
 
+    // Resource/operation convenience: if options and known pairs
+    if (p.type === 'options' && (p.name === 'resource' || p.name === 'operation')) {
+      return (
+        <div key={name} style={{ marginBottom: 8 }}>
+          <label>{label}
+            <select value={value ?? ''} onChange={(e) => set(p.name, e.target.value)}>
+              <option value="">Select</option>
+              {p.options?.map((o) => <option key={o.value} value={o.value}>{o.name}</option>)}
+            </select>
+          </label>
+        </div>
+      );
+    }
     if (p.type === 'string') return (
       <div key={name} style={{ marginBottom: 8 }}>
         <label>{label}<input value={value ?? ''} onChange={(e) => set(p.name, e.target.value)} /></label>

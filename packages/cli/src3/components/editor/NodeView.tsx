@@ -7,6 +7,9 @@ import NodeCreator from './NodeCreator/NodeCreator';
 import { useKeyboardShortcuts } from '../../src3/hooks/useKeyboardShortcuts';
 import TopBar from './Header/TopBar';
 import RightPanel from './SidePanels/RightPanel';
+import { usePushStore } from '../../src3/stores/push';
+import Tooltip from '../ui/Tooltip';
+import { useModal } from '../ui/ModalManager';
 
 type WorkflowId = string;
 
@@ -50,6 +53,11 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
     }
   }, [mode, workflowId]);
 
+  useEffect(() => {
+    const off = usePushStore.getState().subscribeExecutions();
+    return () => off?.();
+  }, []);
+
   const canSave = useMemo(() => workflow.name.trim().length > 0, [workflow.name]);
 
   const saveNew = useCallback(async () => {
@@ -89,8 +97,10 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
 
   useKeyboardShortcuts({
     onSave: () => (workflow.id ? void updateExisting() : void saveNew()),
-    onDelete: () => {
+    onDelete: async () => {
       if (!selectedNodeId) return;
+      const ok = await useModal().confirm('Delete selected node?');
+      if (!ok) return;
       setWorkflow((w) => ({
         ...w,
         nodes: w.nodes.filter((n) => n.id !== selectedNodeId),
@@ -223,7 +233,9 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
           {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
           {/* @ts-ignore */}
           <div>
-            {(await import('./RunControls')).default({ workflowId: workflow.id })}
+            <Tooltip content="Run or stop this workflow">
+              {(await import('./RunControls')).default({ workflowId: workflow.id })}
+            </Tooltip>
           </div>
         </div>
         <div style={{ border: '1px solid #ddd', borderRadius: 8, padding: 0, minHeight: '100%' }}>
