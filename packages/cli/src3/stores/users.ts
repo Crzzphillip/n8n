@@ -1,32 +1,70 @@
 import { create } from 'zustand';
 
-export type User = { id: string; email: string; firstName?: string; lastName?: string };
-
-type State = {
-  me?: User;
-  loading: boolean;
-  error?: string;
-  fetchMe: () => Promise<void>;
-};
-
-async function fetchJson<T>(url: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(url, init);
-  if (!res.ok) throw new Error(await res.text());
-  return (await res.json()) as T;
+interface User {
+	id: string;
+	email: string;
+	firstName?: string;
+	lastName?: string;
+	role: string;
 }
 
-export const useUsersStore = create<State>((set) => ({
-  me: undefined,
-  loading: false,
-  async fetchMe() {
-    set({ loading: true, error: undefined });
-    try {
-      const me = await fetchJson<User>(`/api/rest/me`);
-      set({ me });
-    } catch (e: any) {
-      set({ error: e?.message || 'Failed to fetch user' });
-    } finally {
-      set({ loading: false });
-    }
-  },
+interface UsersState {
+	currentUser: User | null;
+	users: User[];
+	loading: boolean;
+	error: string | null;
+}
+
+interface UsersStore extends UsersState {
+	setCurrentUser: (user: User | null) => void;
+	setUsers: (users: User[]) => void;
+	setLoading: (loading: boolean) => void;
+	setError: (error: string | null) => void;
+	fetchCurrentUser: () => Promise<void>;
+	showPersonalizationSurvey: () => void;
+}
+
+export const useUsersStore = create<UsersStore>((set) => ({
+	currentUser: null,
+	users: [],
+	loading: false,
+	error: null,
+
+	setCurrentUser: (user: User | null) => {
+		set({ currentUser: user });
+	},
+
+	setUsers: (users: User[]) => {
+		set({ users });
+	},
+
+	setLoading: (loading: boolean) => {
+		set({ loading });
+	},
+
+	setError: (error: string | null) => {
+		set({ error });
+	},
+
+	fetchCurrentUser: async () => {
+		set({ loading: true, error: null });
+		try {
+			const response = await fetch('/api/rest/users/me');
+			if (!response.ok) {
+				throw new Error('Failed to fetch current user');
+			}
+			const user = await response.json();
+			set({ currentUser: user, loading: false });
+		} catch (error) {
+			set({ 
+				loading: false, 
+				error: error instanceof Error ? error.message : 'Unknown error' 
+			});
+		}
+	},
+
+	showPersonalizationSurvey: () => {
+		// In a real implementation, this would show a personalization survey
+		console.log('Showing personalization survey');
+	},
 }));

@@ -1,32 +1,48 @@
 import { create } from 'zustand';
 
-type Settings = Record<string, any>;
-
-type State = {
-  data?: Settings;
-  loading: boolean;
-  error?: string;
-  fetch: () => Promise<void>;
-};
-
-async function fetchJson<T>(url: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(url, init);
-  if (!res.ok) throw new Error(await res.text());
-  return (await res.json()) as T;
+interface SettingsState {
+	isPreviewMode: boolean;
+	isEnterpriseFeatureEnabled: Record<string, boolean>;
+	userManagement: {
+		showPersonalizationSurvey: boolean;
+	};
 }
 
-export const useSettingsStore = create<State>((set) => ({
-  data: undefined,
-  loading: false,
-  async fetch() {
-    set({ loading: true, error: undefined });
-    try {
-      const data = await fetchJson<Settings>(`/api/rest/settings`);
-      set({ data });
-    } catch (e: any) {
-      set({ error: e?.message || 'Failed to fetch settings' });
-    } finally {
-      set({ loading: false });
-    }
-  },
+interface SettingsStore extends SettingsState {
+	setIsPreviewMode: (isPreviewMode: boolean) => void;
+	setEnterpriseFeatureEnabled: (feature: string, enabled: boolean) => void;
+	setShowPersonalizationSurvey: (show: boolean) => void;
+}
+
+export const useSettingsStore = create<SettingsStore>((set) => ({
+	isPreviewMode: false,
+	isEnterpriseFeatureEnabled: {
+		Variables: false,
+		ExternalSecrets: false,
+	},
+	userManagement: {
+		showPersonalizationSurvey: false,
+	},
+
+	setIsPreviewMode: (isPreviewMode: boolean) => {
+		set({ isPreviewMode });
+	},
+
+	setEnterpriseFeatureEnabled: (feature: string, enabled: boolean) => {
+		set((state) => ({
+			isEnterpriseFeatureEnabled: {
+				...state.isEnterpriseFeatureEnabled,
+				[feature]: enabled,
+			},
+		}));
+	},
+
+	setShowPersonalizationSurvey: (show: boolean) => {
+		set((state) => ({
+			userManagement: {
+				...state.userManagement,
+				showPersonalizationSurvey: show,
+			},
+		}));
+	},
 }));
