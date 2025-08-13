@@ -230,6 +230,7 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
         .then((wf) => {
           setWorkflow(wf);
           documentTitle.setWorkflowTitle(wf.name);
+          void externalHooks.run('workflow.open', { workflowId: wf.id, workflowName: wf.name });
         })
         .catch((e: any) => {
           setError(e?.message || 'Failed to load');
@@ -255,6 +256,17 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
           }
         })();
       }
+      // Set project context if provided
+      const projectId = params.get('projectId');
+      if (projectId) {
+        (async () => {
+          try {
+            await projectsStore.getState().fetchProjects();
+            const project = projectsStore.getState().getProject(projectId);
+            if (project) projectsStore.getState().setCurrentProject(project);
+          } catch {}
+        })();
+      }
     }
 
     // Handle route-driven actions (e.g., add evaluation trigger, run evaluation)
@@ -269,7 +281,7 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
         void runWorkflow.runEntireWorkflow('node');
       }
     }
-  }, [mode, workflowId, documentTitle, toast, params, nodeCreatorStore, runWorkflow, workflow.nodes]);
+  }, [mode, workflowId, documentTitle, toast, params, nodeCreatorStore, runWorkflow, workflow.nodes, externalHooks]);
 
   useEffect(() => {
     void externalHooks.run('nodeView.mount');
