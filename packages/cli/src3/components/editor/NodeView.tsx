@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Canvas, { CanvasNode, CanvasEdge } from './canvas/Canvas';
+import NDV from './NDV/NodeDetailsView';
 
 type WorkflowId = string;
 
@@ -33,6 +34,7 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [selectedNodeId, setSelectedNodeId] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     if (mode === 'existing' && workflowId) {
@@ -105,8 +107,9 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
         id: n.id,
         data: { label: n.name },
         position: { x: n.position?.x ?? 100, y: n.position?.y ?? 100 },
+        selected: selectedNodeId === n.id,
       })),
-    [workflow.nodes],
+    [workflow.nodes, selectedNodeId],
   );
 
   const canvasEdges: CanvasEdge[] = useMemo(() => {
@@ -139,7 +142,7 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
   if (loading) return <div style={{ padding: 16 }}>Loading…</div>;
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '280px 1fr', minHeight: 'calc(100vh - 32px)' }}>
+    <div style={{ display: 'grid', gridTemplateColumns: '280px 1fr 320px', minHeight: 'calc(100vh - 32px)' }}>
       <aside style={{ borderRight: '1px solid #e5e5e5', padding: 16 }}>
         <h3>Workflow</h3>
         <label>
@@ -179,15 +182,14 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
           <p>Add at least two nodes to enable demo connect</p>
         )}
       </aside>
-      <section style={{ padding: 16 }}>
-        <div style={{ marginBottom: 8, display: 'flex', alignItems: 'center', gap: 12 }}>
-          <h2 style={{ margin: 0 }}>{workflow.name}</h2>
-          {workflow.id && <small style={{ color: '#666' }}>id: {workflow.id}</small>}
-        </div>
-        <div style={{ border: '1px solid #ddd', borderRadius: 8, padding: 0, minHeight: 600 }}>
+      <section style={{ padding: 0 }}>
+        <div style={{ border: '1px solid #ddd', borderRadius: 8, padding: 0, minHeight: '100%' }}>
           <Canvas nodes={canvasNodes} edges={canvasEdges} onChange={onCanvasChange} />
         </div>
       </section>
+      <aside>
+        <NDV selectedNodeId={selectedNodeId} />
+      </aside>
     </div>
   );
 }
