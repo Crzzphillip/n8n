@@ -707,6 +707,10 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
             onChange={onCanvasChange} 
             onSelectNode={setSelectedNodeId}
             onViewportChange={onViewportChange}
+            onPaneClick={(pos) => {
+              // Track last click position equivalent if needed; for now, just clear selection
+              setSelectedNodeId(undefined);
+            }}
           />
         </div>
         

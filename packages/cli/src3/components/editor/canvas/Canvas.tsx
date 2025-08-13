@@ -20,6 +20,7 @@ import 'reactflow/dist/style.css';
 import { useCanvasStore } from '../../../src3/stores/canvas';
 import { useLogsStore } from '../../../src3/stores/logs';
 import Tooltip from '../../ui/Tooltip';
+import { canvasEventBus } from '../../../src3/event-bus/canvas';
 
 export type CanvasNode = Node;
 export type CanvasEdge = Edge;
@@ -31,17 +32,37 @@ export default function Canvas(props: {
   onSelectNode?: (nodeId?: string) => void;
   onContextMenu?: (e: React.MouseEvent) => void;
   fitViewOptions?: FitViewOptions;
+  onViewportChange?: (viewport: { x: number; y: number; zoom: number }, dimensions: { width: number; height: number }) => void;
+  onPaneClick?: (position: { x: number; y: number }) => void;
 }) {
   const [nodes, setNodes, onNodesChange] = useNodesState(props.nodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(props.edges);
   const nodeStatus = useCanvasStore((s) => s.nodeStatus);
   const logsByNode = useLogsStore((s) => s.byNode);
   const rf = useReactFlow();
+  const containerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     if (props.fitViewOptions) rf.fitView(props.fitViewOptions);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.fitViewOptions]);
+
+  // Subscribe to canvas event bus for fitView and nodes selection
+  useEffect(() => {
+    const offFitView = canvasEventBus.on('fitView', () => {
+      try { rf.fitView(); } catch {}
+    });
+    const offSelect = canvasEventBus.on('nodes:select', ({ ids }: { ids: string[] }) => {
+      setNodes((prev) => prev.map((n) => ({ ...n, selected: ids.includes(n.id) })));
+      // sync up to parent
+      props.onChange(nodes, edges);
+    });
+    return () => {
+      offFitView?.();
+      offSelect?.();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rf, setNodes, props.onChange]);
 
   const displayNodes = useMemo(() => {
     return nodes.map((n) => {
@@ -83,8 +104,23 @@ export default function Canvas(props: {
     props.onSelectNode?.(selected?.id);
   }, [props.onSelectNode]);
 
+  const handleMove = useCallback((_evt: any, viewport: { x: number; y: number; zoom: number }) => {
+    if (!props.onViewportChange) return;
+    const rect = containerRef.current?.getBoundingClientRect();
+    const dimensions = { width: rect?.width ?? 0, height: rect?.height ?? 0 };
+    props.onViewportChange(viewport, dimensions);
+  }, [props.onViewportChange]);
+
+  const handlePaneClick = useCallback((evt: React.MouseEvent) => {
+    if (!props.onPaneClick) return;
+    try {
+      const pos = rf.screenToFlowPosition({ x: (evt as any).clientX, y: (evt as any).clientY });
+      props.onPaneClick(pos as any);
+    } catch {}
+  }, [props.onPaneClick, rf]);
+
   return (
-    <div style={{ width: '100%', height: '100%' }} onMouseLeave={syncUp} onBlur={syncUp} onContextMenu={props.onContextMenu}>
+    <div ref={containerRef} style={{ width: '100%', height: '100%' }} onMouseLeave={syncUp} onBlur={syncUp} onContextMenu={props.onContextMenu}>
       <ReactFlowProvider>
         <ReactFlow
           nodes={displayNodes}
@@ -93,6 +129,8 @@ export default function Canvas(props: {
           onEdgesChange={onEdgesChangeWrapped}
           onConnect={onConnect}
           onSelectionChange={onSelectionChange}
+          onMove={handleMove}
+          onPaneClick={handlePaneClick}
           fitView
           proOptions={{ hideAttribution: true }}
         >
