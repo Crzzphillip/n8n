@@ -319,6 +319,25 @@ export function useCanvasOperations() {
 		} catch {}
 	}, []);
 
+	const tryToOpenSubworkflowInNewTab = useCallback(
+		(nodeId: string): boolean => {
+			const node = workflowStore.getState().workflow.nodes.find((n) => n.id === nodeId);
+			if (!node) return false;
+			// Heuristic: look for a parameter that points to a workflow ID
+			const subId = (node as any).parameters?.workflowId || (node as any).parameters?.subWorkflowId;
+			if (typeof subId === 'string' && subId.length > 0) {
+				try {
+					window.open(`/workflow/existing?id=${encodeURIComponent(subId)}`, '_blank');
+					return true;
+				} catch {
+					return false;
+				}
+			}
+			return false;
+		},
+		[workflowStore],
+	);
+
 	return {
 		updateNodePosition,
 		updateNodesPosition,
@@ -339,5 +358,6 @@ export function useCanvasOperations() {
 		revalidateNodeInputConnections,
 		revalidateNodeOutputConnections,
 		startChat,
+		tryToOpenSubworkflowInNewTab,
 	};
 }

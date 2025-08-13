@@ -823,6 +823,19 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
     } catch {}
   }, [uiStore]);
 
+  const onRangeSelectionChange = useCallback((active: boolean) => {
+    canvasStore.setHasRangeSelection(active);
+  }, [canvasStore]);
+
+  const onNodeDoubleClick = useCallback((nodeId: string, event: any) => {
+    if ((event?.metaKey) || (event?.ctrlKey)) {
+      const didOpen = canvasOperations.tryToOpenSubworkflowInNewTab(nodeId);
+      if (!didOpen) {
+        telemetry.track('Subworkflow open requested', { nodeId });
+      }
+    }
+  }, [canvasOperations, telemetry]);
+
   const onRunWorkflow = useCallback(async () => {
     if (!checkIfEditingIsAllowed()) return;
     try {
