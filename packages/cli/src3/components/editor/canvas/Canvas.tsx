@@ -30,6 +30,7 @@ export default function Canvas(props: {
   edges: CanvasEdge[];
   onChange: (nodes: CanvasNode[], edges: CanvasEdge[]) => void;
   onSelectNode?: (nodeId?: string) => void;
+  onSelectEdge?: (edge?: { source: string; target: string }) => void;
   onContextMenu?: (e: React.MouseEvent) => void;
   fitViewOptions?: FitViewOptions;
   onViewportChange?: (viewport: { x: number; y: number; zoom: number }, dimensions: { width: number; height: number }) => void;
@@ -108,7 +109,13 @@ export default function Canvas(props: {
   const onSelectionChange = useCallback((params: OnSelectionChangeParams) => {
     const selected = params.nodes?.find((n) => n.selected);
     props.onSelectNode?.(selected?.id);
-  }, [props.onSelectNode]);
+    const selectedEdge = params.edges?.find((e) => (e as any).selected);
+    if (selectedEdge && props.onSelectEdge) {
+      props.onSelectEdge({ source: String(selectedEdge.source), target: String(selectedEdge.target) });
+    } else if (props.onSelectEdge) {
+      props.onSelectEdge(undefined);
+    }
+  }, [props.onSelectNode, props.onSelectEdge]);
 
   const handleMove = useCallback((_evt: any, viewport: { x: number; y: number; zoom: number }) => {
     if (!props.onViewportChange) return;

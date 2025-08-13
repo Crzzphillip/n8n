@@ -141,6 +141,7 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
   const [viewportTransform, setViewportTransform] = useState<ViewportTransform>({ x: 0, y: 0, zoom: 1 });
   const [viewportDimensions, setViewportDimensions] = useState<Dimensions>({ width: 0, height: 0 });
   const [selectedTriggerNodeName, setSelectedTriggerNodeName] = useState<string | undefined>(undefined);
+  const [selectedEdge, setSelectedEdge] = useState<{ source: string; target: string } | undefined>(undefined);
 
   // Enhanced hooks
   const canvasOperations = useCanvasOperations();
@@ -640,6 +641,13 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
     });
   }, [uiStore, nodeCreatorStore]);
 
+  const onDeleteSelectedConnection = useCallback(() => {
+    if (!checkIfEditingIsAllowed()) return;
+    if (!selectedEdge) return;
+    canvasOperations.deleteConnection({ source: selectedEdge.source, target: selectedEdge.target }, { trackHistory: true });
+    setSelectedEdge(undefined);
+  }, [selectedEdge, canvasOperations, checkIfEditingIsAllowed]);
+
   const canvasNodes: CanvasNode[] = useMemo(
     () =>
       workflow.nodes.map((n) => ({
@@ -900,10 +908,12 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
             edges={canvasEdges} 
             onChange={onCanvasChange} 
             onSelectNode={setSelectedNodeId}
+            onSelectEdge={setSelectedEdge}
             onViewportChange={onViewportChange}
             onPaneClick={(pos) => {
               // Track last click position equivalent if needed; for now, just clear selection
               setSelectedNodeId(undefined);
+              setSelectedEdge(undefined);
             }}
             onCreateConnection={onCreateConnection}
             onCreateConnectionCancelled={onCreateConnectionCancelled}
@@ -915,7 +925,7 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
           <button onClick={() => canvasOperations.tidyUp({ source: 'button' })}>Tidy up</button>
           <button onClick={() => onExtractWorkflow(Array.from(selectedNodeIds))} disabled={selectedNodeIds.size === 0}>Extract workflow</button>
           <button onClick={() => nodeCreatorStore.getState().openNodeCreatorForTriggerNodes(NODE_CREATOR_OPEN_SOURCES.PLUS_ENDPOINT)}>Add node</button>
-          <button onClick={() => {/* TODO: delete selected connection(s) UI */}}>Delete connection</button>
+          <button onClick={onDeleteSelectedConnection} disabled={!selectedEdge}>Delete connection</button>
         </div>
         
         {/* Read-only callout */}
