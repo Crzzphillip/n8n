@@ -87,7 +87,34 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
     }
   }, [workflow]);
 
-  useKeyboardShortcuts({ onSave: () => (workflow.id ? void updateExisting() : void saveNew()) });
+  useKeyboardShortcuts({
+    onSave: () => (workflow.id ? void updateExisting() : void saveNew()),
+    onDelete: () => {
+      if (!selectedNodeId) return;
+      setWorkflow((w) => ({
+        ...w,
+        nodes: w.nodes.filter((n) => n.id !== selectedNodeId),
+        connections: Object.fromEntries(Object.entries(w.connections).map(([k, arr]: any) => [k, (arr as any[]).filter((c) => c.node !== selectedNodeId)])),
+      }));
+      setSelectedNodeId(undefined);
+    },
+    onTidy: () => {
+      // simple tidy: grid positions
+      setWorkflow((w) => ({
+        ...w,
+        nodes: w.nodes.map((n, i) => ({ ...n, position: { x: 100 + (i % 4) * 180, y: 100 + Math.floor(i / 4) * 140 } })),
+      }));
+    },
+    onAlign: () => {
+      // simple align: align selected to top-left if any selected
+      if (!selectedNodeId) return;
+      const base = workflow.nodes.find((n) => n.id === selectedNodeId)?.position || { x: 100, y: 100 };
+      setWorkflow((w) => ({
+        ...w,
+        nodes: w.nodes.map((n) => (n.id === selectedNodeId ? n : { ...n, position: { x: base.x, y: n.position?.y ?? 100 } })),
+      }));
+    },
+  });
 
   const addNode = useCallback((name: string) => {
     const id = uuid();

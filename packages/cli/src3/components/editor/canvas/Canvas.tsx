@@ -1,5 +1,5 @@
 "use client";
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import ReactFlow, {
   Background,
   Controls,
@@ -14,6 +14,7 @@ import ReactFlow, {
   OnSelectionChangeParams,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
+import { useCanvasStore } from '../../../src3/stores/canvas';
 
 export type CanvasNode = Node;
 export type CanvasEdge = Edge;
@@ -26,6 +27,18 @@ export default function Canvas(props: {
 }) {
   const [nodes, setNodes, onNodesChange] = useNodesState(props.nodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(props.edges);
+  const nodeStatus = useCanvasStore((s) => s.nodeStatus);
+
+  const displayNodes = useMemo(() => {
+    return nodes.map((n) => {
+      const status = nodeStatus[n.id] || 'idle';
+      const color = status === 'running' ? '#0af' : status === 'success' ? '#0a0' : status === 'error' ? '#f33' : status === 'waiting' ? '#fa0' : '#999';
+      return {
+        ...n,
+        data: { label: (<span>{n.data?.label} <span style={{ color, fontSize: 10, marginLeft: 6 }}>●</span></span>) },
+      } as CanvasNode;
+    });
+  }, [nodes, nodeStatus]);
 
   const onConnect = useCallback((connection: Connection) => {
     setEdges((eds) => addEdge(connection, eds));
@@ -52,7 +65,7 @@ export default function Canvas(props: {
     <div style={{ width: '100%', height: '100%' }} onMouseLeave={syncUp} onBlur={syncUp}>
       <ReactFlowProvider>
         <ReactFlow
-          nodes={nodes}
+          nodes={displayNodes}
           edges={edges}
           onNodesChange={onNodesChangeWrapped}
           onEdgesChange={onEdgesChangeWrapped}

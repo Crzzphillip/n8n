@@ -5,24 +5,42 @@ export function useKeyboardShortcuts(handlers: {
   onSave?: () => void;
   onUndo?: () => void;
   onRedo?: () => void;
+  onDelete?: () => void;
+  onTidy?: () => void;
+  onAlign?: () => void;
 }) {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const isMac = navigator.platform.toUpperCase().includes('MAC');
       const mod = isMac ? e.metaKey : e.ctrlKey;
-      if (mod && e.key.toLowerCase() === 's') {
+      const key = e.key.toLowerCase();
+      if (mod && key === 's') {
         e.preventDefault();
         handlers.onSave?.();
         return;
       }
-      if (mod && e.key.toLowerCase() === 'z' && !e.shiftKey) {
+      if (mod && key === 'z' && !e.shiftKey) {
         e.preventDefault();
         handlers.onUndo?.();
         return;
       }
-      if (mod && (e.key.toLowerCase() === 'y' || (e.key.toLowerCase() === 'z' && e.shiftKey))) {
+      if (mod && (key === 'y' || (key === 'z' && e.shiftKey))) {
         e.preventDefault();
         handlers.onRedo?.();
+        return;
+      }
+      if (key === 'delete' || key === 'backspace') {
+        handlers.onDelete?.();
+        return;
+      }
+      if (mod && key === 't') {
+        e.preventDefault();
+        handlers.onTidy?.();
+        return;
+      }
+      if (mod && key === 'a') {
+        e.preventDefault();
+        handlers.onAlign?.();
         return;
       }
     };
