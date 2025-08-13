@@ -204,11 +204,11 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
 
       // Add enterprise features if enabled (placeholders)
       if (settingsStore.getState().isEnterpriseFeatureEnabled[EnterpriseEditionFeature.Variables]) {
-        loadPromises.push(environmentsStore.getState().fetchAllVariables());
+        try { loadPromises.push(environmentsStore.getState().fetchAllVariables()); } catch (e) { toast.showError(e, 'Failed to load environment variables'); }
       }
 
       if (settingsStore.getState().isEnterpriseFeatureEnabled[EnterpriseEditionFeature.ExternalSecrets]) {
-        loadPromises.push(externalSecretsStore.getState().fetchAllSecrets());
+        try { loadPromises.push(externalSecretsStore.getState().fetchAllSecrets()); } catch (e) { toast.showError(e, 'Failed to load external secrets'); }
       }
 
       try {
@@ -656,12 +656,9 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
   }, keyBindingsEnabled);
 
   // Enhanced computed values
-  const viewportBoundaries = useMemo<ViewportBoundaries>(() => ({
-    minX: viewportTransform.x,
-    maxX: viewportTransform.x + viewportDimensions.width,
-    minY: viewportTransform.y,
-    maxY: viewportTransform.y + viewportDimensions.height,
-  }), [viewportTransform, viewportDimensions]);
+  const viewportBoundaries = useMemo<ViewportBoundaries>(() => (
+    getBounds(viewportTransform, viewportDimensions)
+  ), [viewportTransform, viewportDimensions]);
 
   const triggerNodes = useMemo(() => {
     return workflow.nodes.filter((node: any) => 
