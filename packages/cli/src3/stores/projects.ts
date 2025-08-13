@@ -1,33 +1,68 @@
 import { create } from 'zustand';
 
-export type Project = { id: string; name: string };
-
-type State = {
-  items: Project[];
-  loading: boolean;
-  error?: string;
-  list: () => Promise<void>;
-};
-
-async function fetchJson<T>(url: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(url, init);
-  if (!res.ok) throw new Error(await res.text());
-  return (await res.json()) as T;
+interface Project {
+	id: string;
+	name: string;
+	description?: string;
+	homeProject?: string;
 }
 
-export const useProjectsStore = create<State>((set) => ({
-  items: [],
-  loading: false,
-  async list() {
-    set({ loading: true, error: undefined });
-    try {
-      const res = await fetchJson<Project[]>(`/api/rest/projects`);
-      const list = (res as any).data || (res as any) || [];
-      set({ items: list });
-    } catch (e: any) {
-      set({ error: e?.message || 'Failed to list projects' });
-    } finally {
-      set({ loading: false });
-    }
-  },
+interface ProjectsState {
+	projects: Project[];
+	currentProject: Project | null;
+	loading: boolean;
+	error: string | null;
+}
+
+interface ProjectsStore extends ProjectsState {
+	setProjects: (projects: Project[]) => void;
+	setCurrentProject: (project: Project | null) => void;
+	setLoading: (loading: boolean) => void;
+	setError: (error: string | null) => void;
+	fetchProjects: () => Promise<void>;
+	getProject: (id: string) => Project | undefined;
+}
+
+export const useProjectsStore = create<ProjectsStore>((set, get) => ({
+	projects: [],
+	currentProject: null,
+	loading: false,
+	error: null,
+
+	setProjects: (projects: Project[]) => {
+		set({ projects });
+	},
+
+	setCurrentProject: (project: Project | null) => {
+		set({ currentProject: project });
+	},
+
+	setLoading: (loading: boolean) => {
+		set({ loading });
+	},
+
+	setError: (error: string | null) => {
+		set({ error });
+	},
+
+	fetchProjects: async () => {
+		set({ loading: true, error: null });
+		try {
+			const response = await fetch('/api/rest/projects');
+			if (!response.ok) {
+				throw new Error('Failed to fetch projects');
+			}
+			const projects = await response.json();
+			set({ projects, loading: false });
+		} catch (error) {
+			set({ 
+				loading: false, 
+				error: error instanceof Error ? error.message : 'Unknown error' 
+			});
+		}
+	},
+
+	getProject: (id: string) => {
+		return get().projects.find(p => p.id === id);
+	},
 }));

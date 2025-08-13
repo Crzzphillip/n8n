@@ -21,6 +21,14 @@ import { useClipboard } from '../../src3/hooks/useClipboard';
 import { useBeforeUnload } from '../../src3/hooks/useBeforeUnload';
 import { useWorkflowSaving } from '../../src3/hooks/useWorkflowSaving';
 import { useRunWorkflow } from '../../src3/hooks/useRunWorkflow';
+import { useNodeHelpers } from '../../src3/hooks/useNodeHelpers';
+import { useExecutionDebugging } from '../../src3/hooks/useExecutionDebugging';
+import { useWorkflowExtraction } from '../../src3/hooks/useWorkflowExtraction';
+import { useGlobalLinkActions } from '../../src3/hooks/useGlobalLinkActions';
+import { useToast } from '../../src3/hooks/useToast';
+import { useMessage } from '../../src3/hooks/useMessage';
+import { useDocumentTitle } from '../../src3/hooks/useDocumentTitle';
+import { useExternalHooks } from '../../src3/hooks/useExternalHooks';
 
 // New stores
 import { useHistoryStore } from '../../src3/stores/history';
@@ -33,6 +41,14 @@ import { useBuilderStore } from '../../src3/stores/builder';
 import { useAgentRequestStore } from '../../src3/stores/agentRequest';
 import { useExecutionsStore } from '../../src3/stores/executions';
 import { useCanvasStore } from '../../src3/stores/canvas';
+import { useNodeTypesStore } from '../../src3/stores/nodeTypes';
+import { useUIStore } from '../../src3/stores/ui';
+import { useSourceControlStore } from '../../src3/stores/sourceControl';
+import { useSettingsStore } from '../../src3/stores/settings';
+import { useCredentialsStore } from '../../src3/stores/credentials';
+import { useProjectsStore } from '../../src3/stores/projects';
+import { useUsersStore } from '../../src3/stores/users';
+import { useTagsStore } from '../../src3/stores/tags';
 
 // New components
 import CanvasRunWorkflowButton from './canvas/buttons/CanvasRunWorkflowButton';
@@ -48,6 +64,35 @@ import SetupWorkflowCredentialsButton from './SetupWorkflowCredentialsButton';
 import { historyBus } from '../../src3/event-bus/history';
 import { canvasEventBus } from '../../src3/event-bus/canvas';
 import { nodeViewEventBus } from '../../src3/event-bus/nodeView';
+import { sourceControlEventBus } from '../../src3/event-bus/sourceControl';
+
+// Constants
+import {
+	CHAT_TRIGGER_NODE_TYPE,
+	MANUAL_CHAT_TRIGGER_NODE_TYPE,
+	START_NODE_TYPE,
+	STICKY_NODE_TYPE,
+	EVALUATION_TRIGGER_NODE_TYPE,
+	EVALUATION_NODE_TYPE,
+	DRAG_EVENT_DATA_KEY,
+	EnterpriseEditionFeature,
+	FOCUS_PANEL_EXPERIMENT,
+	NDV_UI_OVERHAUL_EXPERIMENT,
+	FROM_AI_PARAMETERS_MODAL_KEY,
+	WORKFLOW_SETTINGS_MODAL_KEY,
+	MODAL_CONFIRM,
+	MAIN_HEADER_TABS,
+	NEW_WORKFLOW_ID,
+	PLACEHOLDER_EMPTY_WORKFLOW_ID,
+	NODE_CREATOR_OPEN_SOURCES,
+	VALID_WORKFLOW_IMPORT_URL_REGEX,
+	VIEWS,
+} from '../../src3/constants';
+
+// Utilities
+import { createCanvasConnectionHandleString, parseCanvasConnectionHandleString } from '../../src3/utils/canvasUtils';
+import { isValidNodeConnectionType, isVueFlowConnection } from '../../src3/utils/typeGuards';
+import { tryToParseNumber } from '../../src3/utils/typesUtils';
 
 // Types
 import type { INodeUi, XYPosition, ViewportTransform, Dimensions, ViewportBoundaries } from '../../src3/types/Interface';
@@ -98,6 +143,14 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
   const workflowSaving = useWorkflowSaving({ router });
   const runWorkflow = useRunWorkflow({ router });
   const { addBeforeUnloadEventBindings, removeBeforeUnloadEventBindings } = useBeforeUnload({ route: params });
+  const nodeHelpers = useNodeHelpers();
+  const executionDebugging = useExecutionDebugging();
+  const workflowExtraction = useWorkflowExtraction();
+  const globalLinkActions = useGlobalLinkActions();
+  const toast = useToast();
+  const message = useMessage();
+  const documentTitle = useDocumentTitle();
+  const externalHooks = useExternalHooks();
 
   // Enhanced stores
   const historyStore = useHistoryStore();
@@ -112,16 +165,63 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
   const canvasStore = useCanvasStore();
   const workflowStore = useWorkflowStore();
   const pushStore = usePushStore();
+  const nodeTypesStore = useNodeTypesStore();
+  const uiStore = useUIStore();
+  const sourceControlStore = useSourceControlStore();
+  const settingsStore = useSettingsStore();
+  const credentialsStore = useCredentialsStore();
+  const projectsStore = useProjectsStore();
+  const usersStore = useUsersStore();
+  const tagsStore = useTagsStore();
+
+  // Enhanced initialization
+  useEffect(() => {
+    const initializeData = async () => {
+      const loadPromises: Promise<any>[] = [
+        nodeTypesStore.getState().getNodeTypes(),
+        credentialsStore.getState().fetchAllCredentials(),
+        credentialsStore.getState().fetchCredentialTypes(true),
+        projectsStore.getState().fetchProjects(),
+        usersStore.getState().fetchCurrentUser(),
+        tagsStore.getState().fetchTags(),
+      ];
+
+      // Add enterprise features if enabled
+      if (settingsStore.getState().isEnterpriseFeatureEnabled[EnterpriseEditionFeature.Variables]) {
+        // Add environment variables loading
+      }
+
+      if (settingsStore.getState().isEnterpriseFeatureEnabled[EnterpriseEditionFeature.ExternalSecrets]) {
+        // Add external secrets loading
+      }
+
+      try {
+        await Promise.all(loadPromises);
+      } catch (error) {
+        toast.showError(error, 'Failed to initialize data');
+      }
+    };
+
+    initializeData();
+  }, [nodeTypesStore, credentialsStore, projectsStore, usersStore, tagsStore, settingsStore, toast]);
 
   useEffect(() => {
     if (mode === 'existing' && workflowId) {
       setLoading(true);
       fetchJson<Workflow>(`/api/rest/workflows/${workflowId}`)
-        .then((wf) => setWorkflow(wf))
-        .catch((e: any) => setError(e?.message || 'Failed to load'))
+        .then((wf) => {
+          setWorkflow(wf);
+          documentTitle.setWorkflowTitle(wf.name);
+        })
+        .catch((e: any) => {
+          setError(e?.message || 'Failed to load');
+          toast.showError(e, 'Failed to load workflow');
+        })
         .finally(() => setLoading(false));
+    } else if (mode === 'new') {
+      documentTitle.setWorkflowTitle('New Workflow');
     }
-  }, [mode, workflowId]);
+  }, [mode, workflowId, documentTitle, toast]);
 
   // Enhanced useEffect hooks
   useEffect(() => {
@@ -138,7 +238,7 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
     };
   }, [pushStore, addBeforeUnloadEventBindings, removeBeforeUnloadEventBindings, historyStore, ndvStore]);
 
-  // Event bus bindings
+  // Enhanced event bus bindings
   useEffect(() => {
     const handleHistoryEvents = {
       nodeMove: ({ nodeName, position }: { nodeName: string; position: XYPosition }) => {
@@ -173,17 +273,47 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
       },
     };
 
-    // Bind history events
+    const handleNodeViewEvents = {
+      importWorkflowData: onImportWorkflowData,
+      importWorkflowUrl: onImportWorkflowUrl,
+      openChat: onOpenChat,
+      'runWorkflowButton:mouseenter': () => {
+        telemetry.track('User hovered run workflow button');
+      },
+      'runWorkflowButton:mouseleave': () => {
+        telemetry.track('User left run workflow button');
+      },
+    };
+
+    const handleSourceControlEvents = {
+      pull: onSourceControlPull,
+    };
+
+    // Bind all events
     Object.entries(handleHistoryEvents).forEach(([event, handler]) => {
       historyBus.on(event as any, handler);
+    });
+
+    Object.entries(handleNodeViewEvents).forEach(([event, handler]) => {
+      nodeViewEventBus.on(event as any, handler);
+    });
+
+    Object.entries(handleSourceControlEvents).forEach(([event, handler]) => {
+      sourceControlEventBus.on(event as any, handler);
     });
 
     return () => {
       Object.entries(handleHistoryEvents).forEach(([event, handler]) => {
         historyBus.off(event as any, handler);
       });
+      Object.entries(handleNodeViewEvents).forEach(([event, handler]) => {
+        nodeViewEventBus.off(event as any, handler);
+      });
+      Object.entries(handleSourceControlEvents).forEach(([event, handler]) => {
+        sourceControlEventBus.off(event as any, handler);
+      });
     };
-  }, [workflow.nodes, canvasOperations]);
+  }, [workflow.nodes, canvasOperations, onImportWorkflowData, onImportWorkflowUrl, onOpenChat, onSourceControlPull, telemetry]);
 
   const canSave = useMemo(() => workflow.name.trim().length > 0, [workflow.name]);
 
@@ -286,9 +416,11 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
 
   const triggerNodes = useMemo(() => {
     return workflow.nodes.filter(node => 
-      node.type === 'start' || node.type?.includes('Trigger')
+      nodeHelpers.isTriggerNode(node.type || '') || 
+      node.type === START_NODE_TYPE ||
+      node.type?.includes('Trigger')
     );
-  }, [workflow.nodes]);
+  }, [workflow.nodes, nodeHelpers]);
 
   const containsTriggerNodes = useMemo(() => triggerNodes.length > 0, [triggerNodes]);
   const allTriggerNodesDisabled = useMemo(() => {
@@ -421,6 +553,62 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
     focusPanelStore.getState().toggleFocusPanel();
     telemetry.track('User toggled focus panel');
   }, [focusPanelStore, telemetry]);
+
+  // Enhanced functionality
+  const onExtractWorkflow = useCallback((nodeIds: string[]) => {
+    const extracted = workflowExtraction.extractWorkflow(nodeIds);
+    console.log('Extracted workflow:', extracted);
+    telemetry.track('User extracted workflow', { nodeCount: nodeIds.length });
+  }, [workflowExtraction, telemetry]);
+
+  const onOpenExecution = useCallback(async (executionId: string, nodeId?: string) => {
+    try {
+      await executionDebugging.debugExecution(executionId);
+      if (nodeId) {
+        canvasOperations.setNodeActive(nodeId);
+      }
+      telemetry.track('User opened execution', { executionId, nodeId });
+    } catch (error) {
+      toast.showError(error, 'Failed to open execution');
+    }
+  }, [executionDebugging, canvasOperations, telemetry, toast]);
+
+  const onSourceControlPull = useCallback(async () => {
+    try {
+      await sourceControlStore.getState().pull();
+      toast.showSuccess('Successfully pulled latest changes');
+      telemetry.track('User pulled source control changes');
+    } catch (error) {
+      toast.showError(error, 'Failed to pull changes');
+    }
+  }, [sourceControlStore, toast, telemetry]);
+
+  const onImportWorkflowData = useCallback(async (data: any) => {
+    try {
+      const success = await workflowHelpers.importWorkflow(data);
+      if (success) {
+        toast.showSuccess('Workflow imported successfully');
+        telemetry.track('User imported workflow');
+      }
+    } catch (error) {
+      toast.showError(error, 'Failed to import workflow');
+    }
+  }, [workflowHelpers, toast, telemetry]);
+
+  const onImportWorkflowUrl = useCallback(async (url: string) => {
+    if (!VALID_WORKFLOW_IMPORT_URL_REGEX.test(url)) {
+      toast.showError(new Error('Invalid URL'), 'Invalid workflow URL');
+      return;
+    }
+
+    try {
+      const response = await fetch(url);
+      const data = await response.json();
+      await onImportWorkflowData(data);
+    } catch (error) {
+      toast.showError(error, 'Failed to import workflow from URL');
+    }
+  }, [onImportWorkflowData, toast]);
 
   if (loading) return <div style={{ padding: 16 }}>Loading…</div>;
 

@@ -1,46 +1,100 @@
 import { create } from 'zustand';
 
-export type Credential = {
-  id: string;
-  name: string;
-  type: string;
-};
-
-type State = {
-  items: Credential[];
-  loading: boolean;
-  error?: string;
-  list: () => Promise<void>;
-  getById: (id: string) => Promise<Credential | undefined>;
-};
-
-async function fetchJson<T>(url: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(url, init);
-  if (!res.ok) throw new Error(await res.text());
-  return (await res.json()) as T;
+interface Credential {
+	id: string;
+	name: string;
+	type: string;
+	data?: Record<string, any>;
 }
 
-export const useCredentialsStore = create<State>((set, get) => ({
-  items: [],
-  loading: false,
-  async list() {
-    set({ loading: true, error: undefined });
-    try {
-      const res = await fetchJson<Credential[]>(`/api/rest/credentials`);
-      const list = (res as any).data || (res as any) || [];
-      set({ items: list });
-    } catch (e: any) {
-      set({ error: e?.message || 'Failed to list credentials' });
-    } finally {
-      set({ loading: false });
-    }
-  },
-  async getById(id) {
-    try {
-      const res = await fetchJson<Credential>(`/api/rest/credentials/${id}`);
-      return (res as any) as Credential;
-    } catch {
-      return undefined;
-    }
-  },
+interface CredentialType {
+	name: string;
+	displayName: string;
+	documentationUrl?: string;
+	properties?: Record<string, any>;
+}
+
+interface CredentialsState {
+	credentials: Credential[];
+	credentialTypes: CredentialType[];
+	loading: boolean;
+	error: string | null;
+}
+
+interface CredentialsStore extends CredentialsState {
+	setCredentials: (credentials: Credential[]) => void;
+	setCredentialTypes: (types: CredentialType[]) => void;
+	setLoading: (loading: boolean) => void;
+	setError: (error: string | null) => void;
+	fetchAllCredentials: () => Promise<void>;
+	fetchCredentialTypes: (force?: boolean) => Promise<void>;
+	getCredential: (id: string) => Credential | undefined;
+	getCredentialType: (type: string) => CredentialType | undefined;
+}
+
+export const useCredentialsStore = create<CredentialsStore>((set, get) => ({
+	credentials: [],
+	credentialTypes: [],
+	loading: false,
+	error: null,
+
+	setCredentials: (credentials: Credential[]) => {
+		set({ credentials });
+	},
+
+	setCredentialTypes: (types: CredentialType[]) => {
+		set({ credentialTypes: types });
+	},
+
+	setLoading: (loading: boolean) => {
+		set({ loading });
+	},
+
+	setError: (error: string | null) => {
+		set({ error });
+	},
+
+	fetchAllCredentials: async () => {
+		set({ loading: true, error: null });
+		try {
+			const response = await fetch('/api/rest/credentials');
+			if (!response.ok) {
+				throw new Error('Failed to fetch credentials');
+			}
+			const credentials = await response.json();
+			set({ credentials, loading: false });
+		} catch (error) {
+			set({ 
+				loading: false, 
+				error: error instanceof Error ? error.message : 'Unknown error' 
+			});
+		}
+	},
+
+	fetchCredentialTypes: async (force = false) => {
+		if (!force && get().credentialTypes.length > 0) return;
+		
+		set({ loading: true, error: null });
+		try {
+			const response = await fetch('/api/rest/credential-types');
+			if (!response.ok) {
+				throw new Error('Failed to fetch credential types');
+			}
+			const types = await response.json();
+			set({ credentialTypes: types, loading: false });
+		} catch (error) {
+			set({ 
+				loading: false, 
+				error: error instanceof Error ? error.message : 'Unknown error' 
+			});
+		}
+	},
+
+	getCredential: (id: string) => {
+		return get().credentials.find(c => c.id === id);
+	},
+
+	getCredentialType: (type: string) => {
+		return get().credentialTypes.find(ct => ct.name === type);
+	},
 }));
