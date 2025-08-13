@@ -4,6 +4,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Canvas, { CanvasNode, CanvasEdge } from './canvas/Canvas';
 import NDV from './NDV/NodeDetailsView';
 import NodeCreator from './NodeCreator/NodeCreator';
+import { useKeyboardShortcuts } from '../../src3/hooks/useKeyboardShortcuts';
 
 type WorkflowId = string;
 
@@ -83,6 +84,8 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
       setSaving(false);
     }
   }, [workflow]);
+
+  useKeyboardShortcuts({ onSave: () => (workflow.id ? void updateExisting() : void saveNew()) });
 
   const addNode = useCallback((name: string) => {
     const id = uuid();
