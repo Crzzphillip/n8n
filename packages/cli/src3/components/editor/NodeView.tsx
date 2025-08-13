@@ -238,6 +238,23 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
         .finally(() => setLoading(false));
     } else if (mode === 'new') {
       documentTitle.setWorkflowTitle('New Workflow');
+      // If templateId present, import template workflow
+      const templateId = params.get('templateId');
+      if (templateId) {
+        (async () => {
+          try {
+            // Minimal template fetch
+            const res = await fetch(`/api/rest/templates/${templateId}`);
+            if (!res.ok) throw new Error('Failed to fetch template');
+            const data = await res.json();
+            await importWorkflowExact({ workflow: data.workflow, name: data.name });
+            telemetry.track('template.open', { template_id: templateId });
+            setTimeout(() => canvasEventBus.emit('fitView'));
+          } catch (e) {
+            toast.showError(e, 'Failed to import template');
+          }
+        })();
+      }
     }
 
     // Handle route-driven actions (e.g., add evaluation trigger, run evaluation)
@@ -288,6 +305,14 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
       off?.();
     };
   }, [pushStore, addBeforeUnloadEventBindings, removeBeforeUnloadEventBindings, historyStore, ndvStore, onImportWorkflowUrl, onImportWorkflowData]);
+
+  useEffect(() => {
+    // Connect push SSE explicitly
+    pushStore.getState().pushConnect();
+    return () => {
+      pushStore.getState().pushDisconnect();
+    };
+  }, [pushStore]);
 
   // Enhanced event bus bindings
   useEffect(() => {
