@@ -50,6 +50,8 @@ import { useCredentialsStore } from '../../src3/stores/credentials';
 import { useProjectsStore } from '../../src3/stores/projects';
 import { useUsersStore } from '../../src3/stores/users';
 import { useTagsStore } from '../../src3/stores/tags';
+import { useEnvironmentsStore } from '../../src3/stores/environments';
+import { useExternalSecretsStore } from '../../src3/stores/externalSecrets';
 
 // New components
 import CanvasRunWorkflowButton from './canvas/buttons/CanvasRunWorkflowButton';
@@ -181,6 +183,8 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
   const projectsStore = useProjectsStore();
   const usersStore = useUsersStore();
   const tagsStore = useTagsStore();
+  const environmentsStore = useEnvironmentsStore();
+  const externalSecretsStore = useExternalSecretsStore();
 
   // Enhanced initialization
   useEffect(() => {
@@ -196,11 +200,11 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
 
       // Add enterprise features if enabled (placeholders)
       if (settingsStore.getState().isEnterpriseFeatureEnabled[EnterpriseEditionFeature.Variables]) {
-        // TODO: environmentsStore.fetchAllVariables()
+        loadPromises.push(environmentsStore.getState().fetchAllVariables());
       }
 
       if (settingsStore.getState().isEnterpriseFeatureEnabled[EnterpriseEditionFeature.ExternalSecrets]) {
-        // TODO: externalSecretsStore.fetchAllSecrets()
+        loadPromises.push(externalSecretsStore.getState().fetchAllSecrets());
       }
 
       try {
@@ -221,7 +225,7 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
         guardedReplace(`${window.location.pathname}?${sp.toString()}`);
       } catch {}
     }
-  }, [nodeTypesStore, credentialsStore, projectsStore, usersStore, tagsStore, settingsStore, toast, params, uiStore, guardedReplace]);
+  }, [nodeTypesStore, credentialsStore, projectsStore, usersStore, tagsStore, settingsStore, toast, params, uiStore, guardedReplace, environmentsStore, externalSecretsStore]);
 
   useEffect(() => {
     if (mode === 'existing' && workflowId) {
@@ -843,6 +847,8 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
       await Promise.all([
         credentialsStore.getState().fetchAllCredentials(),
         tagsStore.getState().fetchTags(),
+        environmentsStore.getState().fetchAllVariables(),
+        externalSecretsStore.getState().fetchAllSecrets(),
       ]);
       // Reload workflow if applicable
       if (workflow.id) {
@@ -855,7 +861,7 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
     } catch (error) {
       toast.showError(error, 'Failed to pull changes');
     }
-  }, [sourceControlStore, toast, telemetry, workflow.id, credentialsStore, tagsStore, documentTitle]);
+  }, [sourceControlStore, toast, telemetry, workflow.id, credentialsStore, tagsStore, environmentsStore, externalSecretsStore, documentTitle]);
 
   const onImportWorkflowData = useCallback(async (data: any) => {
     try {
