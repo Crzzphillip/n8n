@@ -789,19 +789,13 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
         {error && <p style={{ color: 'red' }}>{error}</p>}
         <hr style={{ margin: '16px 0' }} />
         <h4>Browse nodes</h4>
-        <div style={{ maxHeight: 360, overflow: 'auto' }} draggable onDragStart={(e) => {
-          const payload = JSON.stringify({ type: 'node', name: 'Custom Node' });
-          e.dataTransfer.setData('application/x-sv-node', payload);
-        }}>
+        <div style={{ maxHeight: 360, overflow: 'auto' }}>
           <NodeCreator />
         </div>
         <hr style={{ margin: '16px 0' }} />
-        <h4>Connect (demo)</h4>
-        {workflow.nodes.length >= 2 ? (
-          <button onClick={() => connectNodes(workflow.nodes[0].id, workflow.nodes[1].id)}>Connect first → second</button>
-        ) : (
-          <p>Add at least two nodes to enable demo connect</p>
-        )}
+        <button onClick={() => nodeCreatorStore.getState().openNodeCreatorForTriggerNodes(NODE_CREATOR_OPEN_SOURCES.ADD_EVALUATION_TRIGGER_BUTTON)}>
+          Open Node Creator
+        </button>
       </aside>
       
       <section style={{ padding: 0, position: 'relative' }}>
