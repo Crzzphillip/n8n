@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { useCanvasStore } from './canvas';
+import { useLogsStore } from './logs';
 
 type Listener = (event: MessageEvent) => void;
 
@@ -42,8 +43,10 @@ export const usePushStore = create<State>((set, get) => {
       try {
         const payload = JSON.parse(e.data);
         if (payload?.type === 'execution:node-status') {
-          // expected shape: { workflowId, nodeId, status }
           useCanvasStore.getState().setNodeStatus(payload.nodeId, payload.status);
+        } else if (payload?.type === 'execution:log') {
+          useLogsStore.getState().add(payload.nodeId, { ts: Date.now(), level: payload.level || 'info', message: payload.message });
+          useLogsStore.getState().trim(payload.nodeId, 50);
         }
       } catch {}
     });

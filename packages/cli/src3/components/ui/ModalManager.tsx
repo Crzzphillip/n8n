@@ -5,6 +5,8 @@ import Modal from './Modal';
 type ModalContextType = {
   confirm: (msg: string) => Promise<boolean>;
   prompt: (msg: string, def?: string) => Promise<string | undefined>;
+  open: (content: React.ReactNode) => void;
+  close: () => void;
 };
 
 const ModalContext = createContext<ModalContextType | undefined>(undefined);
@@ -16,20 +18,20 @@ export function useModal() {
 }
 
 export function ModalProvider({ children }: { children: React.ReactNode }) {
-  const [open, setOpen] = useState(false);
+  const [openState, setOpenState] = useState(false);
   const [content, setContent] = useState<React.ReactNode>(null);
   const [resolver, setResolver] = useState<((v: any) => void) | null>(null);
 
   const api: ModalContextType = useMemo(() => ({
     confirm(msg) {
-      setOpen(true);
+      setOpenState(true);
       return new Promise<boolean>((resolve) => {
         setContent(
           <div>
             <p>{msg}</p>
             <div style={{ display: 'flex', gap: 8 }}>
-              <button onClick={() => { setOpen(false); resolve(true); }}>OK</button>
-              <button onClick={() => { setOpen(false); resolve(false); }}>Cancel</button>
+              <button onClick={() => { setOpenState(false); resolve(true); }}>OK</button>
+              <button onClick={() => { setOpenState(false); resolve(false); }}>Cancel</button>
             </div>
           </div>,
         );
@@ -37,7 +39,7 @@ export function ModalProvider({ children }: { children: React.ReactNode }) {
       });
     },
     prompt(msg, def) {
-      setOpen(true);
+      setOpenState(true);
       let val = def || '';
       return new Promise<string | undefined>((resolve) => {
         setContent(
@@ -45,20 +47,28 @@ export function ModalProvider({ children }: { children: React.ReactNode }) {
             <p>{msg}</p>
             <input defaultValue={val} onChange={(e) => (val = e.target.value)} />
             <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
-              <button onClick={() => { setOpen(false); resolve(val); }}>OK</button>
-              <button onClick={() => { setOpen(false); resolve(undefined); }}>Cancel</button>
+              <button onClick={() => { setOpenState(false); resolve(val); }}>OK</button>
+              <button onClick={() => { setOpenState(false); resolve(undefined); }}>Cancel</button>
             </div>
           </div>,
         );
         setResolver(() => resolve);
       });
     },
+    open(node) {
+      setContent(node);
+      setOpenState(true);
+    },
+    close() {
+      setOpenState(false);
+      setResolver(null);
+    },
   }), []);
 
   return (
     <ModalContext.Provider value={api}>
       {children}
-      <Modal open={open} onClose={() => { setOpen(false); resolver?.(undefined); }}>
+      <Modal open={openState} onClose={() => { setOpenState(false); resolver?.(undefined); }}>
         {content}
       </Modal>
     </ModalContext.Provider>
