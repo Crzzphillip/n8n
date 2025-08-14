@@ -62,6 +62,9 @@ const resources = {
 					pin: 'Pin',
 					tidyUp: 'Tidy up',
 					extract: 'Extract',
+					toggleActivation: 'Toggle activation',
+					selectAll: 'Select all',
+					deselectAll: 'Deselect all',
 				},
 				toast: {
 					readOnly: {

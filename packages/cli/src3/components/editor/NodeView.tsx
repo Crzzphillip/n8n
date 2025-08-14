@@ -1230,6 +1230,10 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
         });
       }
     });
+    const offToggleActivation = canvasEventBus.on('update:nodes:enabled', (ids: string[]) => {
+      if (!checkIfEditingIsAllowed()) return;
+      canvasOperations.toggleNodesDisabled(ids);
+    });
 
     // Show toast when saving from NDV context
     const onSavedFromNDV = () => {
@@ -1264,6 +1268,7 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
       offSelectionEnd?.();
       offNodesAction?.();
       offSaved?.();
+      offToggleActivation?.();
     };
   }, [focusPanelStore, canvasOperations, nodeCreatorStore, runWorkflow, telemetry, logsStore, toast, uiStore, workflow.nodes, onCopyNodes, onDuplicateNodes, onPinNodes, onOpenRenameNodeModal, onExtractWorkflow]);
 

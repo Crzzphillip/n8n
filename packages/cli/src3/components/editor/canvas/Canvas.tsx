@@ -247,6 +247,9 @@ export default function Canvas(props: {
               <button disabled={props.readOnly} onClick={() => { canvasEventBus.emit('update:node:name', contextMenu.targetNodeId as any); setContextMenu(null); }}>{t('nodeView.buttons.rename')}</button>
               <button disabled={props.readOnly} onClick={() => { canvasEventBus.emit('tidyUp', { source: 'context-menu' } as any); setContextMenu(null); }}>{t('nodeView.buttons.tidyUp')}</button>
               <button disabled={props.readOnly} onClick={() => { canvasEventBus.emit('extract-workflow', contextMenu.targetNodeId ? [contextMenu.targetNodeId] : [] as any); setContextMenu(null); }}>{t('nodeView.buttons.extract')}</button>
+              <button disabled={props.readOnly} onClick={() => { canvasEventBus.emit('update:nodes:enabled', contextMenu.targetNodeId ? [contextMenu.targetNodeId] : [] as any); setContextMenu(null); }}>{t('nodeView.buttons.toggleActivation') || 'Toggle activation'}</button>
+              <button onClick={() => { const allIds = nodes.map(n => String(n.id)); canvasEventBus.emit('nodes:select', { ids: allIds }); setContextMenu(null); }}>{t('nodeView.buttons.selectAll') || 'Select all'}</button>
+              <button onClick={() => { canvasEventBus.emit('nodes:select', { ids: [] }); setContextMenu(null); }}>{t('nodeView.buttons.deselectAll') || 'Deselect all'}</button>
               <button disabled={props.readOnly} onClick={() => { canvasEventBus.emit('nodes:action', { ids: contextMenu.targetNodeId ? [contextMenu.targetNodeId] : nodes.filter(n => (n as any).data?.sticky).map(n => n.id), action: 'update:sticky:color' }); setContextMenu(null); }}>{t('nodeView.labels.stickyChangeColor')}</button>
               <div style={{ display: 'flex', gap: 6 }}>
                 {[0,1,2,3].map((c) => (
