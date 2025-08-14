@@ -237,16 +237,16 @@ export default function Canvas(props: {
         {contextMenu && (
           <div style={{ position: 'fixed', left: contextMenu.x, top: contextMenu.y, background: '#fff', border: '1px solid #ccc', borderRadius: 6, padding: 8 }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-              <button disabled={props.readOnly} onClick={() => { canvasEventBus.emit('create:node', { source: 'context_menu' } as any); setContextMenu(null); }}>{t('nodeView.buttons.focusPanel')}</button>
-              <button disabled={props.readOnly} onClick={() => { canvasEventBus.emit('create:sticky'); setContextMenu(null); }}>{t('nodeView.labels.stickyChangeColor')}</button>
+              <button disabled={props.readOnly} onClick={() => { canvasEventBus.emit('create:node', { source: 'context_menu' } as any); setContextMenu(null); }}>{t('nodeView.buttons.addNode')}</button>
+              <button disabled={props.readOnly} onClick={() => { canvasEventBus.emit('create:sticky'); setContextMenu(null); }}>{t('nodeView.buttons.addSticky')}</button>
               <button onClick={() => { canvasEventBus.emit('copy:nodes', contextMenu.targetNodeId ? [contextMenu.targetNodeId] : [] as any); setContextMenu(null); }}>{t('nodeView.success.copied')}</button>
               <button disabled={props.readOnly} onClick={() => { canvasEventBus.emit('delete:nodes', contextMenu.targetNodeId ? [contextMenu.targetNodeId] : [] as any); setContextMenu(null); }}>{t('nodeView.buttons.deleteNodeConfirm')}</button>
-              <button disabled={props.readOnly} onClick={() => { canvasEventBus.emit('duplicate:nodes', contextMenu.targetNodeId ? [contextMenu.targetNodeId] : [] as any); setContextMenu(null); }}>{t('nodeView.buttons.update')}</button>
-              <button disabled={props.readOnly} onClick={() => { canvasEventBus.emit('update:nodes:pin', contextMenu.targetNodeId ? [contextMenu.targetNodeId] : [] as any); setContextMenu(null); }}>Pin</button>
+              <button disabled={props.readOnly} onClick={() => { canvasEventBus.emit('duplicate:nodes', contextMenu.targetNodeId ? [contextMenu.targetNodeId] : [] as any); setContextMenu(null); }}>{t('nodeView.buttons.duplicate')}</button>
+              <button disabled={props.readOnly} onClick={() => { canvasEventBus.emit('update:nodes:pin', contextMenu.targetNodeId ? [contextMenu.targetNodeId] : [] as any); setContextMenu(null); }}>{t('nodeView.buttons.pin')}</button>
               <button disabled={props.readOnly} onClick={() => { canvasEventBus.emit('run:node', { nodeId: contextMenu.targetNodeId } as any); setContextMenu(null); }}>{t('nodeView.buttons.run')}</button>
-              <button disabled={props.readOnly} onClick={() => { canvasEventBus.emit('update:node:name', contextMenu.targetNodeId as any); setContextMenu(null); }}>{t('nodeView.labels.name')}</button>
-              <button disabled={props.readOnly} onClick={() => { canvasEventBus.emit('tidyUp', { source: 'context-menu' } as any); setContextMenu(null); }}>Tidy up</button>
-              <button disabled={props.readOnly} onClick={() => { canvasEventBus.emit('extract-workflow', contextMenu.targetNodeId ? [contextMenu.targetNodeId] : [] as any); setContextMenu(null); }}>Extract</button>
+              <button disabled={props.readOnly} onClick={() => { canvasEventBus.emit('update:node:name', contextMenu.targetNodeId as any); setContextMenu(null); }}>{t('nodeView.buttons.rename')}</button>
+              <button disabled={props.readOnly} onClick={() => { canvasEventBus.emit('tidyUp', { source: 'context-menu' } as any); setContextMenu(null); }}>{t('nodeView.buttons.tidyUp')}</button>
+              <button disabled={props.readOnly} onClick={() => { canvasEventBus.emit('extract-workflow', contextMenu.targetNodeId ? [contextMenu.targetNodeId] : [] as any); setContextMenu(null); }}>{t('nodeView.buttons.extract')}</button>
               <button disabled={props.readOnly} onClick={() => { canvasEventBus.emit('nodes:action', { ids: contextMenu.targetNodeId ? [contextMenu.targetNodeId] : nodes.filter(n => (n as any).data?.sticky).map(n => n.id), action: 'update:sticky:color' }); setContextMenu(null); }}>{t('nodeView.labels.stickyChangeColor')}</button>
               <div style={{ display: 'flex', gap: 6 }}>
                 {[0,1,2,3].map((c) => (

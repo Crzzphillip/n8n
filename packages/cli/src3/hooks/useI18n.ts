@@ -55,6 +55,13 @@ const resources = {
 					update: 'Update',
 					executions: 'Executions',
 					focusPanel: 'Focus Panel',
+					addNode: 'Add node',
+					addSticky: 'Add sticky',
+					duplicate: 'Duplicate',
+					rename: 'Rename',
+					pin: 'Pin',
+					tidyUp: 'Tidy up',
+					extract: 'Extract',
 				},
 				toast: {
 					readOnly: {
