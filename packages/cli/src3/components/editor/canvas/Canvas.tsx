@@ -47,6 +47,13 @@ export default function Canvas(props: {
   const rf = useReactFlow();
   const containerRef = useRef<HTMLDivElement | null>(null);
   const connectStartRef = useRef<{ nodeId: string; handleId: string } | null>(null);
+  const [contextMenu, setContextMenu] = React.useState<{ x: number; y: number; targetNodeId?: string } | null>(null);
+  const onContextMenuLocal = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    const target = (e.target as HTMLElement).closest('.react-flow__node');
+    const nodeId = (target as any)?.getAttribute?.('data-id') || undefined;
+    setContextMenu({ x: e.clientX, y: e.clientY, targetNodeId: nodeId });
+  }, []);
 
   useEffect(() => {
     if (props.fitViewOptions) rf.fitView(props.fitViewOptions);
@@ -186,7 +193,7 @@ export default function Canvas(props: {
   }, [props, rf]);
 
   return (
-    <div ref={containerRef} style={{ width: '100%', height: '100%' }} onMouseLeave={syncUp} onBlur={syncUp} onContextMenu={props.onContextMenu}>
+    <div ref={containerRef} style={{ width: '100%', height: '100%' }} onMouseLeave={syncUp} onBlur={syncUp} onContextMenu={onContextMenuLocal}>
       <ReactFlowProvider>
         <ReactFlow
           nodes={displayNodes}
@@ -221,6 +228,12 @@ export default function Canvas(props: {
             <button onClick={() => canvasEventBus.emit('nodes:action', { ids: (nodes.filter(n => (n as any).data?.sticky).map(n => n.id)), action: 'update:sticky:color' })}>Sticky Color</button>
           </Panel>
         </ReactFlow>
+        {contextMenu && (
+          <div style={{ position: 'fixed', left: contextMenu.x, top: contextMenu.y, background: '#fff', border: '1px solid #ccc', borderRadius: 6, padding: 8 }}>
+            <button onClick={() => { canvasEventBus.emit('nodes:action', { ids: contextMenu.targetNodeId ? [contextMenu.targetNodeId] : nodes.filter(n => (n as any).data?.sticky).map(n => n.id), action: 'update:sticky:color' }); setContextMenu(null); }}>Change sticky color</button>
+            <button onClick={() => setContextMenu(null)}>Close</button>
+          </div>
+        )}
       </ReactFlowProvider>
     </div>
   );

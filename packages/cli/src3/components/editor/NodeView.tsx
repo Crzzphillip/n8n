@@ -675,6 +675,7 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
       void onOpenRenameNodeModal(selectedNodeId);
     },
     onTab: () => {
+      if (!checkIfEditingIsAllowed()) return;
       nodeCreatorStore.getState().openNodeCreatorForTriggerNodes(NODE_CREATOR_OPEN_SOURCES.TAB);
     },
     onShiftS: () => {
@@ -1173,12 +1174,15 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
       focusPanelStore.getState().toggleFocusPanel();
     });
     const offCreateSticky = canvasEventBus.on('create:sticky', () => {
+      if (!checkIfEditingIsAllowed()) return;
       void canvasOperations.addNodes([{ type: STICKY_NODE_TYPE }], { trackHistory: true });
     });
     const offCreateNodePlus = canvasEventBus.on('create:node', ({ source }) => {
+      if (!checkIfEditingIsAllowed()) return;
       nodeCreatorStore.getState().setNodeCreatorState({ createNodeActive: true, source: NODE_CREATOR_OPEN_SOURCES.PLUS_ENDPOINT });
     });
     const offClickConnectionAdd = canvasEventBus.on('click:connection:add', ({ source, target }) => {
+      if (!checkIfEditingIsAllowed()) return;
       nodeCreatorStore.getState().openNodeCreatorForConnectingNode({ connection: { source: source, sourceHandle: 'outputs-main-0' }, eventSource: NODE_CREATOR_OPEN_SOURCES.NODE_CONNECTION_ACTION });
     });
     const offRunNode = canvasEventBus.on('run:node', ({ nodeId }) => {
