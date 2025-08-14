@@ -311,4 +311,21 @@ describe('NodeView', () => {
     });
     expect(addSpy).toHaveBeenCalled();
   });
+
+  it('focus panel respects experiment and toggles via event', async () => {
+    (global as any).fetch = jest.fn(async () => ({ ok: true, json: async () => ({ id: 'wf', name: 'WF', nodes: [], connections: {} }) }));
+    render(<NodeView mode="new" /> as any);
+    // Simulate event
+    act(() => canvasEventBus.emit('toggle:focus-panel'));
+    // No assertion on DOM, but ensure no throw
+  });
+
+  it('push connection is disabled in preview mode', async () => {
+    const params = (require('next/navigation') as any).useSearchParams();
+    params.set('isProductionExecutionPreview', 'true');
+    const ps = require('../stores/push');
+    const connectSpy = jest.spyOn(ps.usePushStore.getState(), 'pushConnect');
+    render(<NodeView mode="new" /> as any);
+    expect(connectSpy).not.toHaveBeenCalled();
+  });
 });

@@ -304,6 +304,7 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
             const path = await foldersStore.getState().getFolderPath(projectId, parentFolderId);
             if (path?.length) {
               foldersStore.getState().setPath(parentFolderId, path);
+              useWorkflowStore.getState().setParentFolderId(parentFolderId);
             }
           } catch {}
         })();
@@ -370,12 +371,15 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
   }, [pushStore, addBeforeUnloadEventBindings, removeBeforeUnloadEventBindings, historyStore, ndvStore, onImportWorkflowUrl, onImportWorkflowData]);
 
   useEffect(() => {
-    // Connect push SSE explicitly
-    pushStore.getState().pushConnect();
+    // Connect push SSE explicitly (skip for preview/demo)
+    const isPreview = params.get('isProductionExecutionPreview') === 'true' || params.get('mode') === 'demo';
+    if (!isPreview) {
+      pushStore.getState().pushConnect();
+    }
     return () => {
       pushStore.getState().pushDisconnect();
     };
-  }, [pushStore]);
+  }, [pushStore, params]);
 
   // Enhanced event bus bindings
   useEffect(() => {
