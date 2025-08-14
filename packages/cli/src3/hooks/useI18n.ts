@@ -18,6 +18,17 @@ const resources = {
 					pull: 'Successfully pulled latest changes',
 					workflowSaved: 'Workflow saved',
 					savedFromNDV: 'Saved from Node panel',
+					imported: 'Workflow imported successfully',
+					copied: 'Copied to clipboard',
+				},
+				buttons: {
+					run: 'Run Workflow',
+					running: 'Running…',
+					waitingForWebhook: 'Waiting for webhook…',
+					deleteNodeConfirm: 'Delete selected node?',
+				},
+				labels: {
+					selectTrigger: 'Select trigger node',
 				},
 				toast: {
 					readOnly: {

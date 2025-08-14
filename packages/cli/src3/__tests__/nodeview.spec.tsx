@@ -328,4 +328,12 @@ describe('NodeView', () => {
     render(<NodeView mode="new" /> as any);
     expect(connectSpy).not.toHaveBeenCalled();
   });
+
+  it('renders i18n loading key by default', async () => {
+    const params = (require('next/navigation') as any).useSearchParams();
+    params.set('id', 'wf-x');
+    (global as any).fetch = jest.fn(async () => new Promise((resolve) => setTimeout(() => resolve({ ok: true, json: async () => ({ id: 'wf-x', name: 'WF', nodes: [], connections: {} }) }), 10)) as any);
+    const { getByText } = render(<NodeView mode="existing" /> as any);
+    expect(getByText('Loading…')).toBeTruthy();
+  });
 });

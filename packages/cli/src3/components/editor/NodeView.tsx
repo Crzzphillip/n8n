@@ -638,7 +638,7 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
     },
     onDelete: async () => {
       if (!selectedNodeId) return;
-      const ok = await useModal().confirm('Delete selected node?');
+      const ok = await useModal().confirm(t('nodeView.buttons.deleteNodeConfirm'));
       if (!ok) return;
       canvasOperations.deleteNode(selectedNodeId, { trackHistory: true });
       setSelectedNodeId(undefined);
@@ -940,7 +940,7 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
         nodesIdsToTidyUp: Array.isArray(data?.nodesIdsToTidyUp) ? data.nodesIdsToTidyUp : [],
       });
       if (success) {
-        toast.showSuccess('Workflow imported successfully');
+        toast.showSuccess(t('nodeView.success.imported'));
         telemetry.track('User imported workflow');
       }
     } catch (error) {
@@ -1228,8 +1228,7 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
 
   const { t } = (require('../../src3/hooks/useI18n') as any);
   if (loading) return <div style={{ padding: 16 }}>{t('nodeView.loading')}</div>;
-
-  // Block access to new workflow route in read-only env
+  if (error) return <div style={{ padding: 16 }}>{t('nodeView.error.loadWorkflow')}</div>;
   if (isReadOnlyEnv && mode === 'new') return <div style={{ padding: 16 }}>{t('nodeView.readOnlyEnv')}</div>;
 
   return (

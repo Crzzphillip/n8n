@@ -2,6 +2,7 @@ import React from 'react';
 import { useRunWorkflow } from '../../../hooks/useRunWorkflow';
 import { useWorkflowStore } from '../../../stores/workflows';
 import { useExecutionsStore } from '../../../stores/executions';
+import { useI18n } from '../../../../src3/hooks/useI18n';
 
 interface CanvasRunWorkflowButtonProps {
 	waitingForWebhook?: boolean;
@@ -27,6 +28,7 @@ export default function CanvasRunWorkflowButton({
 	const { runEntireWorkflow } = useRunWorkflow();
 	const workflowStore = useWorkflowStore();
 	const executionsStore = useExecutionsStore();
+	const { t } = useI18n();
 
 	const handleExecute = async () => {
 		if (onExecute) {
@@ -47,10 +49,10 @@ export default function CanvasRunWorkflowButton({
 	};
 
 	const buttonText = waitingForWebhook 
-		? 'Waiting for webhook...' 
+		? t('nodeView.buttons.waitingForWebhook') 
 		: executing 
-		? 'Running...' 
-		: 'Run Workflow';
+		? t('nodeView.buttons.running') 
+		: t('nodeView.buttons.run');
 
 	return (
 		<div className="canvas-run-workflow-button">
@@ -61,7 +63,7 @@ export default function CanvasRunWorkflowButton({
 					disabled={disabled || executing}
 					className="trigger-node-selector"
 				>
-					<option value="">Select trigger node</option>
+					<option value="">{t('nodeView.labels.selectTrigger')}</option>
 					{triggerNodes.map((node) => (
 						<option key={node.id} value={node.name}>
 							{node.name}
