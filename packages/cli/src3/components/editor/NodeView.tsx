@@ -263,6 +263,7 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
               workflowHelpers.resetWorkspace();
               workflowHelpers.initializeWorkspace(getEasyAiWorkflowJson());
               telemetry.track('template.open', { template_id: templateId });
+              void externalHooks.run('template.open', { templateId, templateName: getEasyAiWorkflowJson().meta.name, workflow: getEasyAiWorkflowJson() });
               setTimeout(() => canvasEventBus.emit('fitView'));
               return;
             }
@@ -270,6 +271,7 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
               workflowHelpers.resetWorkspace();
               workflowHelpers.initializeWorkspace(getRagStarterWorkflowJson());
               telemetry.track('template.open', { template_id: templateId });
+              void externalHooks.run('template.open', { templateId, templateName: getRagStarterWorkflowJson().meta.name, workflow: getRagStarterWorkflowJson() });
               setTimeout(() => canvasEventBus.emit('fitView'));
               return;
             }
@@ -279,11 +281,13 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
             const data = await res.json();
             // Telemetry template.requested with previousSessionId if available
             telemetry.track('template.requested', { template_id: templateId, wf_template_repo_session_id: templatesStore.previousSessionId });
+            void externalHooks.run('template.requested', { templateId });
             workflowHelpers.resetWorkspace();
             workflowHelpers.initializeWorkspace({ workflow: data.workflow, name: data.name });
             // Reset executions state on import
             executionsStore.setState({ activeExecution: null, items: [] } as any);
             telemetry.track('template.open', { template_id: templateId });
+            void externalHooks.run('template.open', { templateId, templateName: data.name, workflow: data.workflow });
             setTimeout(() => canvasEventBus.emit('fitView'));
             try {
               nodeHelpers.updateNodesInputIssues();

@@ -70,6 +70,25 @@ export default function Canvas(props: {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rf, setNodes, props.onChange]);
 
+  // No explicit global keymap here; rely on ReactFlow + separate shortcuts. Emulate simple listeners for L/I/O keys.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const key = e.key.toLowerCase();
+      if (key === 'l' && !e.metaKey && !e.ctrlKey) {
+        canvasEventBus.emit('logs:open');
+      } else if (key === 'i' && !e.metaKey && !e.ctrlKey) {
+        canvasEventBus.emit('logs:input-open');
+      } else if (key === 'o' && !e.metaKey && !e.ctrlKey) {
+        canvasEventBus.emit('logs:output-open');
+      } else if (key === 'x' && e.altKey) {
+        // Extract sub-workflow on selected nodes would be handled in NodeView
+        // Emit a placeholder event or rely on NodeView's UI actions
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
+
   const displayNodes = useMemo(() => {
     return nodes.map((n) => {
       const status = nodeStatus[n.id] || 'idle';
