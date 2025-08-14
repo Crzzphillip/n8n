@@ -1207,12 +1207,12 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
     const offSelectionEnd = canvasEventBus.on('selection:end', (pos: any) => {
       try { uiStore.getState().setLastClickPosition([pos.x, pos.y]); } catch {}
     });
-    const offNodesAction = canvasEventBus.on('nodes:action', ({ ids, action }: any) => {
+    const offNodesAction = canvasEventBus.on('nodes:action', ({ ids, action, color }: any) => {
       if (action === 'update:sticky:color') {
         ids.forEach((id: string) => {
           const n = workflow.nodes.find((m) => m.id === id);
           if (!n) return;
-          const nextColor = (((n as any).parameters?.color || 0) + 1) % 4;
+          const nextColor = typeof color === 'number' ? color : ((((n as any).parameters?.color || 0) + 1) % 4);
           canvasOperations.setNodeParameters(id, { ...(n.parameters || {}), color: nextColor });
         });
       }
@@ -1309,7 +1309,7 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
         </div>
         {error && <p style={{ color: 'red' }}>{error}</p>}
         <hr style={{ margin: '16px 0' }} />
-        <h4>Browse nodes</h4>
+        <h4>{t('nodeView.titles.browseNodes') || 'Browse nodes'}</h4>
         <div style={{ maxHeight: 360, overflow: 'auto' }}>
           <NodeCreator />
         </div>

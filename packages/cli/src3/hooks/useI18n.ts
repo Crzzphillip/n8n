@@ -37,6 +37,7 @@ const resources = {
 				},
 				titles: {
 					workflow: 'Workflow',
+					browseNodes: 'Browse nodes',
 				},
 				labels: {
 					selectTrigger: 'Select trigger node',

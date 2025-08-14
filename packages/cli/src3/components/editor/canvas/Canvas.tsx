@@ -233,7 +233,12 @@ export default function Canvas(props: {
         {contextMenu && (
           <div style={{ position: 'fixed', left: contextMenu.x, top: contextMenu.y, background: '#fff', border: '1px solid #ccc', borderRadius: 6, padding: 8 }}>
             <button onClick={() => { canvasEventBus.emit('nodes:action', { ids: contextMenu.targetNodeId ? [contextMenu.targetNodeId] : nodes.filter(n => (n as any).data?.sticky).map(n => n.id), action: 'update:sticky:color' }); setContextMenu(null); }}>{t('nodeView.labels.stickyChangeColor')}</button>
-            <button onClick={() => setContextMenu(null)}>{t('nodeView.labels.close')}</button>
+            <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
+              {[0,1,2,3].map((c) => (
+                <button key={c} onClick={() => { canvasEventBus.emit('nodes:action', { ids: contextMenu.targetNodeId ? [contextMenu.targetNodeId] : nodes.filter(n => (n as any).data?.sticky).map(n => n.id), action: 'update:sticky:color', color: c }); setContextMenu(null); }} style={{ width: 16, height: 16, background: ['#f66','#6f6','#66f','#fc3'][c], border: '1px solid #999', borderRadius: 3 }} />
+              ))}
+            </div>
+            <button onClick={() => setContextMenu(null)} style={{ marginTop: 6 }}>{t('nodeView.labels.close')}</button>
           </div>
         )}
       </ReactFlowProvider>
