@@ -662,48 +662,34 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
     getBounds(viewportTransform, viewportDimensions)
   ), [viewportTransform, viewportDimensions]);
 
-  const triggerNodes = useMemo(() => {
-    return workflow.nodes.filter((node: any) => 
-      nodeHelpers.isTriggerNode(node.type || '') || 
-      node.type === START_NODE_TYPE ||
-      node.type?.includes('Trigger')
-    );
-  }, [workflow.nodes, nodeHelpers]);
-
+  const triggerNodes = useMemo(() => workflow.nodes.filter((n) => n.type === START_NODE_TYPE || n.type === CHAT_TRIGGER_NODE_TYPE || n.type === MANUAL_CHAT_TRIGGER_NODE_TYPE), [workflow.nodes]);
   const containsTriggerNodes = useMemo(() => triggerNodes.length > 0, [triggerNodes]);
   const allTriggerNodesDisabled = useMemo(() => {
-    const disabledTriggerNodes = triggerNodes.filter((node: any) => node.disabled);
-    return disabledTriggerNodes.length === triggerNodes.length;
+    const disabled = triggerNodes.filter((n: any) => n.disabled);
+    return disabled.length === triggerNodes.length;
   }, [triggerNodes]);
 
-  // Chat trigger gating
   const chatTriggerNode = useMemo(() => workflow.nodes.find((n: any) => n.type === CHAT_TRIGGER_NODE_TYPE), [workflow.nodes]);
   const containsChatTriggerNodes = useMemo(() => {
-    if (executionsStore.getState().activeExecution?.status === 'waiting') return false;
-    return workflow.nodes.some((n: any) => [MANUAL_CHAT_TRIGGER_NODE_TYPE, CHAT_TRIGGER_NODE_TYPE].includes(n.type) && n.disabled !== true);
-  }, [workflow.nodes, executionsStore]);
-  const isOnlyChatTriggerNodeActive = useMemo(() => {
-    return triggerNodes.every((node: any) => node.disabled || node.type === CHAT_TRIGGER_NODE_TYPE);
-  }, [triggerNodes]);
+    // simplistic: true if any chat/ manual chat trigger exists and not disabled
+    return !!workflow.nodes.find((n: any) => (n.type === MANUAL_CHAT_TRIGGER_NODE_TYPE || n.type === CHAT_TRIGGER_NODE_TYPE) && !n.disabled);
+  }, [workflow.nodes]);
+  const isOnlyChatTriggerNodeActive = useMemo(() => triggerNodes.every((n: any) => n.disabled || n.type === CHAT_TRIGGER_NODE_TYPE), [triggerNodes]);
   const chatTriggerNodePinnedData = useMemo(() => {
-    // Placeholder: in real impl, get from workflows store pin data
-    return chatTriggerNode ? {} : null;
+    if (!chatTriggerNode) return null;
+    // stub: fetch from workflow store pin-like structure if exists
+    const wf = useWorkflowStore.getState().current;
+    const pinByName = (name: string) => (wf as any)?.pinData?.[name];
+    return chatTriggerNode ? pinByName(chatTriggerNode.name) : null;
   }, [chatTriggerNode]);
 
-  const isWorkflowRunning = useMemo(() => {
-    return executionsStore.getState().activeExecution?.status === 'running';
-  }, [executionsStore]);
-
-  const isExecutionWaitingForWebhook = useMemo(() => {
-    return executionsStore.getState().activeExecution?.status === 'waiting';
-  }, [executionsStore]);
-
+  const isWorkflowRunning = useMemo(() => executionsStore.getState().activeExecution != null, [executionsStore]);
+  const isExecutionWaitingForWebhook = useMemo(() => false, []);
   const isExecutionDisabled = useMemo(() => {
     // Disable when only chat trigger active without pinned data
     if (containsChatTriggerNodes && isOnlyChatTriggerNodeActive && !chatTriggerNodePinnedData) return true;
     return !containsTriggerNodes || allTriggerNodesDisabled;
   }, [containsChatTriggerNodes, isOnlyChatTriggerNodeActive, chatTriggerNodePinnedData, containsTriggerNodes, allTriggerNodesDisabled]);
-
   const isRunWorkflowButtonVisible = useMemo(() => {
     return !isOnlyChatTriggerNodeActive || !!chatTriggerNodePinnedData;
   }, [isOnlyChatTriggerNodeActive, chatTriggerNodePinnedData]);
@@ -1353,15 +1339,13 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
         <div style={{ position: 'absolute', bottom: '16px', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '8px' }}>
                       <div onMouseEnter={() => nodeViewEventBus.emit('runWorkflowButton:mouseenter')} onMouseLeave={() => nodeViewEventBus.emit('runWorkflowButton:mouseleave')}>
               {isRunWorkflowButtonVisible && !isProductionExecutionPreview && (
-                <CanvasRunWorkflowButton
+                <CanvasRunWorkflowButton 
                   waitingForWebhook={isExecutionWaitingForWebhook}
                   disabled={isExecutionDisabled || isReadOnlyEnv}
                   executing={isWorkflowRunning}
-                  triggerNodes={triggerNodes}
-                  onExecute={onRunWorkflow}
-                  getNodeType={nodeTypesStore.getNodeType}
+                  triggerNodes={triggerNodes as any}
                   selectedTriggerNodeName={selectedTriggerNodeName}
-                  onSelectTriggerNode={setSelectedTriggerNodeName}
+                  onSelectTriggerNode={(name) => setSelectedTriggerNodeName(name)}
                 />
               )}
             </div>
