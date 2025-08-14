@@ -1,5 +1,7 @@
 import { create } from 'zustand';
 import { useUIStore } from './ui';
+import { useExternalHooks } from '../hooks/useExternalHooks';
+import { useTelemetry } from '../hooks/useTelemetry';
 import {
 	createCanvasConnectionHandleString,
 	parseCanvasConnectionHandleString,
@@ -47,6 +49,17 @@ export const useNodeCreatorStore = create<NodeCreatorStore>((set, get) => ({
 			openSource: source || '',
 			selectedView: nodeCreatorView || 'trigger',
 		});
+		try {
+			void useExternalHooks().run('nodeView.createNodeActiveChanged', {
+				source,
+				mode: nodeCreatorView || 'trigger',
+				createNodeActive,
+			});
+			useTelemetry().track('User opened node creator', {
+				source,
+				mode: nodeCreatorView || 'trigger',
+			});
+		} catch {}
 	},
 
 	setShowScrim: (isVisible: boolean) => {
@@ -68,6 +81,9 @@ export const useNodeCreatorStore = create<NodeCreatorStore>((set, get) => ({
 			openSource: source,
 			showScrim: true,
 		});
+		try {
+			useTelemetry().track('User opened node creator', { source, mode: 'trigger' });
+		} catch {}
 	},
 
 	openNodeCreatorForActions: (node: string, eventSource?: string) => {
@@ -76,6 +92,12 @@ export const useNodeCreatorStore = create<NodeCreatorStore>((set, get) => ({
 			selectedView: 'regular',
 			openSource: eventSource || '',
 		});
+		try {
+			useTelemetry().track('User opened node creator', {
+				source: eventSource || '',
+				mode: 'regular',
+			});
+		} catch {}
 	},
 
 	openSelectiveNodeCreator: ({ connectionType, node, creatorView, connectionIndex = 0 }) => {
@@ -101,5 +123,8 @@ export const useNodeCreatorStore = create<NodeCreatorStore>((set, get) => ({
 			openSource: eventSource,
 			showScrim: true,
 		});
+		try {
+			useTelemetry().track('User opened node creator', { source: eventSource, mode: 'regular' });
+		} catch {}
 	},
 }));
