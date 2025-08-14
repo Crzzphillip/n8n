@@ -14,6 +14,8 @@ export function useKeyboardShortcuts(
 		onRename?: () => void;
 		onTab?: () => void;
 		onShiftS?: () => void;
+		onRun?: () => void;
+		onExtract?: () => void;
 	},
 	enabled: boolean = true,
 ) {
@@ -38,6 +40,11 @@ export function useKeyboardShortcuts(
 				handlers.onRedo?.();
 				return;
 			}
+			if (mod && key === 'enter') {
+				e.preventDefault();
+				handlers.onRun?.();
+				return;
+			}
 			if (mod && key === 'c') {
 				e.preventDefault();
 				handlers.onCopy?.();
@@ -55,6 +62,11 @@ export function useKeyboardShortcuts(
 			if (mod && key === 't') {
 				e.preventDefault();
 				handlers.onTidy?.();
+				return;
+			}
+			if (e.altKey && !mod && key === 'x') {
+				e.preventDefault();
+				handlers.onExtract?.();
 				return;
 			}
 			if (mod && key === 'a') {

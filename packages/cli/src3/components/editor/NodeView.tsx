@@ -645,6 +645,7 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
         historyStore.getState().pushCommandToUndo(redoable as any);
       }
     },
+    onRun: () => onRunWorkflow(),
     onCopy: () => {
       const items = workflow.nodes.filter((n) => selectedNodeIds.has(n.id));
       setClipboard(JSON.parse(JSON.stringify(items)));
@@ -666,10 +667,8 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
       setSelectedNodeId(undefined);
       telemetry.track('User deleted node');
     },
-    onTidy: () => {
-      canvasOperations.tidyUp({ source: 'keyboard-shortcut' });
-      telemetry.track('User tidied up workflow');
-    },
+    onTidy: () => canvasOperations.tidyUp({ source: 'keyboard-shortcut' }),
+    onExtract: () => onExtractWorkflow(Array.from(selectedNodeIds)),
     onAlign: () => {},
     onRename: () => {
       if (!selectedNodeId) return;
