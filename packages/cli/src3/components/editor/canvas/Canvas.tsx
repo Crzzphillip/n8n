@@ -105,7 +105,9 @@ export default function Canvas(props: {
       const status = nodeStatus[n.id] || 'idle';
       const color = status === 'running' ? '#0af' : status === 'success' ? '#0a0' : status === 'error' ? '#f33' : status === 'waiting' ? '#fa0' : '#999';
       const recent = (logsByNode[n.id] || []).slice(-1)[0]?.message;
-      const isSticky = (n as any).data?.sticky === true;
+      const stickyType = 'n8n-nodes-base.stickyNote';
+      const isStickyNode = (n as any).type === stickyType;
+      const isSticky = (n as any).data?.sticky === true || isStickyNode;
       const label = isSticky ? (
         <div style={{ background: '#fffa9c', padding: 8, border: '1px solid #e0d76b', borderRadius: 6, maxWidth: 220 }}>
           {n.data?.label}
@@ -115,7 +117,7 @@ export default function Canvas(props: {
           <span>{n.data?.label} <span style={{ color, fontSize: 10, marginLeft: 6 }}>●</span></span>
         </Tooltip>
       );
-      return { ...n, data: { ...n.data, label } } as CanvasNode;
+      return { ...n, data: { ...n.data, label, sticky: isStickyNode } } as CanvasNode;
     });
   }, [nodes, nodeStatus, logsByNode]);
 

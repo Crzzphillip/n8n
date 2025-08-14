@@ -264,17 +264,19 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
             // Recognize easy AI / RAG shortcuts
             if (templateId === getEasyAiWorkflowJson().meta.templateId) {
               workflowHelpers.resetWorkspace();
-              workflowHelpers.initializeWorkspace(getEasyAiWorkflowJson());
+              const easy = getEasyAiWorkflowJson();
+              workflowHelpers.initializeWorkspace(easy);
               telemetry.track('template.open', { template_id: templateId });
-              void externalHooks.run('template.open', { templateId, templateName: getEasyAiWorkflowJson().meta.name, workflow: getEasyAiWorkflowJson() });
+              void externalHooks.run('template.open', { templateId, templateName: easy.name, workflow: easy });
               setTimeout(() => canvasEventBus.emit('fitView'));
               return;
             }
             if (templateId === getRagStarterWorkflowJson().meta.templateId) {
               workflowHelpers.resetWorkspace();
-              workflowHelpers.initializeWorkspace(getRagStarterWorkflowJson());
+              const rag = getRagStarterWorkflowJson();
+              workflowHelpers.initializeWorkspace(rag);
               telemetry.track('template.open', { template_id: templateId });
-              void externalHooks.run('template.open', { templateId, templateName: getRagStarterWorkflowJson().meta.name, workflow: getRagStarterWorkflowJson() });
+              void externalHooks.run('template.open', { templateId, templateName: rag.name, workflow: rag });
               setTimeout(() => canvasEventBus.emit('fitView'));
               return;
             }
@@ -1206,6 +1208,15 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
     const offLogsClose = canvasEventBus.on('logs:close', () => logsStore.getState().toggleOpen(false));
     const offLogsInputOpen = canvasEventBus.on('logs:input-open', () => logsStore.getState().toggleInputOpen());
     const offLogsOutputOpen = canvasEventBus.on('logs:output-open', () => logsStore.getState().toggleOutputOpen());
+    const offCopyNodes = canvasEventBus.on('copy:nodes', (ids: string[]) => { void onCopyNodes(ids); });
+    const offDeleteNodes = canvasEventBus.on('delete:nodes', (ids: string[]) => {
+      if (!checkIfEditingIsAllowed()) return;
+      ids.forEach((id) => canvasOperations.deleteNode(id, { trackHistory: true }));
+    });
+    const offDuplicateNodes = canvasEventBus.on('duplicate:nodes', (ids: string[]) => { void onDuplicateNodes(ids); });
+    const offPinNodes = canvasEventBus.on('update:nodes:pin', (ids: string[]) => { void onPinNodes(ids); });
+    const offRenameNode = canvasEventBus.on('update:node:name', (id: string) => { void onOpenRenameNodeModal(id); });
+    const offExtractWorkflow = canvasEventBus.on('extract-workflow', (ids: string[]) => { void onExtractWorkflow(ids); });
     const offSelectionEnd = canvasEventBus.on('selection:end', (pos: any) => {
       try { uiStore.getState().setLastClickPosition([pos.x, pos.y]); } catch {}
     });
@@ -1244,11 +1255,17 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
       offLogsClose?.();
       offLogsInputOpen?.();
       offLogsOutputOpen?.();
+      offCopyNodes?.();
+      offDeleteNodes?.();
+      offDuplicateNodes?.();
+      offPinNodes?.();
+      offRenameNode?.();
+      offExtractWorkflow?.();
       offSelectionEnd?.();
       offNodesAction?.();
       offSaved?.();
     };
-  }, [focusPanelStore, canvasOperations, nodeCreatorStore, runWorkflow, telemetry, logsStore, toast, uiStore, workflow.nodes]);
+  }, [focusPanelStore, canvasOperations, nodeCreatorStore, runWorkflow, telemetry, logsStore, toast, uiStore, workflow.nodes, onCopyNodes, onDuplicateNodes, onPinNodes, onOpenRenameNodeModal, onExtractWorkflow]);
 
   useEffect(() => {
     const execId = params.get('executionId');

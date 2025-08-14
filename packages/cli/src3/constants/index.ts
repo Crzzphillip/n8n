@@ -2,7 +2,7 @@
 export const CHAT_TRIGGER_NODE_TYPE = 'n8n-chat-trigger';
 export const MANUAL_CHAT_TRIGGER_NODE_TYPE = 'n8n-manual-chat-trigger';
 export const START_NODE_TYPE = 'n8n-start';
-export const STICKY_NODE_TYPE = 'n8n-sticky';
+export const STICKY_NODE_TYPE = 'n8n-nodes-base.stickyNote';
 export const EVALUATION_TRIGGER_NODE_TYPE = 'n8n-evaluation-trigger';
 export const EVALUATION_NODE_TYPE = 'n8n-evaluation';
 
