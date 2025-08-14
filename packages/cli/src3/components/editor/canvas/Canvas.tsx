@@ -21,6 +21,7 @@ import { useCanvasStore } from '../../../src3/stores/canvas';
 import { useLogsStore } from '../../../src3/stores/logs';
 import Tooltip from '../../ui/Tooltip';
 import { canvasEventBus } from '../../../src3/event-bus/canvas';
+import { useI18n } from '../../../src3/hooks/useI18n';
 
 export type CanvasNode = Node;
 export type CanvasEdge = Edge;
@@ -48,6 +49,7 @@ export default function Canvas(props: {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const connectStartRef = useRef<{ nodeId: string; handleId: string } | null>(null);
   const [contextMenu, setContextMenu] = React.useState<{ x: number; y: number; targetNodeId?: string } | null>(null);
+  const { t } = useI18n();
   const onContextMenuLocal = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     const target = (e.target as HTMLElement).closest('.react-flow__node');
@@ -230,8 +232,8 @@ export default function Canvas(props: {
         </ReactFlow>
         {contextMenu && (
           <div style={{ position: 'fixed', left: contextMenu.x, top: contextMenu.y, background: '#fff', border: '1px solid #ccc', borderRadius: 6, padding: 8 }}>
-            <button onClick={() => { canvasEventBus.emit('nodes:action', { ids: contextMenu.targetNodeId ? [contextMenu.targetNodeId] : nodes.filter(n => (n as any).data?.sticky).map(n => n.id), action: 'update:sticky:color' }); setContextMenu(null); }}>Change sticky color</button>
-            <button onClick={() => setContextMenu(null)}>Close</button>
+            <button onClick={() => { canvasEventBus.emit('nodes:action', { ids: contextMenu.targetNodeId ? [contextMenu.targetNodeId] : nodes.filter(n => (n as any).data?.sticky).map(n => n.id), action: 'update:sticky:color' }); setContextMenu(null); }}>{t('nodeView.labels.stickyChangeColor')}</button>
+            <button onClick={() => setContextMenu(null)}>{t('nodeView.labels.close')}</button>
           </div>
         )}
       </ReactFlowProvider>
