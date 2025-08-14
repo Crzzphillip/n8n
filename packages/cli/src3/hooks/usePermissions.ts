@@ -8,18 +8,38 @@ export function usePermissions() {
 	const projectsStore = useProjectsStore();
 	const workflowStore = useWorkflowStore();
 
-	const isCanvasReadOnly = useMemo(() => {
+	const permissions = useMemo(() => {
 		const branchReadOnly = sourceControlStore.getState().preferences.branchReadOnly;
-		if (branchReadOnly) return true;
 		const wf: any = workflowStore.getState().current;
 		const project: any = projectsStore.getState().currentProject;
-		const workflowScopes = wf?.scopes?.workflow;
-		const projectScopes = project?.scopes?.workflow;
-		const canUpdate = workflowScopes?.update ?? projectScopes?.update;
-		if (canUpdate === false) return true;
-		if (wf?.isArchived) return true;
-		return false;
+
+		let workflowPermissions: any = wf?.scopes?.workflow ?? {};
+		let projectPermissions: any = project?.scopes ?? {};
+		try {
+			// Attempt to use @n8n/permissions if available
+			// eslint-disable-next-line @typescript-eslint/no-var-requires
+			const perm = require('@n8n/permissions');
+			if (perm?.getResourcePermissions) {
+				workflowPermissions = perm.getResourcePermissions(wf?.scopes).workflow;
+				projectPermissions = perm.getResourcePermissions(project?.scopes);
+			}
+		} catch {}
+
+		const canUpdateWorkflow = workflowPermissions?.update ?? projectPermissions?.workflow?.update;
+		const isCanvasReadOnly = Boolean(
+			branchReadOnly || wf?.isArchived || canUpdateWorkflow === false,
+		);
+
+		return {
+			isCanvasReadOnly,
+			workflowPermissions,
+			projectPermissions,
+		};
 	}, [sourceControlStore, projectsStore, workflowStore]);
 
-	return { isCanvasReadOnly };
+	return permissions as {
+		isCanvasReadOnly: boolean;
+		workflowPermissions: any;
+		projectPermissions: any;
+	};
 }

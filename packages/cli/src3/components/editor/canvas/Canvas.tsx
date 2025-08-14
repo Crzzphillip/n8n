@@ -218,6 +218,7 @@ export default function Canvas(props: {
             <button onClick={() => canvasEventBus.emit('logs:close')}>Logs Close</button>
             <button onClick={() => canvasEventBus.emit('logs:input-open')}>Logs Input</button>
             <button onClick={() => canvasEventBus.emit('logs:output-open')}>Logs Output</button>
+            <button onClick={() => canvasEventBus.emit('nodes:action', { ids: (nodes.filter(n => (n as any).data?.sticky).map(n => n.id)), action: 'update:sticky:color' })}>Sticky Color</button>
           </Panel>
         </ReactFlow>
       </ReactFlowProvider>
