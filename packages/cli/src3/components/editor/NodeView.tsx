@@ -464,30 +464,36 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
   useEffect(() => {
     const onPostMessageReceived = async (messageEvent: MessageEvent) => {
       try {
-        if (!messageEvent || typeof messageEvent.data !== 'string' || !messageEvent.data.includes('"command"')) return;
+        if (!messageEvent || typeof messageEvent.data !== 'string' || !messageEvent.data?.includes?.('"command"')) return;
         const json = JSON.parse(messageEvent.data);
         if (json?.command === 'openWorkflow') {
           try {
             await importWorkflowExact(json);
           } catch (e) {
-            toast.showError(e, 'Failed to import workflow');
+            toast.showError(e, t('nodeView.error.importTemplate'));
+            if (window.top) window.top.postMessage(JSON.stringify({ command: 'error', message: t('nodeView.error.importTemplate') }), '*');
           }
         } else if (json?.command === 'openExecution') {
           try {
-            // Track preview flags
             setIsProductionExecutionPreview(json.executionMode !== 'manual' && json.executionMode !== 'evaluation');
             setIsExecutionPreview(true);
             await onOpenExecution(json.executionId, json.nodeId);
           } catch (e) {
-            toast.showError(e, 'Failed to open execution');
+            toast.showError(e, t('nodeView.error.loadWorkflow'));
+            if (window.top) window.top.postMessage(JSON.stringify({ command: 'error', message: t('nodeView.error.loadWorkflow') }), '*');
           }
         } else if (json?.command === 'setActiveExecution') {
           try {
             const exec = await executionsStore.getState().fetchExecution(json.executionId);
             executionsStore.getState().setActiveExecution(exec);
           } catch (e) {
-            toast.showError(e, 'Failed to set active execution');
+            toast.showError(e, t('nodeView.error.loadWorkflow'));
           }
+        } else if (json?.command === 'canOpenNDV') {
+          try {
+            // Allow parent to disable NDV opening
+            (useNDVStore.getState() as any).canOpenNDV = json.canOpenNDV ?? true;
+          } catch {}
         }
       } catch {}
     };
@@ -513,7 +519,7 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
       window.removeEventListener('message', onPostMessageReceived);
       offSaved?.();
     };
-  }, [executionsStore, onOpenExecution, toast]);
+  }, [executionsStore, onOpenExecution, toast, t]);
 
   // Import workflow exactly (replace current)
   const importWorkflowExact = useCallback(async (data: any) => {
@@ -844,10 +850,11 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
     try {
       await runWorkflow.runEntireWorkflow('main');
       telemetry.track('User ran workflow');
+      void externalHooks.run('nodeView.onRunNode', { source: 'canvas' });
     } catch (error) {
       console.error('Failed to run workflow:', error);
     }
-  }, [runWorkflow, telemetry, checkIfEditingIsAllowed]);
+  }, [runWorkflow, telemetry, checkIfEditingIsAllowed, externalHooks]);
 
   const onStopExecution = useCallback(async () => {
     setIsStoppingExecution(true);
@@ -1170,6 +1177,19 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
     const offLogsClose = canvasEventBus.on('logs:close', () => logsStore.getState().toggleOpen(false));
     const offLogsInputOpen = canvasEventBus.on('logs:input-open', () => logsStore.getState().toggleInputOpen());
     const offLogsOutputOpen = canvasEventBus.on('logs:output-open', () => logsStore.getState().toggleOutputOpen());
+    const offSelectionEnd = canvasEventBus.on('selection:end', (pos: any) => {
+      try { uiStore.getState().setLastClickPosition([pos.x, pos.y]); } catch {}
+    });
+    const offNodesAction = canvasEventBus.on('nodes:action', ({ ids, action }: any) => {
+      if (action === 'update:sticky:color') {
+        ids.forEach((id: string) => {
+          const n = workflow.nodes.find((m) => m.id === id);
+          if (!n) return;
+          const nextColor = (((n as any).parameters?.color || 0) + 1) % 4;
+          canvasOperations.setNodeParameters(id, { ...(n.parameters || {}), color: nextColor });
+        });
+      }
+    });
 
     // Show toast when saving from NDV context
     const onSavedFromNDV = () => {
@@ -1195,9 +1215,11 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
       offLogsClose?.();
       offLogsInputOpen?.();
       offLogsOutputOpen?.();
+      offSelectionEnd?.();
+      offNodesAction?.();
       offSaved?.();
     };
-  }, [focusPanelStore, canvasOperations, nodeCreatorStore, runWorkflow, telemetry, logsStore, toast]);
+  }, [focusPanelStore, canvasOperations, nodeCreatorStore, runWorkflow, telemetry, logsStore, toast, uiStore, workflow.nodes]);
 
   useEffect(() => {
     const execId = params.get('executionId');

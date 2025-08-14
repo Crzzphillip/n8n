@@ -125,7 +125,13 @@ export default function Canvas(props: {
     const hasRange = (params.nodes || []).filter((n) => n.selected).length > 1;
     canvasEventBus.emit('nodes:select', { ids: (params.nodes || []).filter((n) => n.selected).map((n) => String(n.id)) });
     props.onRangeSelectionChange?.(hasRange);
-  }, [props.onSelectNode, props.onSelectEdge, props.onRangeSelectionChange]);
+    if (!hasRange) {
+      try {
+        const center = rf.project({ x: (rf as any).toObject().x + 100, y: (rf as any).toObject().y + 100 });
+        canvasEventBus.emit('selection:end', center as any);
+      } catch {}
+    }
+  }, [props.onSelectNode, props.onSelectEdge, props.onRangeSelectionChange, rf]);
 
   const handleMove = useCallback((_evt: any, viewport: { x: number; y: number; zoom: number }) => {
     if (!props.onViewportChange) return;
