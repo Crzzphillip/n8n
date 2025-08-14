@@ -35,16 +35,25 @@ const resources = {
 					imported: 'Workflow imported successfully',
 					copied: 'Copied to clipboard',
 				},
-				buttons: {
-					run: 'Run Workflow',
-					running: 'Running…',
-					waitingForWebhook: 'Waiting for webhook…',
-					deleteNodeConfirm: 'Delete selected node?',
+				titles: {
+					workflow: 'Workflow',
 				},
 				labels: {
 					selectTrigger: 'Select trigger node',
 					stickyChangeColor: 'Change sticky color',
 					close: 'Close',
+					name: 'Name',
+					id: 'ID',
+				},
+				buttons: {
+					run: 'Run Workflow',
+					running: 'Running…',
+					waitingForWebhook: 'Waiting for webhook…',
+					deleteNodeConfirm: 'Delete selected node?',
+					saveNew: 'Save new',
+					update: 'Update',
+					executions: 'Executions',
+					focusPanel: 'Focus Panel',
 				},
 				toast: {
 					readOnly: {

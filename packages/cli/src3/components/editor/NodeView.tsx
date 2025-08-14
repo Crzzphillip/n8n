@@ -1287,9 +1287,9 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
   return (
     <div style={{ display: 'grid', gridTemplateColumns: '280px 1fr 320px', minHeight: 'calc(100vh - 32px)' }}>
       <aside style={{ borderRight: '1px solid #e5e5e5', padding: 16 }}>
-        <h3>Workflow</h3>
+        <h3>{t('nodeView.titles.workflow')}</h3>
         <label>
-          Name
+          {t('nodeView.labels.name')}
           <input
             value={workflow.name}
             onChange={(e) => setWorkflow({ ...workflow, name: e.target.value })}
@@ -1299,11 +1299,11 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
         <div style={{ marginTop: 12 }}>
           {mode === 'new' ? (
             <button onClick={saveNew} disabled={!canSave || saving}>
-              {saving ? 'Saving…' : 'Save new'}
+              {saving ? t('nodeView.buttons.running') : t('nodeView.buttons.saveNew')}
             </button>
           ) : (
             <button onClick={updateExisting} disabled={!canSave || saving}>
-              {saving ? 'Saving…' : 'Update'}
+              {saving ? t('nodeView.buttons.running') : t('nodeView.buttons.update')}
             </button>
           )}
         </div>
@@ -1315,7 +1315,7 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
         </div>
         <hr style={{ margin: '16px 0' }} />
         <button onClick={() => nodeCreatorStore.getState().openNodeCreatorForTriggerNodes(NODE_CREATOR_OPEN_SOURCES.ADD_EVALUATION_TRIGGER_BUTTON)}>
-          Open Node Creator
+          {t('nodeView.buttons.focusPanel')}
         </button>
       </aside>
       
@@ -1327,15 +1327,15 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
         <div className={styles.headerControls}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <h2 style={{ margin: 0 }}>{workflow.name}</h2>
-            {workflow.id && <small style={{ color: '#666' }}>id: {workflow.id}</small>}
+            {workflow.id && <small style={{ color: '#666' }}>{t('nodeView.labels.id')}: {workflow.id}</small>}
           </div>
           
           <div style={{ display: 'flex', gap: 8 }}>
             <Tooltip content={t('nodeView.buttons.running')}>
-              <button onClick={() => setShowExecutions((v) => !v)}>Executions</button>
+              <button onClick={() => setShowExecutions((v) => !v)}>{t('nodeView.buttons.executions')}</button>
             </Tooltip>
             <Tooltip content={t('nodeView.readOnly.showMessage.workflows.title')}>
-              <button onClick={onToggleFocusPanel}>Focus Panel</button>
+              <button onClick={onToggleFocusPanel}>{t('nodeView.buttons.focusPanel')}</button>
             </Tooltip>
             <Tooltip content={t('nodeView.buttons.run')}>
               <RunControls workflowId={workflow.id} />
