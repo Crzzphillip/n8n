@@ -365,4 +365,20 @@ describe('NodeView', () => {
     });
     expect((ndv.useNDVStore.getState() as any).canOpenNDV).toBe(false);
   });
+
+  it('read-only gating prevents opening node creator and creating sticky', async () => {
+    const params = (require('next/navigation') as any).useSearchParams();
+    (global as any).fetch = jest.fn(async () => ({ ok: true, json: async () => ({ id: 'wf', name: 'WF', nodes: [], connections: {}, scopes: { workflow: { update: false } } }) }));
+    const ps = require('../stores/sourceControl');
+    ps.useSourceControlStore.setState({ preferences: { branchReadOnly: true } });
+    render(<NodeView mode="existing" /> as any);
+    const creatorSpy = jest.spyOn(require('../stores/nodeCreator').useNodeCreatorStore.getState(), 'setNodeCreatorState');
+    const opsAddSpy = jest.spyOn(require('../hooks/useCanvasOperations').useCanvasOperations(), 'addNodes');
+    await act(async () => {
+      canvasEventBus.emit('create:node', { source: 'plus' });
+      canvasEventBus.emit('create:sticky');
+    });
+    expect(creatorSpy).not.toHaveBeenCalled();
+    expect(opsAddSpy).not.toHaveBeenCalled();
+  });
 });

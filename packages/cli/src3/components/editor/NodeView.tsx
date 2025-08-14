@@ -616,6 +616,7 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
 
   // Enhanced keyboard shortcuts with new functionality
   const onOpenRenameNodeModal = useCallback(async (id: string) => {
+    if (!checkIfEditingIsAllowed()) return;
     const node = workflow.nodes.find((n) => n.id === id);
     if (!node) return;
     // For now use window.prompt as placeholder; integrate useMessage prompt when available
@@ -947,10 +948,10 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
         setWorkflow(wf);
         documentTitle.setWorkflowTitle(wf.name);
       }
-      toast.showSuccess('Successfully pulled latest changes');
+      toast.showSuccess(t('nodeView.success.pull'));
       telemetry.track('User pulled source control changes');
     } catch (error) {
-      toast.showError(error, 'Failed to pull changes');
+      toast.showError(error, t('nodeView.error.loadWorkflow'));
     }
   }, [sourceControlStore, toast, telemetry, workflow.id, credentialsStore, tagsStore, environmentsStore, externalSecretsStore, documentTitle]);
 
@@ -996,6 +997,7 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
 
   const onRunWorkflowToSelectedNode = useCallback(async () => {
     if (!selectedNodeId) return;
+    if (!checkIfEditingIsAllowed()) return;
     try {
       await runWorkflow.runWorkflowToNode(selectedNodeId);
       telemetry.track('User clicked execute node button', { node_id: selectedNodeId });
@@ -1061,7 +1063,7 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
   const onCopyNodes = useCallback(async (ids: string[]) => {
     const nodesToCopy = workflow.nodes.filter((n) => ids.includes(n.id));
     setClipboard(JSON.parse(JSON.stringify(nodesToCopy)));
-    toast.showMessage({ title: 'Copied to clipboard', message: `${nodesToCopy.length} node(s)`, type: 'success' });
+    toast.showMessage({ title: t('nodeView.success.copied'), message: `${nodesToCopy.length} node(s)`, type: 'success' });
   }, [workflow.nodes, toast]);
 
   const onCutNodes = useCallback(async (ids: string[]) => {
