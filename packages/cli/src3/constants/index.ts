@@ -47,6 +47,10 @@ export const NODE_CREATOR_OPEN_SOURCES = {
 	ADD_EVALUATION_TRIGGER_BUTTON: 'add-evaluation-trigger-button',
 	ADD_EVALUATION_NODE_BUTTON: 'add-evaluation-node-button',
 	NOTICE_ERROR_MESSAGE: 'notice-error-message',
+	PLUS_ENDPOINT: 'plus_endpoint',
+	TAB: 'tab',
+	NODE_CONNECTION_ACTION: 'node_connection_action',
+	NODE_CONNECTION_DROP: 'node_connection_drop',
 } as const;
 
 // URL Validation

@@ -639,19 +639,16 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
       canvasOperations.tidyUp({ source: 'keyboard-shortcut' });
       telemetry.track('User tidied up workflow');
     },
-    onAlign: () => {
-      if (!selectedNodeId) return;
-      const base = workflow.nodes.find((n) => n.id === selectedNodeId)?.position || { x: 100, y: 100 };
-      setWorkflow((w) => ({
-        ...w,
-        nodes: w.nodes.map((n) => (n.id === selectedNodeId ? n : { ...n, position: { x: base.x, y: n.position?.y ?? 100 } })),
-      }));
-      historyStore.getState().pushCommandToUndo(new (require('../../src3/models/history').MoveNodeCommand)('', [0, 0], [0, 0], Date.now()));
-      telemetry.track('User aligned nodes');
-    },
+    onAlign: () => {},
     onRename: () => {
       if (!selectedNodeId) return;
       void onOpenRenameNodeModal(selectedNodeId);
+    },
+    onTab: () => {
+      nodeCreatorStore.getState().openNodeCreatorForTriggerNodes(NODE_CREATOR_OPEN_SOURCES.TAB);
+    },
+    onShiftS: () => {
+      void canvasOperations.addNodes([{ type: STICKY_NODE_TYPE }], { trackHistory: true });
     },
   }, keyBindingsEnabled);
 

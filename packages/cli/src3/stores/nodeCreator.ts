@@ -1,4 +1,9 @@
 import { create } from 'zustand';
+import { useUIStore } from './ui';
+import {
+	createCanvasConnectionHandleString,
+	parseCanvasConnectionHandleString,
+} from '../utils/canvasUtils';
 
 interface NodeCreatorState {
 	isCreateNodeActive: boolean;
@@ -74,15 +79,22 @@ export const useNodeCreatorStore = create<NodeCreatorStore>((set, get) => ({
 	},
 
 	openSelectiveNodeCreator: ({ connectionType, node, creatorView, connectionIndex = 0 }) => {
+		// In a fuller implementation, node and connectionType would be used to set filters
 		set({
 			isCreateNodeActive: true,
 			selectedView: creatorView || 'regular',
 			openSource: 'selective',
+			showScrim: true,
 		});
 	},
 
 	openNodeCreatorForConnectingNode: ({ connection, eventSource }) => {
-		// In a real implementation we would pass connection info to the modal
+		// Persist interaction metadata for downstream placement/connection
+		try {
+			const ui = useUIStore.getState();
+			ui.setLastInteractedWithNodeId(connection.source);
+			ui.setLastInteractedWithNodeHandle(connection.sourceHandle ?? null);
+		} catch {}
 		set({
 			isCreateNodeActive: true,
 			selectedView: 'regular',

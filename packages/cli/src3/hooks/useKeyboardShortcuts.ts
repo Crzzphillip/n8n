@@ -11,6 +11,9 @@ export function useKeyboardShortcuts(
 		onAlign?: () => void;
 		onCopy?: () => void;
 		onPaste?: () => void;
+		onRename?: () => void;
+		onTab?: () => void;
+		onShiftS?: () => void;
 	},
 	enabled: boolean = true,
 ) {
@@ -57,6 +60,22 @@ export function useKeyboardShortcuts(
 			if (mod && key === 'a') {
 				e.preventDefault();
 				handlers.onAlign?.();
+				return;
+			}
+			// Additional mappings
+			if (key === 'f2') {
+				e.preventDefault();
+				handlers.onRename?.();
+				return;
+			}
+			if (e.shiftKey && !mod && key === 's') {
+				e.preventDefault();
+				handlers.onShiftS?.();
+				return;
+			}
+			if (!mod && key === 'tab') {
+				e.preventDefault();
+				handlers.onTab?.();
 				return;
 			}
 		};

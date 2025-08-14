@@ -10,6 +10,7 @@ import { useNodeCreatorStore } from '../stores/nodeCreator';
 import { fireEvent } from '@testing-library/react';
 import { useLogsStore } from '../stores/logs';
 import { useFoldersStore } from '../stores/folders';
+import { useCanvasOperations } from '../hooks/useCanvasOperations';
 
 jest.mock('next/navigation', () => {
   const params = new URLSearchParams();
@@ -210,5 +211,38 @@ describe('NodeView', () => {
     const runNode = getByTestId('run-node');
     await act(async () => { fireEvent.click(runNode); });
     expect(runNode).toBeTruthy();
+  });
+
+  it('plus endpoint opens node creator', async () => {
+    (global as any).fetch = jest.fn(async () => ({ ok: true, json: async () => ({ id: 'wf', name: 'WF', nodes: [], connections: {} }) }));
+    render(<NodeView mode="new" /> as any);
+    const openStateBefore = useNodeCreatorStore.getState().isCreateNodeActive;
+    act(() => {
+      canvasEventBus.emit('create:node', { source: 'plus' } as any);
+    });
+    const openStateAfter = useNodeCreatorStore.getState().isCreateNodeActive;
+    expect(openStateBefore).toBeFalsy();
+    expect(openStateAfter).toBeTruthy();
+  });
+
+  it('connection action opens selective creator', async () => {
+    (global as any).fetch = jest.fn(async () => ({ ok: true, json: async () => ({ id: 'wf', name: 'WF', nodes: [], connections: {} }) }));
+    render(<NodeView mode="new" /> as any);
+    const spy = jest.spyOn(useNodeCreatorStore.getState(), 'openNodeCreatorForConnectingNode');
+    act(() => {
+      canvasEventBus.emit('click:connection:add', { source: 'n1' } as any);
+    });
+    expect(spy).toHaveBeenCalled();
+  });
+
+  it('create sticky via canvas event', async () => {
+    (global as any).fetch = jest.fn(async () => ({ ok: true, json: async () => ({ id: 'wf', name: 'WF', nodes: [], connections: {} }) }));
+    render(<NodeView mode="new" /> as any);
+    const ops = useCanvasOperations();
+    const addSpy = jest.spyOn(ops, 'addNodes');
+    await act(async () => {
+      canvasEventBus.emit('create:sticky');
+    });
+    expect(addSpy).toHaveBeenCalled();
   });
 });
