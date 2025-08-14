@@ -37,6 +37,11 @@ interface NodeCreatorStore extends NodeCreatorState {
 	}) => void;
 }
 
+let nodePanelSessionId = '';
+function resetNodesPanelSession() {
+	nodePanelSessionId = `nodes_panel_session_${Date.now()}`;
+}
+
 export const useNodeCreatorStore = create<NodeCreatorStore>((set, get) => ({
 	isCreateNodeActive: false,
 	openSource: '',
@@ -55,9 +60,11 @@ export const useNodeCreatorStore = create<NodeCreatorStore>((set, get) => ({
 				mode: nodeCreatorView || 'trigger',
 				createNodeActive,
 			});
+			if (createNodeActive) resetNodesPanelSession();
 			useTelemetry().track('User opened node creator', {
 				source,
 				mode: nodeCreatorView || 'trigger',
+				nodes_panel_session_id: nodePanelSessionId,
 			});
 		} catch {}
 	},
@@ -82,7 +89,12 @@ export const useNodeCreatorStore = create<NodeCreatorStore>((set, get) => ({
 			showScrim: true,
 		});
 		try {
-			useTelemetry().track('User opened node creator', { source, mode: 'trigger' });
+			resetNodesPanelSession();
+			useTelemetry().track('User opened node creator', {
+				source,
+				mode: 'trigger',
+				nodes_panel_session_id: nodePanelSessionId,
+			});
 		} catch {}
 	},
 
@@ -93,9 +105,11 @@ export const useNodeCreatorStore = create<NodeCreatorStore>((set, get) => ({
 			openSource: eventSource || '',
 		});
 		try {
+			resetNodesPanelSession();
 			useTelemetry().track('User opened node creator', {
 				source: eventSource || '',
 				mode: 'regular',
+				nodes_panel_session_id: nodePanelSessionId,
 			});
 		} catch {}
 	},
@@ -124,7 +138,12 @@ export const useNodeCreatorStore = create<NodeCreatorStore>((set, get) => ({
 			showScrim: true,
 		});
 		try {
-			useTelemetry().track('User opened node creator', { source: eventSource, mode: 'regular' });
+			resetNodesPanelSession();
+			useTelemetry().track('User opened node creator', {
+				source: eventSource,
+				mode: 'regular',
+				nodes_panel_session_id: nodePanelSessionId,
+			});
 		} catch {}
 	},
 }));
