@@ -266,4 +266,22 @@ describe('NodeView', () => {
     // No direct DOM run button rendered with CanvasMock; we assert computed via visibility is false
     // This is a soft check by invoking internal compute would require ref; here we ensure no crash
   });
+
+  it('importWorkflow applies viewport, selection, and tidyUp flags', async () => {
+    const params = (require('next/navigation') as any).useSearchParams();
+    params.delete('templateId');
+    (global as any).fetch = jest.fn(async () => ({ ok: true, json: async () => ({ id: 'wf', name: 'WF', nodes: [], connections: {} }) }));
+    render(<NodeView mode="new" /> as any);
+    const emitSpy = jest.spyOn(canvasEventBus, 'emit');
+    // Simulate paste handler directly by calling onImportWorkflowData via menu is harder; instead trigger with workflowHelpers
+    const helpers = require('../hooks/useWorkflowHelpers');
+    const { useWorkflowHelpers } = helpers;
+    const wh = useWorkflowHelpers();
+    const data = { name: 'Imported', nodes: [{ id: 'a' }, { id: 'b' }], connections: {} };
+    await act(async () => {
+      await wh.importWorkflow(data, { viewport: { minX: 0, maxX: 100, minY: 0, maxY: 100 }, selectNodes: ['a', 'b'], tidyUp: true, nodesIdsToTidyUp: ['a', 'b'] });
+    });
+    expect(emitSpy).toHaveBeenCalledWith('nodes:select', { ids: ['a', 'b'] });
+    expect(emitSpy).toHaveBeenCalledWith('tidyUp', expect.anything());
+  });
 });

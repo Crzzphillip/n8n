@@ -87,10 +87,55 @@ export function useWorkflowHelpers() {
 	}, [workflowStore]);
 
 	const importWorkflow = useCallback(
-		async (workflowData: any) => {
+		async (
+			workflowData: any,
+			options?: {
+				viewport?: { minX: number; maxX: number; minY: number; maxY: number };
+				regenerateIds?: boolean;
+				tidyUp?: boolean;
+				nodesIdsToTidyUp?: string[];
+				selectNodes?: string[];
+			},
+		) => {
 			try {
-				workflowStore.getState().setWorkflow(workflowData);
+				let wf = { ...workflowData };
+				if (options?.regenerateIds) {
+					wf = {
+						...wf,
+						nodes: (wf.nodes || []).map((n: any) => ({
+							...n,
+							id: crypto.randomUUID ? crypto.randomUUID() : `${n.id}-${Date.now()}`,
+						})),
+					};
+				}
+				if (options?.viewport && Array.isArray(wf.nodes)) {
+					const { minX, minY } = options.viewport;
+					wf = {
+						...wf,
+						nodes: (wf.nodes || []).map((n: any, idx: number) => ({
+							...n,
+							position: n.position || {
+								x: minX + 100 + (idx % 5) * 40,
+								y: minY + 100 + (idx % 5) * 40,
+							},
+						})),
+					};
+				}
+				workflowStore.getState().setWorkflow(wf);
 				workflowStore.getState().setDirty(true);
+				// Node selection after import
+				if (options?.selectNodes && options.selectNodes.length > 0) {
+					setTimeout(() => canvasEventBus.emit('nodes:select', { ids: options.selectNodes! }));
+				}
+				// Optional tidy-up
+				if (options?.tidyUp) {
+					setTimeout(() =>
+						canvasEventBus.emit('tidyUp', {
+							source: 'import-workflow-data',
+							nodeIdsFilter: options.nodesIdsToTidyUp || [],
+						} as any),
+					);
+				}
 				return true;
 			} catch (error) {
 				console.error('Failed to import workflow:', error);

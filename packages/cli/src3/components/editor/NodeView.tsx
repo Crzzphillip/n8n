@@ -923,7 +923,12 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
 
   const onImportWorkflowData = useCallback(async (data: any) => {
     try {
-      const success = await workflowHelpers.importWorkflow(data);
+      const success = await workflowHelpers.importWorkflow(data, {
+        viewport: getBounds(viewportTransform, viewportDimensions),
+        selectNodes: Array.isArray(data?.nodes) ? data.nodes.map((n: any) => n.id).filter(Boolean) : [],
+        tidyUp: !!data?.tidyUp,
+        nodesIdsToTidyUp: Array.isArray(data?.nodesIdsToTidyUp) ? data.nodesIdsToTidyUp : [],
+      });
       if (success) {
         toast.showSuccess('Workflow imported successfully');
         telemetry.track('User imported workflow');
@@ -931,7 +936,7 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
     } catch (error) {
       toast.showError(error, 'Failed to import workflow');
     }
-  }, [workflowHelpers, toast, telemetry]);
+  }, [workflowHelpers, toast, telemetry, viewportTransform, viewportDimensions]);
 
   const onImportWorkflowUrl = useCallback(async (url: string) => {
     if (!VALID_WORKFLOW_IMPORT_URL_REGEX.test(url)) {
@@ -942,11 +947,14 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
     try {
       const response = await fetch(url);
       const data = await response.json();
-      await onImportWorkflowData(data);
+      await workflowHelpers.importWorkflow(data, {
+        viewport: getBounds(viewportTransform, viewportDimensions),
+        selectNodes: Array.isArray(data?.nodes) ? data.nodes.map((n: any) => n.id).filter(Boolean) : [],
+      });
     } catch (error) {
       toast.showError(error, 'Failed to import workflow from URL');
     }
-  }, [onImportWorkflowData, toast]);
+  }, [toast, workflowHelpers, viewportTransform, viewportDimensions]);
 
   const onRunWorkflowToSelectedNode = useCallback(async () => {
     if (!selectedNodeId) return;
