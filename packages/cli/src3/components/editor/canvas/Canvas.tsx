@@ -40,6 +40,7 @@ export default function Canvas(props: {
   onCreateConnectionCancelled?: (start: { nodeId: string; handleId: string }, position: { x: number; y: number }, event?: MouseEvent | TouchEvent) => void;
   onNodeDoubleClick?: (nodeId: string, event: MouseEvent) => void;
   onRangeSelectionChange?: (active: boolean) => void;
+  readOnly?: boolean;
 }) {
   const [nodes, setNodes, onNodesChange] = useNodesState(props.nodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(props.edges);
@@ -52,10 +53,11 @@ export default function Canvas(props: {
   const { t } = useI18n();
   const onContextMenuLocal = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
+    if (props.readOnly) return;
     const target = (e.target as HTMLElement).closest('.react-flow__node');
     const nodeId = (target as any)?.getAttribute?.('data-id') || undefined;
     setContextMenu({ x: e.clientX, y: e.clientY, targetNodeId: nodeId });
-  }, []);
+  }, [props.readOnly]);
 
   useEffect(() => {
     if (props.fitViewOptions) rf.fitView(props.fitViewOptions);
@@ -195,7 +197,7 @@ export default function Canvas(props: {
   }, [props, rf]);
 
   return (
-    <div ref={containerRef} style={{ width: '100%', height: '100%' }} onMouseLeave={syncUp} onBlur={syncUp} onContextMenu={onContextMenuLocal}>
+    <div ref={containerRef} style={{ width: '100%', height: '100%', background: props.readOnly ? 'repeating-linear-gradient(45deg,#fafafa,#fafafa 10px,#f0f0f0 10px,#f0f0f0 20px)' : undefined }} onMouseLeave={syncUp} onBlur={syncUp} onContextMenu={onContextMenuLocal}>
       <ReactFlowProvider>
         <ReactFlow
           nodes={displayNodes}

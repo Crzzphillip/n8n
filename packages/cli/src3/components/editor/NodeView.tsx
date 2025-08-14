@@ -1372,18 +1372,15 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
             nodes={canvasNodes} 
             edges={canvasEdges} 
             onChange={onCanvasChange} 
-            onSelectNode={setSelectedNodeId}
-            onSelectEdge={setSelectedEdge}
+            onSelectNode={(id) => setSelectedNodeId(id)}
+            onSelectEdge={(edge) => setSelectedEdge(edge)}
             onViewportChange={onViewportChange}
-            onPaneClick={(pos) => {
-              uiStore.getState().setLastClickPosition([pos.x, pos.y]);
-              setSelectedNodeId(undefined);
-              setSelectedEdge(undefined);
-            }}
+            onPaneClick={(position) => uiStore.getState().setLastClickPosition([position.x, position.y])}
             onCreateConnection={onCreateConnection}
-            onCreateConnectionCancelled={onCreateConnectionCancelled}
-            onRangeSelectionChange={onRangeSelectionChange}
+            onCreateConnectionCancelled={(start, position, event) => onCreateConnectionCancelled(start, position)}
             onNodeDoubleClick={onNodeDoubleClick}
+            onRangeSelectionChange={onRangeSelectionChange}
+            readOnly={isReadOnlyEnv || isProductionExecutionPreview}
           />
         </div>
         
