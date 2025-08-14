@@ -1324,20 +1324,20 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
           <TopBar />
         </div>
         
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px' }}>
+        <div className={styles.headerControls}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <h2 style={{ margin: 0 }}>{workflow.name}</h2>
             {workflow.id && <small style={{ color: '#666' }}>id: {workflow.id}</small>}
           </div>
           
           <div style={{ display: 'flex', gap: 8 }}>
-            <Tooltip content="Toggle executions tab">
+            <Tooltip content={t('nodeView.buttons.running')}>
               <button onClick={() => setShowExecutions((v) => !v)}>Executions</button>
             </Tooltip>
-            <Tooltip content="Toggle focus panel">
+            <Tooltip content={t('nodeView.readOnly.showMessage.workflows.title')}>
               <button onClick={onToggleFocusPanel}>Focus Panel</button>
             </Tooltip>
-            <Tooltip content="Run or stop this workflow">
+            <Tooltip content={t('nodeView.buttons.run')}>
               <RunControls workflowId={workflow.id} />
             </Tooltip>
           </div>
