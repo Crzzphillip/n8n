@@ -310,6 +310,11 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
       }
     }
 
+    // Detect production execution preview from query (isProductionExecutionPreview=true|false)
+    const previewFlag = params.get('isProductionExecutionPreview');
+    if (previewFlag === 'true') setIsProductionExecutionPreview(true);
+    else if (previewFlag === 'false') setIsProductionExecutionPreview(false);
+
     // Handle route-driven actions (e.g., add evaluation trigger, run evaluation)
     const action = params.get('action');
     if (action === 'addEvaluationTrigger') {
@@ -753,22 +758,27 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
 
   const onAddNodesAndConnections = useCallback(async (payload: AddedNodesAndConnections, position?: XYPosition) => {
     if (!checkIfEditingIsAllowed()) return;
-    // Add nodes
-    const nodesToAdd = payload.nodes.map((n) => ({ type: n.type, position: n.position ?? position, parameters: n.parameters }));
-    const added = await canvasOperations.addNodes(nodesToAdd as any, { dragAndDrop: !!position, position, trackHistory: true });
-    // Map connections using newly added nodes order: connect by index
-    const offsetIndex = workflow.nodes.length; // prior to addition
-    if (payload.connections?.length) {
-      const connections = payload.connections.map((c) => {
-        const from = workflow.nodes[offsetIndex + c.from.nodeIndex] || added[c.from.nodeIndex];
-        const to = workflow.nodes[offsetIndex + c.to.nodeIndex] || added[c.to.nodeIndex];
-        return { source: from?.id || '', target: to?.id || '' };
-      }).filter((c) => c.source && c.target);
-      if (connections.length) {
-        await canvasOperations.addConnections(connections as any, { trackHistory: true });
+    historyStore.getState().startRecordingUndo();
+    try {
+      // Add nodes
+      const nodesToAdd = payload.nodes.map((n) => ({ type: n.type, position: n.position ?? position, parameters: n.parameters }));
+      const added = await canvasOperations.addNodes(nodesToAdd as any, { dragAndDrop: !!position, position, trackHistory: true });
+      // Map connections using newly added nodes order: connect by index
+      const offsetIndex = workflow.nodes.length; // prior to addition
+      if (payload.connections?.length) {
+        const connections = payload.connections.map((c) => {
+          const from = workflow.nodes[offsetIndex + c.from.nodeIndex] || added[c.from.nodeIndex];
+          const to = workflow.nodes[offsetIndex + c.to.nodeIndex] || added[c.to.nodeIndex];
+          return { source: from?.id || '', target: to?.id || '' };
+        }).filter((c) => c.source && c.target);
+        if (connections.length) {
+          await canvasOperations.addConnections(connections as any, { trackHistory: true });
+        }
       }
+    } finally {
+      historyStore.getState().stopRecordingUndo();
     }
-  }, [canvasOperations, workflow.nodes, checkIfEditingIsAllowed]);
+  }, [canvasOperations, workflow.nodes, checkIfEditingIsAllowed, historyStore]);
 
   const canvasNodes: CanvasNode[] = useMemo(
     () =>
@@ -1018,17 +1028,26 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
   const onCutNodes = useCallback(async (ids: string[]) => {
     if (!checkIfEditingIsAllowed()) return;
     await onCopyNodes(ids);
-    ids.forEach((id) => canvasOperations.deleteNode(id, { trackHistory: true }));
-  }, [onCopyNodes, canvasOperations, checkIfEditingIsAllowed]);
+    historyStore.getState().startRecordingUndo();
+    try {
+      ids.forEach((id) => canvasOperations.deleteNode(id, { trackHistory: true }));
+    } finally {
+      historyStore.getState().stopRecordingUndo();
+    }
+  }, [onCopyNodes, canvasOperations, checkIfEditingIsAllowed, historyStore]);
 
   const onDuplicateNodes = useCallback(async (ids: string[]) => {
     if (!checkIfEditingIsAllowed()) return;
     const offset = 30;
     const toDuplicate = workflow.nodes.filter((n) => ids.includes(n.id));
-    const duplicated = toDuplicate.map((n) => ({ ...n, id: uuid(), position: { x: (n.position?.x || 100) + offset, y: (n.position?.y || 100) + offset } }));
-    setWorkflow((w) => ({ ...w, nodes: [...w.nodes, ...duplicated] }));
-    if (duplicated[0]) historyStore.getState().pushCommandToUndo(new (require('../../src3/models/history').AddNodeCommand)(duplicated[0], Date.now()));
-  }, [workflow.nodes, checkIfEditingIsAllowed, historyStore]);
+    const nodesToAdd = toDuplicate.map((n) => ({ type: n.type, position: { x: (n.position?.x || 100) + offset, y: (n.position?.y || 100) + offset }, parameters: n.parameters }));
+    historyStore.getState().startRecordingUndo();
+    try {
+      await canvasOperations.addNodes(nodesToAdd as any, { trackHistory: true });
+    } finally {
+      historyStore.getState().stopRecordingUndo();
+    }
+  }, [workflow.nodes, checkIfEditingIsAllowed, historyStore, canvasOperations]);
 
   const onPinNodes = useCallback((ids: string[]) => {
     // Placeholder: toggling a custom flag
@@ -1140,6 +1159,17 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
     const offLogsClose = canvasEventBus.on('logs:close', () => logsStore.getState().toggleOpen(false));
     const offLogsInputOpen = canvasEventBus.on('logs:input-open', () => logsStore.getState().toggleInputOpen());
     const offLogsOutputOpen = canvasEventBus.on('logs:output-open', () => logsStore.getState().toggleOutputOpen());
+
+    // Show toast when saving from NDV context
+    const onSavedFromNDV = () => {
+      if (useNDVStore.getState().activeNodeName) {
+        const { t } = require('../../src3/hooks/useI18n');
+        const i18n = t as (k: string, params?: any) => string;
+        toast.showSuccess(i18n('nodeView.success.savedFromNDV'));
+      }
+    };
+    const offSaved = canvasEventBus.on('saved:workflow', onSavedFromNDV);
+
     return () => {
       offFitView?.();
       offToggleFocus?.();
@@ -1154,8 +1184,9 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
       offLogsClose?.();
       offLogsInputOpen?.();
       offLogsOutputOpen?.();
+      offSaved?.();
     };
-  }, [focusPanelStore, canvasOperations, nodeCreatorStore, runWorkflow, telemetry, logsStore]);
+  }, [focusPanelStore, canvasOperations, nodeCreatorStore, runWorkflow, telemetry, logsStore, toast]);
 
   useEffect(() => {
     const execId = params.get('executionId');
@@ -1400,7 +1431,7 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
               if (node) setSelectedNodeId(node.id);
             }}
             onSaveKeyboardShortcut={workflowSaving.saveCurrentWorkflow}
-            readOnly={isReadOnlyEnv}
+            readOnly={isReadOnlyEnv || isProductionExecutionPreview}
             isProductionExecutionPreview={isProductionExecutionPreview}
           />
         ) : (
