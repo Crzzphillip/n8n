@@ -6,12 +6,14 @@ import {
 	createCanvasConnectionHandleString,
 	parseCanvasConnectionHandleString,
 } from '../utils/canvasUtils';
+import { AI_UNCATEGORIZED_CATEGORY } from '../constants';
 
 interface NodeCreatorState {
 	isCreateNodeActive: boolean;
 	openSource: string;
 	selectedView: string;
 	showScrim: boolean;
+	connectionType?: string;
 }
 
 interface NodeCreatorStore extends NodeCreatorState {
@@ -116,12 +118,22 @@ export const useNodeCreatorStore = create<NodeCreatorStore>((set, get) => ({
 
 	openSelectiveNodeCreator: ({ connectionType, node, creatorView, connectionIndex = 0 }) => {
 		// In a fuller implementation, node and connectionType would be used to set filters
+		const isScoped = connectionType && connectionType !== 'main';
 		set({
 			isCreateNodeActive: true,
-			selectedView: creatorView || 'regular',
+			selectedView: isScoped ? AI_UNCATEGORIZED_CATEGORY : creatorView || 'regular',
 			openSource: 'selective',
 			showScrim: true,
+			connectionType,
 		});
+		try {
+			resetNodesPanelSession();
+			useTelemetry().track('User opened node creator', {
+				source: 'selective',
+				mode: isScoped ? AI_UNCATEGORIZED_CATEGORY : creatorView || 'regular',
+				nodes_panel_session_id: nodePanelSessionId,
+			});
+		} catch {}
 	},
 
 	openNodeCreatorForConnectingNode: ({ connection, eventSource }) => {
@@ -131,17 +143,20 @@ export const useNodeCreatorStore = create<NodeCreatorStore>((set, get) => ({
 			ui.setLastInteractedWithNodeId(connection.source);
 			ui.setLastInteractedWithNodeHandle(connection.sourceHandle ?? null);
 		} catch {}
+		const { type } = parseCanvasConnectionHandleString(connection.sourceHandle);
+		const isScoped = type && type !== 'main';
 		set({
 			isCreateNodeActive: true,
-			selectedView: 'regular',
+			selectedView: isScoped ? AI_UNCATEGORIZED_CATEGORY : 'regular',
 			openSource: eventSource,
 			showScrim: true,
+			connectionType: type,
 		});
 		try {
 			resetNodesPanelSession();
 			useTelemetry().track('User opened node creator', {
 				source: eventSource,
-				mode: 'regular',
+				mode: isScoped ? AI_UNCATEGORIZED_CATEGORY : 'regular',
 				nodes_panel_session_id: nodePanelSessionId,
 			});
 		} catch {}

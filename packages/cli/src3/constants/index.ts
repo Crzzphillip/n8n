@@ -30,6 +30,7 @@ export const NDV_UI_OVERHAUL_EXPERIMENT = {
 export const FROM_AI_PARAMETERS_MODAL_KEY = 'from-ai-parameters';
 export const WORKFLOW_SETTINGS_MODAL_KEY = 'workflow-settings';
 export const MODAL_CONFIRM = 'confirm';
+export const NPS_SURVEY_MODAL_KEY = 'npsSurvey';
 
 // Header Tabs
 export const MAIN_HEADER_TABS = {
@@ -52,6 +53,8 @@ export const NODE_CREATOR_OPEN_SOURCES = {
 	NODE_CONNECTION_ACTION: 'node_connection_action',
 	NODE_CONNECTION_DROP: 'node_connection_drop',
 } as const;
+
+export const AI_UNCATEGORIZED_CATEGORY = 'ai-uncategorized';
 
 // URL Validation
 export const VALID_WORKFLOW_IMPORT_URL_REGEX = /^https?:\/\/.+/;
