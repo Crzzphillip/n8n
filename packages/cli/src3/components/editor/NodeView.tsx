@@ -335,7 +335,7 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
     } else if (action === 'executeEvaluation') {
       const evalTrigger = workflow.nodes.find((n) => n.type === EVALUATION_TRIGGER_NODE_TYPE);
       if (evalTrigger) {
-        void runWorkflow.runEntireWorkflow('node');
+        void runWorkflow.runWorkflowToNode(evalTrigger.id);
       }
     }
   }, [mode, workflowId, documentTitle, toast, params, nodeCreatorStore, runWorkflow, workflow.nodes, externalHooks]);
@@ -913,17 +913,12 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
       const data = await executionDebugging.debugExecution(executionId);
       if (data?.workflowData) {
         workflowHelpers.openWorkflow(data.workflowData);
-        try {
-          nodeHelpers.updateNodesInputIssues();
-          nodeHelpers.updateNodesCredentialsIssues();
-          nodeHelpers.updateNodesParameterIssues();
-        } catch {}
       }
       if (nodeId) {
         canvasOperations.setNodeActive(nodeId);
       }
       telemetry.track('User opened execution', { executionId, nodeId });
-      void externalHooks.run('execution.open', { executionId });
+      void externalHooks.run('execution.open', { executionId, mode: data?.mode, finished: data?.finished });
       setTimeout(() => canvasEventBus.emit('fitView'));
     } catch (error) {
       toast.showError(error, 'Failed to open execution');

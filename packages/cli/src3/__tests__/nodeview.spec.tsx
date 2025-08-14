@@ -336,4 +336,33 @@ describe('NodeView', () => {
     const { getByText } = render(<NodeView mode="existing" /> as any);
     expect(getByText('Loading…')).toBeTruthy();
   });
+
+  it('handles postMessage openWorkflow and fitView', async () => {
+    (global as any).fetch = jest.fn(async () => ({ ok: true, json: async () => ({ id: 'wf', name: 'WF', nodes: [], connections: {} }) }));
+    render(<NodeView mode="new" /> as any);
+    const fitSpy = jest.spyOn(canvasEventBus, 'emit');
+    await act(async () => {
+      window.dispatchEvent(new MessageEvent('message', { data: JSON.stringify({ command: 'openWorkflow', workflow: { id: 'wf', name: 'WF', nodes: [], connections: {} } }) } as any));
+    });
+    expect(fitSpy).toHaveBeenCalledWith('fitView');
+  });
+
+  it('handles postMessage openExecution and setActiveExecution', async () => {
+    const execStore = require('../stores/executions');
+    jest.spyOn(execStore.useExecutionsStore.getState(), 'fetchExecution').mockResolvedValue({ id: 'e1' } as any);
+    render(<NodeView mode="new" /> as any);
+    await act(async () => {
+      window.dispatchEvent(new MessageEvent('message', { data: JSON.stringify({ command: 'setActiveExecution', executionId: 'e1' }) } as any));
+    });
+    expect(execStore.useExecutionsStore.getState().activeExecution).toBeDefined();
+  });
+
+  it('sets canOpenNDV via postMessage', async () => {
+    const ndv = require('../stores/ndv');
+    render(<NodeView mode="new" /> as any);
+    await act(async () => {
+      window.dispatchEvent(new MessageEvent('message', { data: JSON.stringify({ command: 'canOpenNDV', canOpenNDV: false }) } as any));
+    });
+    expect((ndv.useNDVStore.getState() as any).canOpenNDV).toBe(false);
+  });
 });
