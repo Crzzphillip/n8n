@@ -43,6 +43,8 @@ const resources = {
 				},
 				labels: {
 					selectTrigger: 'Select trigger node',
+					stickyChangeColor: 'Change sticky color',
+					close: 'Close',
 				},
 				toast: {
 					readOnly: {

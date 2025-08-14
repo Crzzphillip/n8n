@@ -910,10 +910,11 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
 
   // Enhanced functionality
   const onExtractWorkflow = useCallback((nodeIds: string[]) => {
+    if (!checkIfEditingIsAllowed()) return;
     const extracted = workflowExtraction.extractWorkflow(nodeIds);
     console.log('Extracted workflow:', extracted);
     telemetry.track('User extracted workflow', { nodeCount: nodeIds.length });
-  }, [workflowExtraction, telemetry]);
+  }, [workflowExtraction, telemetry, checkIfEditingIsAllowed]);
 
   const onOpenExecution = useCallback(async (executionId: string, nodeId?: string) => {
     try {
