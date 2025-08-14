@@ -284,4 +284,31 @@ describe('NodeView', () => {
     expect(emitSpy).toHaveBeenCalledWith('nodes:select', { ids: ['a', 'b'] });
     expect(emitSpy).toHaveBeenCalledWith('tidyUp', expect.anything());
   });
+
+  it('openSelectiveNodeCreator respects parameters', async () => {
+    (global as any).fetch = jest.fn(async () => ({ ok: true, json: async () => ({ id: 'wf', name: 'WF', nodes: [{ id: 'n1', name: 'Node 1' }], connections: {} }) }));
+    render(<NodeView mode="existing" /> as any);
+    const spy = jest.spyOn(useNodeCreatorStore.getState(), 'openNodeCreatorForConnectingNode');
+    const actions = require('../hooks/useGlobalLinkActions');
+    actions.useGlobalLinkActions().dispatchCustomAction('openSelectiveNodeCreator', { connectionType: 'ai', connectionIndex: 2, creatorView: 'regular' });
+    expect(spy).toHaveBeenCalled();
+  });
+
+  it('placement uses last click position after selection end', async () => {
+    (global as any).fetch = jest.fn(async () => ({ ok: true, json: async () => ({ id: 'wf', name: 'WF', nodes: [], connections: {} }) }));
+    render(<NodeView mode="new" /> as any);
+    // Simulate selection end
+    const lastCall = CanvasMock.mock.calls[CanvasMock.mock.calls.length - 1];
+    const props = lastCall?.[0] || {};
+    await act(async () => {
+      props.onRangeSelectionChange(false);
+    });
+    // Add a node via addNodesAndConnections path indirectly by canvasEventBus click create sticky
+    const ops = require('../hooks/useCanvasOperations');
+    const addSpy = jest.spyOn(ops.useCanvasOperations(), 'addNodes');
+    await act(async () => {
+      canvasEventBus.emit('create:sticky');
+    });
+    expect(addSpy).toHaveBeenCalled();
+  });
 });

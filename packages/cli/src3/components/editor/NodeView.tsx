@@ -746,9 +746,10 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
     if (!checkIfEditingIsAllowed()) return;
     historyStore.getState().startRecordingUndo();
     try {
+      const defaultPos: XYPosition | undefined = position || (uiStore.getState().lastClickPosition ? { x: uiStore.getState().lastClickPosition[0], y: uiStore.getState().lastClickPosition[1] } : undefined);
       // Add nodes
-      const nodesToAdd = payload.nodes.map((n) => ({ type: n.type, position: n.position ?? position, parameters: n.parameters }));
-      const added = await canvasOperations.addNodes(nodesToAdd as any, { dragAndDrop: !!position, position, trackHistory: true });
+      const nodesToAdd = payload.nodes.map((n) => ({ type: n.type, position: n.position ?? defaultPos, parameters: n.parameters }));
+      const added = await canvasOperations.addNodes(nodesToAdd as any, { dragAndDrop: !!position, position: defaultPos, trackHistory: true });
       // Map connections using newly added nodes order: connect by index
       const offsetIndex = workflow.nodes.length; // prior to addition
       if (payload.connections?.length) {
@@ -764,7 +765,7 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
     } finally {
       historyStore.getState().stopRecordingUndo();
     }
-  }, [canvasOperations, workflow.nodes, checkIfEditingIsAllowed, historyStore]);
+  }, [canvasOperations, workflow.nodes, checkIfEditingIsAllowed, historyStore, uiStore]);
 
   const canvasNodes: CanvasNode[] = useMemo(
     () =>
@@ -818,7 +819,12 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
 
   const onRangeSelectionChange = useCallback((active: boolean) => {
     canvasStore.setHasRangeSelection(active);
-  }, [canvasStore]);
+    if (!active) {
+      // Selection ended; store last click position best-effort (we rely on onPaneClick for accurate)
+      const pos = uiStore.getState().lastClickPosition;
+      if (!pos) uiStore.getState().setLastClickPosition([viewportTransform.x + 100, viewportTransform.y + 100]);
+    }
+  }, [canvasStore, uiStore, viewportTransform]);
 
   const onNodeDoubleClick = useCallback((nodeId: string, event: any) => {
     if ((event?.metaKey) || (event?.ctrlKey)) {
@@ -999,11 +1005,18 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
     globalLinkActions.registerCustomAction('showNodeCreator', () => {
       nodeCreatorStore.getState().openNodeCreatorForTriggerNodes(NODE_CREATOR_OPEN_SOURCES.PLUS_ENDPOINT);
     });
-    globalLinkActions.registerCustomAction('openSelectiveNodeCreator', () => {
+    globalLinkActions.registerCustomAction('openSelectiveNodeCreator', (payload?: any) => {
+      const connectionType = payload?.connectionType || 'main';
+      const connectionIndex = typeof payload?.connectionIndex === 'number' ? payload.connectionIndex : 0;
+      const creatorView = payload?.creatorView;
+      const handle = `outputs-${connectionType}-${connectionIndex}`;
       nodeCreatorStore.getState().openNodeCreatorForConnectingNode({
-        connection: { source: selectedNodeId || '', sourceHandle: 'outputs-main-0' },
+        connection: { source: selectedNodeId || '', sourceHandle: handle },
         eventSource: NODE_CREATOR_OPEN_SOURCES.PLUS_ENDPOINT,
       });
+      if (creatorView) {
+        nodeCreatorStore.getState().setSelectedView(creatorView);
+      }
     });
     return () => {
       globalLinkActions.unregisterCustomAction('openNodeDetail');
