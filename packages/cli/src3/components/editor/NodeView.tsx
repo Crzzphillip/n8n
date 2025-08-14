@@ -64,6 +64,7 @@ import KeyboardShortcutTooltip from '../ui/KeyboardShortcutTooltip';
 import NodeViewUnfinishedWorkflowMessage from './NodeViewUnfinishedWorkflowMessage';
 import SetupWorkflowCredentialsButton from './SetupWorkflowCredentialsButton';
 import RunControls from './RunControls';
+import styles from './styles/NodeView.module.css';
 
 // Event buses
 import { historyBus } from '../../src3/event-bus/history';
@@ -1399,7 +1400,7 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
         
         {/* Read-only environment callout */}
         {isReadOnlyEnv && (
-          <div style={{ position: 'absolute', right: 16, bottom: 16 }} className="readOnlyEnvironmentNotification">
+          <div className={styles.readOnlyEnvironmentNotification}>
             <div style={{ padding: 12, border: '1px solid #f0c36d', background: '#fffbe6', borderRadius: 8 }}>
               <strong>{t(isReadOnlyRoute ? 'nodeView.readOnly.showMessage.executions.title' : 'nodeView.readOnly.showMessage.workflows.title')}</strong>
               <div>{t(isReadOnlyRoute ? 'nodeView.readOnly.showMessage.executions.message' : 'nodeView.readOnly.showMessage.workflows.message')}</div>
