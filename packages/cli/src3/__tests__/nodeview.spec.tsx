@@ -381,4 +381,23 @@ describe('NodeView', () => {
     expect(creatorSpy).not.toHaveBeenCalled();
     expect(opsAddSpy).not.toHaveBeenCalled();
   });
+
+  it('registers keyboard shortcuts including run and extract', async () => {
+    (global as any).fetch = jest.fn(async () => ({ ok: true, json: async () => ({ id: 'wf', name: 'WF', nodes: [{ id: 'n1', name: 'Node 1', position: { x: 0, y: 0 } }], connections: {} }) }));
+    render(<NodeView mode="existing" /> as any);
+    const lastArgs = mockUseKeyboardShortcuts.mock.calls[mockUseKeyboardShortcuts.mock.calls.length - 1]?.[0];
+    expect(typeof lastArgs.onRun).toBe('function');
+    expect(typeof lastArgs.onExtract).toBe('function');
+  });
+
+  it('sticky color action updates node parameters', async () => {
+    (global as any).fetch = jest.fn(async () => ({ ok: true, json: async () => ({ id: 'wf', name: 'WF', nodes: [{ id: 's1', name: 'Sticky', type: 'n8n-sticky', parameters: {} }], connections: {} }) }));
+    render(<NodeView mode="existing" /> as any);
+    const ops = require('../hooks/useCanvasOperations');
+    const setParamsSpy = jest.spyOn(ops.useCanvasOperations(), 'setNodeParameters');
+    await act(async () => {
+      canvasEventBus.emit('nodes:action', { ids: ['s1'], action: 'update:sticky:color', color: 2 });
+    });
+    expect(setParamsSpy).toHaveBeenCalledWith('s1', expect.objectContaining({ color: 2 }));
+  });
 });
