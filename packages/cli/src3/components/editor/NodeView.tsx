@@ -53,6 +53,7 @@ import { useTagsStore } from '../../src3/stores/tags';
 import { useEnvironmentsStore } from '../../src3/stores/environments';
 import { useExternalSecretsStore } from '../../src3/stores/externalSecrets';
 import { useFoldersStore } from '../../src3/stores/folders';
+import { useNpsSurveyStore } from '../../src3/stores/npsSurvey';
 
 // New components
 import CanvasRunWorkflowButton from './canvas/buttons/CanvasRunWorkflowButton';
@@ -190,6 +191,7 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
   const environmentsStore = useEnvironmentsStore();
   const externalSecretsStore = useExternalSecretsStore();
   const foldersStore = useFoldersStore();
+  const npsSurveyStore = useNpsSurveyStore();
 
   // Enhanced initialization
   useEffect(() => {
@@ -528,13 +530,14 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
       if (ndvStore.activeNodeName) {
         toast.showSuccess('Saved from Node panel');
       }
+      try { void npsSurveyStore.fetchPromptsData(); } catch {}
     });
 
     return () => {
       window.removeEventListener('message', onPostMessageReceived);
       offSaved?.();
     };
-  }, [executionsStore, onOpenExecution, toast, t]);
+  }, [executionsStore, onOpenExecution, toast, t, npsSurveyStore]);
 
   // Import workflow exactly (replace current)
   const importWorkflowExact = useCallback(async (data: any) => {
