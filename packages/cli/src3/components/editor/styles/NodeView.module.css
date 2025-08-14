@@ -1,0 +1,22 @@
+/* Key NodeView styles for parity */
+.readOnlyEnvironmentNotification {
+	position: absolute;
+	right: 16px;
+	bottom: 16px;
+	z-index: 10;
+}
+
+.executionButtons {
+	display: flex;
+	gap: 8px;
+	align-items: center;
+	justify-content: flex-end;
+}
+
+.headerControls {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	justify-content: space-between;
+	padding: 8px 12px;
+}
