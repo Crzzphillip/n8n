@@ -234,13 +234,25 @@ export default function Canvas(props: {
         </ReactFlow>
         {contextMenu && (
           <div style={{ position: 'fixed', left: contextMenu.x, top: contextMenu.y, background: '#fff', border: '1px solid #ccc', borderRadius: 6, padding: 8 }}>
-            <button onClick={() => { canvasEventBus.emit('nodes:action', { ids: contextMenu.targetNodeId ? [contextMenu.targetNodeId] : nodes.filter(n => (n as any).data?.sticky).map(n => n.id), action: 'update:sticky:color' }); setContextMenu(null); }}>{t('nodeView.labels.stickyChangeColor')}</button>
-            <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
-              {[0,1,2,3].map((c) => (
-                <button key={c} onClick={() => { canvasEventBus.emit('nodes:action', { ids: contextMenu.targetNodeId ? [contextMenu.targetNodeId] : nodes.filter(n => (n as any).data?.sticky).map(n => n.id), action: 'update:sticky:color', color: c }); setContextMenu(null); }} style={{ width: 16, height: 16, background: ['#f66','#6f6','#66f','#fc3'][c], border: '1px solid #999', borderRadius: 3 }} />
-              ))}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+              <button disabled={props.readOnly} onClick={() => { canvasEventBus.emit('create:node', { source: 'context_menu' } as any); setContextMenu(null); }}>{t('nodeView.buttons.focusPanel')}</button>
+              <button disabled={props.readOnly} onClick={() => { canvasEventBus.emit('create:sticky'); setContextMenu(null); }}>{t('nodeView.labels.stickyChangeColor')}</button>
+              <button onClick={() => { canvasEventBus.emit('copy:nodes', contextMenu.targetNodeId ? [contextMenu.targetNodeId] : [] as any); setContextMenu(null); }}>{t('nodeView.success.copied')}</button>
+              <button disabled={props.readOnly} onClick={() => { canvasEventBus.emit('delete:nodes', contextMenu.targetNodeId ? [contextMenu.targetNodeId] : [] as any); setContextMenu(null); }}>{t('nodeView.buttons.deleteNodeConfirm')}</button>
+              <button disabled={props.readOnly} onClick={() => { canvasEventBus.emit('duplicate:nodes', contextMenu.targetNodeId ? [contextMenu.targetNodeId] : [] as any); setContextMenu(null); }}>{t('nodeView.buttons.update')}</button>
+              <button disabled={props.readOnly} onClick={() => { canvasEventBus.emit('update:nodes:pin', contextMenu.targetNodeId ? [contextMenu.targetNodeId] : [] as any); setContextMenu(null); }}>Pin</button>
+              <button disabled={props.readOnly} onClick={() => { canvasEventBus.emit('run:node', { nodeId: contextMenu.targetNodeId } as any); setContextMenu(null); }}>{t('nodeView.buttons.run')}</button>
+              <button disabled={props.readOnly} onClick={() => { canvasEventBus.emit('update:node:name', contextMenu.targetNodeId as any); setContextMenu(null); }}>{t('nodeView.labels.name')}</button>
+              <button disabled={props.readOnly} onClick={() => { canvasEventBus.emit('tidyUp', { source: 'context-menu' } as any); setContextMenu(null); }}>Tidy up</button>
+              <button disabled={props.readOnly} onClick={() => { canvasEventBus.emit('extract-workflow', contextMenu.targetNodeId ? [contextMenu.targetNodeId] : [] as any); setContextMenu(null); }}>Extract</button>
+              <button disabled={props.readOnly} onClick={() => { canvasEventBus.emit('nodes:action', { ids: contextMenu.targetNodeId ? [contextMenu.targetNodeId] : nodes.filter(n => (n as any).data?.sticky).map(n => n.id), action: 'update:sticky:color' }); setContextMenu(null); }}>{t('nodeView.labels.stickyChangeColor')}</button>
+              <div style={{ display: 'flex', gap: 6 }}>
+                {[0,1,2,3].map((c) => (
+                  <button key={c} disabled={props.readOnly} onClick={() => { canvasEventBus.emit('nodes:action', { ids: contextMenu.targetNodeId ? [contextMenu.targetNodeId] : nodes.filter(n => (n as any).data?.sticky).map(n => n.id), action: 'update:sticky:color', color: c }); setContextMenu(null); }} style={{ width: 16, height: 16, background: ['#f66','#6f6','#66f','#fc3'][c], border: '1px solid #999', borderRadius: 3 }} />
+                ))}
+              </div>
+              <button onClick={() => setContextMenu(null)}>{t('nodeView.labels.close')}</button>
             </div>
-            <button onClick={() => setContextMenu(null)} style={{ marginTop: 6 }}>{t('nodeView.labels.close')}</button>
           </div>
         )}
       </ReactFlowProvider>
