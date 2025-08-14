@@ -6,13 +6,27 @@ const resources = {
 		translation: {
 			nodeView: {
 				loading: 'Loading…',
-				readOnlyEnv: 'Read-only environment',
 				error: {
 					initData: 'Failed to initialize data',
 					envVars: 'Failed to load environment variables',
 					externalSecrets: 'Failed to load external secrets',
 					importTemplate: 'Failed to import template',
 					loadWorkflow: 'Failed to load workflow',
+				},
+				readOnlyEnv: {
+					cantEditOrRun: 'You cannot edit or run workflows in this environment.',
+				},
+				readOnly: {
+					showMessage: {
+						workflows: {
+							title: 'Read-only environment',
+							message: 'Editing or running workflows is disabled on this branch.',
+						},
+						executions: {
+							title: 'Read-only environment',
+							message: 'This execution is read-only and cannot be modified.',
+						},
+					},
 				},
 				success: {
 					pull: 'Successfully pulled latest changes',

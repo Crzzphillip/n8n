@@ -240,6 +240,11 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
           workflowHelpers.initializeWorkspace(wf);
           documentTitle.setWorkflowTitle(wf.name);
           void externalHooks.run('workflow.open', { workflowId: wf.id, workflowName: wf.name });
+          try {
+            nodeHelpers.updateNodesInputIssues();
+            nodeHelpers.updateNodesCredentialsIssues();
+            nodeHelpers.updateNodesParameterIssues();
+          } catch {}
         })
         .catch((e: any) => {
           setError(e?.message || 'Failed to load');
@@ -280,6 +285,11 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
             executionsStore.setState({ activeExecution: null, items: [] } as any);
             telemetry.track('template.open', { template_id: templateId });
             setTimeout(() => canvasEventBus.emit('fitView'));
+            try {
+              nodeHelpers.updateNodesInputIssues();
+              nodeHelpers.updateNodesCredentialsIssues();
+              nodeHelpers.updateNodesParameterIssues();
+            } catch {}
           } catch (e) {
             toast.showError(e, 'Failed to import template');
           }
@@ -903,6 +913,11 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
       const data = await executionDebugging.debugExecution(executionId);
       if (data?.workflowData) {
         workflowHelpers.openWorkflow(data.workflowData);
+        try {
+          nodeHelpers.updateNodesInputIssues();
+          nodeHelpers.updateNodesCredentialsIssues();
+          nodeHelpers.updateNodesParameterIssues();
+        } catch {}
       }
       if (nodeId) {
         canvasOperations.setNodeActive(nodeId);
@@ -949,6 +964,11 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
       if (success) {
         toast.showSuccess(t('nodeView.success.imported'));
         telemetry.track('User imported workflow');
+        try {
+          nodeHelpers.updateNodesInputIssues();
+          nodeHelpers.updateNodesCredentialsIssues();
+          nodeHelpers.updateNodesParameterIssues();
+        } catch {}
       }
     } catch (error) {
       toast.showError(error, 'Failed to import workflow');
@@ -1251,7 +1271,11 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
   const { t } = (require('../../src3/hooks/useI18n') as any);
   if (loading) return <div style={{ padding: 16 }}>{t('nodeView.loading')}</div>;
   if (error) return <div style={{ padding: 16 }}>{t('nodeView.error.loadWorkflow')}</div>;
-  if (isReadOnlyEnv && mode === 'new') return <div style={{ padding: 16 }}>{t('nodeView.readOnlyEnv')}</div>;
+  const isReadOnlyRoute = useMemo(() => {
+    const tab = getNodeViewTab(params);
+    return tab === MAIN_HEADER_TABS.EXECUTIONS;
+  }, [params]);
+  if (isReadOnlyEnv && mode === 'new') return <div style={{ padding: 16 }}>{t('nodeView.readOnlyEnv.cantEditOrRun')}</div>;
 
   return (
     <div style={{ display: 'grid', gridTemplateColumns: '280px 1fr 320px', minHeight: 'calc(100vh - 32px)' }}>
@@ -1374,10 +1398,13 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
           <button data-testid="toggle-output" onClick={() => logsStore.getState().toggleOutputOpen()}>{logsStore.getState().detailsState === 'both' || logsStore.getState().detailsState === 'output' ? 'Hide' : 'Show'} Output</button>
         </div>
         
-        {/* Read-only callout */}
+        {/* Read-only environment callout */}
         {isReadOnlyEnv && (
-          <div style={{ position: 'absolute', bottom: 16, left: '50%', transform: 'translateX(-50%)', background: '#fff7e6', border: '1px solid #ffe58f', padding: '8px 12px', borderRadius: 6 }}>
-            You cannot edit or run workflows in read-only environment
+          <div style={{ position: 'absolute', right: 16, bottom: 16 }} className="readOnlyEnvironmentNotification">
+            <div style={{ padding: 12, border: '1px solid #f0c36d', background: '#fffbe6', borderRadius: 8 }}>
+              <strong>{t(isReadOnlyRoute ? 'nodeView.readOnly.showMessage.executions.title' : 'nodeView.readOnly.showMessage.workflows.title')}</strong>
+              <div>{t(isReadOnlyRoute ? 'nodeView.readOnly.showMessage.executions.message' : 'nodeView.readOnly.showMessage.workflows.message')}</div>
+            </div>
           </div>
         )}
         
