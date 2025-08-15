@@ -1,4 +1,8 @@
-import type { IConnection, INodeParameters } from 'n8n-workflow';
+import type {
+	IConnection,
+	INodeParameters,
+	NodeConnectionType as WFNodeConnectionType,
+} from 'n8n-workflow';
 import type { Command, BulkCommand } from '../models/history';
 
 export type XYPosition = [number, number];
@@ -51,6 +55,13 @@ export interface ViewportBoundaries {
 	minY: number;
 	maxY: number;
 }
+
+export type Connection = {
+	source: string;
+	target: string;
+	sourceHandle?: string;
+	targetHandle?: string;
+};
 
 export interface CanvasConnectionCreateData {
 	source: string;
@@ -178,3 +189,11 @@ export interface WorkflowDataUpdate {
 export interface IDataObject {
 	[key: string]: any;
 }
+
+export type NodeConnectionType = WFNodeConnectionType;
+export const NodeConnectionTypes = {
+	Main: 'main',
+	Ai: 'ai',
+	Webhook: 'webhook',
+	Trigger: 'trigger',
+} as const;

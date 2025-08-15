@@ -1,12 +1,24 @@
 import { createEventBus } from '@n8n/utils/event-bus';
+import type { IDataObject } from '../types/Interface';
 
-export const nodeViewEventBus = createEventBus();
+export interface NodeViewEventBusEvents {
+	/** Command to create a new workflow */
+	newWorkflow: undefined;
 
-// Event types for node view events
-export interface NodeViewEvents {
-	importWorkflowData: { data: any; regenerateIds?: boolean; tidyUp?: boolean; nodesIdsToTidyUp?: string[] };
-	importWorkflowUrl: { url: string };
-	openChat: void;
-	'runWorkflowButton:mouseenter': void;
-	'runWorkflowButton:mouseleave': void;
+	/** Command to open the chat */
+	openChat: undefined;
+
+	/** Command to import a workflow from given data */
+	importWorkflowData: IDataObject;
+
+	/** Command to import a workflow from given URL */
+	importWorkflowUrl: IDataObject;
+
+	'runWorkflowButton:mouseenter': undefined;
+	'runWorkflowButton:mouseleave': undefined;
+
+	/** Command to tidy up the canvas */
+	tidyUp: undefined;
 }
+
+export const nodeViewEventBus = createEventBus<NodeViewEventBusEvents>();
