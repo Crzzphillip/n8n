@@ -396,7 +396,7 @@ describe('NodeView', () => {
     const ops = require('../hooks/useCanvasOperations');
     const setParamsSpy = jest.spyOn(ops.useCanvasOperations(), 'setNodeParameters');
     await act(async () => {
-      canvasEventBus.emit('nodes:action', { ids: ['s1'], action: 'update:sticky:color', color: 2 });
+      canvasEventBus.emit('nodes:action', { ids: ['s1'], action: 'update:sticky:color', payload: { color: 2 } } as any);
     });
     expect(setParamsSpy).toHaveBeenCalledWith('s1', expect.objectContaining({ color: 2 }));
   });

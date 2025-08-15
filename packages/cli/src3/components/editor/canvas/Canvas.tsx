@@ -231,7 +231,7 @@ export default function Canvas(props: {
             <button onClick={() => canvasEventBus.emit('logs:close')}>Logs Close</button>
             <button onClick={() => canvasEventBus.emit('logs:input-open')}>Logs Input</button>
             <button onClick={() => canvasEventBus.emit('logs:output-open')}>Logs Output</button>
-            <button onClick={() => canvasEventBus.emit('nodes:action', { ids: (nodes.filter(n => (n as any).data?.sticky).map(n => n.id)), action: 'update:sticky:color' })}>Sticky Color</button>
+            <button onClick={() => canvasEventBus.emit('nodes:action', { ids: (nodes.filter(n => (n as any).data?.sticky).map(n => n.id)), action: 'update:sticky:color', payload: {} })}>Sticky Color</button>
           </Panel>
         </ReactFlow>
         {contextMenu && (
@@ -250,10 +250,10 @@ export default function Canvas(props: {
               <button disabled={props.readOnly} onClick={() => { canvasEventBus.emit('update:nodes:enabled', contextMenu.targetNodeId ? [contextMenu.targetNodeId] : [] as any); setContextMenu(null); }}>{t('nodeView.buttons.toggleActivation') || 'Toggle activation'}</button>
               <button onClick={() => { const allIds = nodes.map(n => String(n.id)); canvasEventBus.emit('nodes:select', { ids: allIds }); setContextMenu(null); }}>{t('nodeView.buttons.selectAll') || 'Select all'}</button>
               <button onClick={() => { canvasEventBus.emit('nodes:select', { ids: [] }); setContextMenu(null); }}>{t('nodeView.buttons.deselectAll') || 'Deselect all'}</button>
-              <button disabled={props.readOnly} onClick={() => { canvasEventBus.emit('nodes:action', { ids: contextMenu.targetNodeId ? [contextMenu.targetNodeId] : nodes.filter(n => (n as any).data?.sticky).map(n => n.id), action: 'update:sticky:color' }); setContextMenu(null); }}>{t('nodeView.labels.stickyChangeColor')}</button>
+              <button disabled={props.readOnly} onClick={() => { canvasEventBus.emit('nodes:action', { ids: contextMenu.targetNodeId ? [contextMenu.targetNodeId] : nodes.filter(n => (n as any).data?.sticky).map(n => n.id), action: 'update:sticky:color', payload: {} }); setContextMenu(null); }}>{t('nodeView.labels.stickyChangeColor')}</button>
               <div style={{ display: 'flex', gap: 6 }}>
                 {[0,1,2,3].map((c) => (
-                  <button key={c} disabled={props.readOnly} onClick={() => { canvasEventBus.emit('nodes:action', { ids: contextMenu.targetNodeId ? [contextMenu.targetNodeId] : nodes.filter(n => (n as any).data?.sticky).map(n => n.id), action: 'update:sticky:color', color: c }); setContextMenu(null); }} style={{ width: 16, height: 16, background: ['#f66','#6f6','#66f','#fc3'][c], border: '1px solid #999', borderRadius: 3 }} />
+                  <button key={c} disabled={props.readOnly} onClick={() => { canvasEventBus.emit('nodes:action', { ids: contextMenu.targetNodeId ? [contextMenu.targetNodeId] : nodes.filter(n => (n as any).data?.sticky).map(n => n.id), action: 'update:sticky:color', payload: { color: c } }); setContextMenu(null); }} style={{ width: 16, height: 16, background: ['#f66','#6f6','#66f','#fc3'][c], border: '1px solid #999', borderRadius: 3 }} />
                 ))}
               </div>
               <button onClick={() => setContextMenu(null)}>{t('nodeView.labels.close')}</button>

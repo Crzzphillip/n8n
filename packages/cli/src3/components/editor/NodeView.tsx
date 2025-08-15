@@ -1220,12 +1220,14 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
     const offSelectionEnd = canvasEventBus.on('selection:end', (pos: any) => {
       try { uiStore.getState().setLastClickPosition([pos.x, pos.y]); } catch {}
     });
-    const offNodesAction = canvasEventBus.on('nodes:action', ({ ids, action, color }: any) => {
+    const offNodesAction = canvasEventBus.on('nodes:action', ({ ids, action, payload, ...rest }: any) => {
       if (action === 'update:sticky:color') {
         ids.forEach((id: string) => {
           const n = workflow.nodes.find((m) => m.id === id);
           if (!n) return;
-          const nextColor = typeof color === 'number' ? color : ((((n as any).parameters?.color || 0) + 1) % 4);
+          const explicit = (payload as any)?.color;
+          const legacy = (rest as any)?.color;
+          const nextColor = typeof explicit === 'number' ? explicit : typeof legacy === 'number' ? legacy : ((((n as any).parameters?.color || 0) + 1) % 4);
           canvasOperations.setNodeParameters(id, { ...(n.parameters || {}), color: nextColor });
         });
       }

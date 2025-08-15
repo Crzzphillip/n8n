@@ -1,12 +1,8 @@
 import { createEventBus } from '@n8n/utils/event-bus';
 
-export const sourceControlEventBus = createEventBus();
-
-// Event types for source control events
-export interface SourceControlEvents {
-	pull: void;
-	push: void;
-	commit: { message: string };
-	branchChanged: { branchName: string };
-	repositoryChanged: { repositoryUrl: string };
+export interface SourceControlEventBusEvents {
+	/** Event when latest changes were pulled from the source control */
+	pull: undefined;
 }
+
+export const sourceControlEventBus = createEventBus<SourceControlEventBusEvents>();
