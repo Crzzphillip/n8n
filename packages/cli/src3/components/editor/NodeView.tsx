@@ -290,7 +290,7 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
             workflowHelpers.resetWorkspace();
             workflowHelpers.initializeWorkspace({ workflow: data.workflow, name: data.name });
             // Reset executions state on import
-            executionsStore.setState({ activeExecution: null, items: [] } as any);
+            useExecutionsStore.setState({ activeExecution: null, items: [] } as any);
             telemetry.track('template.open', { template_id: templateId });
             void externalHooks.run('template.open', { templateId, templateName: data.name, workflow: data.workflow });
             setTimeout(() => canvasEventBus.emit('fitView'));

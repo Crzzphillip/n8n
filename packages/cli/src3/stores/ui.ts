@@ -30,7 +30,7 @@ interface UIStore extends UIState {
 	setLastClickPosition: (position: [number, number] | null) => void;
 }
 
-export const useUIStore = create<UIStore>((set) => ({
+export const useUIStore = create<UIStore>((set, get) => ({
 	stateIsDirty: false,
 	nodeViewInitialized: false,
 	activeModals: [],

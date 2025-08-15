@@ -7,6 +7,7 @@ interface PosthogState {
 interface PosthogStore extends PosthogState {
 	setVariant: (name: string, variant: string) => void;
 	isVariantEnabled: (name: string, variant: string) => boolean;
+	getVariant: (name: string) => string | undefined;
 }
 
 export const usePostHog = create<PosthogStore>((set, get) => ({
@@ -14,4 +15,5 @@ export const usePostHog = create<PosthogStore>((set, get) => ({
 	setVariant: (name: string, variant: string) =>
 		set((s) => ({ variants: { ...s.variants, [name]: variant } })),
 	isVariantEnabled: (name: string, variant: string) => get().variants[name] === variant,
+	getVariant: (name: string) => get().variants[name],
 }));

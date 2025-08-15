@@ -6,6 +6,7 @@ interface NDVState {
 	activeNode: INodeUi | null;
 	isNDVOpen: boolean;
 	pushRef: string;
+	canOpenNDV: boolean;
 }
 
 interface NDVStore extends NDVState {
@@ -20,19 +21,20 @@ export const useNDVStore = create<NDVStore>((set, get) => ({
 	activeNode: null,
 	isNDVOpen: false,
 	pushRef: '',
+	canOpenNDV: true,
 
 	setActiveNodeName: (nodeName: string | null) => {
-		set({ 
+		set({
 			activeNodeName: nodeName,
-			isNDVOpen: nodeName !== null 
+			isNDVOpen: nodeName !== null,
 		});
 	},
 
 	setActiveNode: (node: INodeUi | null) => {
-		set({ 
+		set({
 			activeNode: node,
 			activeNodeName: node?.name || null,
-			isNDVOpen: node !== null 
+			isNDVOpen: node !== null,
 		});
 	},
 

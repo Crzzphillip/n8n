@@ -8,6 +8,7 @@ export type WorkflowNode = {
 	type?: string;
 	position?: { x: number; y: number };
 	parameters?: Record<string, any>;
+	disabled?: boolean;
 };
 
 export type Workflow = {
@@ -17,6 +18,11 @@ export type Workflow = {
 	connections: Record<string, any[]>;
 	settings?: Record<string, any>;
 	parentFolderId?: string;
+	// Parity fields
+	pinData?: Record<string, any>;
+	meta?: { templateId?: string; onboardingId?: string };
+	homeProject?: string;
+	parentFolder?: { id: string; name: string; parentFolder?: string };
 };
 
 async function fetchJson<T>(url: string, init?: RequestInit): Promise<T> {
@@ -45,6 +51,15 @@ type State = {
 	redo: () => void;
 	markSaved: () => void;
 	setParentFolderId: (folderId: string | undefined) => void;
+	// Parity helpers
+	setParentFolder: (folder: { id: string; name: string; parentFolder?: string }) => void;
+	fetchWorkflow: (id: string) => Promise<Workflow>;
+	fetchActiveWorkflows: () => Promise<void>;
+	getNewWorkflowDataAndMakeShareable: (
+		name?: string,
+		_projectId?: string,
+		_parentFolderId?: string,
+	) => Promise<void>;
 };
 
 function clone(wf?: Workflow): Workflow | undefined {
@@ -99,6 +114,11 @@ export const useWorkflowStore = create<State>((set, get) => ({
 		if (!wf) return;
 		set({ current: { ...wf, parentFolderId: folderId } });
 	},
+	setParentFolder(folder) {
+		const wf = get().current;
+		if (!wf) return;
+		set({ current: { ...wf, parentFolder: folder, parentFolderId: folder?.id } });
+	},
 	setName(name) {
 		const wf = get().current;
 		if (!wf) return;
@@ -125,7 +145,7 @@ export const useWorkflowStore = create<State>((set, get) => ({
 		if (!wf) return;
 		const conns = { ...wf.connections };
 		conns[fromId] = conns[fromId] || [];
-		conns[fromId].push({ node: toId, type: 'main', index: 0 });
+		(conns[fromId] as any[]).push({ node: toId, type: 'main', index: 0 });
 		const next = { ...wf, connections: conns };
 		set({ current: next, dirty: true });
 	},
@@ -165,5 +185,22 @@ export const useWorkflowStore = create<State>((set, get) => ({
 	},
 	markSaved() {
 		set({ dirty: false });
+	},
+	fetchWorkflow: async (id: string) => {
+		const wf = await fetchJson<Workflow>(`/api/rest/workflows/${id}`);
+		return wf;
+	},
+	fetchActiveWorkflows: async () => {
+		// Placeholder: no-op in this minimal implementation
+		return;
+	},
+	getNewWorkflowDataAndMakeShareable: async (name = 'My workflow', _projectId, parentFolderId) => {
+		const wf: Workflow = {
+			name,
+			nodes: [],
+			connections: {},
+			parentFolderId,
+		};
+		set({ current: wf, dirty: false, history: [clone(wf)!], historyIndex: 0 });
 	},
 }));
