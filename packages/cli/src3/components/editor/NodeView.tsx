@@ -1,6 +1,7 @@
 "use client";
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import WorkflowCanvas from './canvas/WorkflowCanvas';
 import Canvas, { CanvasNode, CanvasEdge } from './canvas/Canvas';
 import NDV from './NDV/NodeDetailsView';
 import NodeCreator from './NodeCreator/NodeCreator';
@@ -1395,10 +1396,11 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
           }} 
           onDragOver={(e) => e.preventDefault()}
         >
-          <Canvas 
-            nodes={canvasNodes} 
-            edges={canvasEdges} 
-            onChange={onCanvasChange} 
+          <WorkflowCanvas
+            readOnly={isReadOnlyEnv || isProductionExecutionPreview}
+            nodes={canvasNodes}
+            edges={canvasEdges}
+            onChange={onCanvasChange}
             onSelectNode={(id) => setSelectedNodeId(id)}
             onSelectEdge={(edge) => setSelectedEdge(edge)}
             onViewportChange={onViewportChange}
@@ -1407,8 +1409,8 @@ export default function NodeView(props: { mode: 'new' | 'existing' }) {
             onCreateConnectionCancelled={(start, position, event) => onCreateConnectionCancelled(start, position)}
             onNodeDoubleClick={onNodeDoubleClick}
             onRangeSelectionChange={onRangeSelectionChange}
-            readOnly={isReadOnlyEnv || isProductionExecutionPreview}
-          />
+          >
+          </WorkflowCanvas>
         </div>
         
         {/* Canvas Actions Row */}
