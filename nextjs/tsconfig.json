@@ -16,7 +16,7 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["*"],
-      "@n8n/*": ["shims/@n8n/*"],
+      "@n8n/*": ["shims/@n8n/*","@n8n/*/src/index.ts"],
       "@/constants": ["constants.ts"],
       "n8n-workflow": ["workflow/src/index.ts"]
     }
