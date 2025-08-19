@@ -2,6 +2,9 @@
 
 import React, { useMemo } from 'react';
 import styles from './CanvasNodeStatusIcons.module.css';
+import TitledList from '@/components/TitledList';
+import { N8nTooltip, N8nIcon } from '@n8n/design-system';
+import { useI18n } from '@n8n/i18n';
 
 export const CanvasNodeDirtiness = {
   PARAMETERS_UPDATED: 'parameters-updated',
@@ -49,6 +52,7 @@ export default function CanvasNodeStatusIcons({
   dirtiness,
   isExecuting,
 }: Props) {
+  const i18n = useI18n();
   const isNodeExecuting = useMemo(() => {
     if (!isExecuting) return false;
     return Boolean(executionRunning || executionWaitingForNext || executionStatus === 'running');
@@ -62,29 +66,17 @@ export default function CanvasNodeStatusIcons({
     .filter(Boolean)
     .join(' ');
 
-  // Icons: replace N8nIcon with simple emoji placeholders; consumer can inject real icons later
-  const Icon = ({ name }: { name: string }) => {
-    const map: Record<string, string> = {
-      clock: '🕒',
-      refresh: '⟳',
-      power: '⏻',
-      error: '⚠️',
-      pin: '📌',
-      dirty: '✱',
-      success: '✔️',
-    };
-    return <span className={name === 'refresh' ? styles.spin : undefined}>{map[name] ?? '•'}</span>;
-  };
-
   if (executionWaiting || executionStatus === 'waiting') {
     return (
       <div>
-        <div className={[commonClass, styles.waiting].join(' ')} title={String(executionWaiting)}>
-          <Icon name="clock" />
-        </div>
+        <N8nTooltip content={String(executionWaiting)} placement="bottom">
+          <div className={[commonClass, styles.waiting].join(' ')}>
+            <N8nIcon icon="clock" size={size} />
+          </div>
+        </N8nTooltip>
         {spinnerLayout === 'absolute' && (
           <div className={[commonClass, styles.nodeWaitingSpinner].join(' ')}>
-            <Icon name="refresh" />
+            <N8nIcon icon="refresh-cw" spin />
           </div>
         )}
       </div>
@@ -94,7 +86,7 @@ export default function CanvasNodeStatusIcons({
   if (isNodeExecuting) {
     return (
       <div data-test-id="canvas-node-status-running" className={[commonClass, styles.running].join(' ')}>
-        <Icon name="refresh" />
+        <N8nIcon icon="refresh-cw" spin />
       </div>
     );
   }
@@ -102,16 +94,18 @@ export default function CanvasNodeStatusIcons({
   if (isDisabled) {
     return (
       <div className={[commonClass, styles.disabled].join(' ')}>
-        <Icon name="power" />
+        <N8nIcon icon="power" size={size} />
       </div>
     );
   }
 
   if (hasIssues) {
     return (
-      <div className={[commonClass, styles.issues].join(' ')} data-test-id="node-issues" title={issues.join('\n')}>
-        <Icon name="error" />
-      </div>
+      <N8nTooltip placement="bottom" showAfter={500} content={<TitledList title={`${i18n.baseText('node.issues')}:`} items={issues} />}>
+        <div className={[commonClass, styles.issues].join(' ')} data-test-id="node-issues">
+          <N8nIcon icon="node-error" size={size} />
+        </div>
+      </N8nTooltip>
     );
   }
 
@@ -122,26 +116,27 @@ export default function CanvasNodeStatusIcons({
   if (hasPinnedData) {
     return (
       <div className={[commonClass, styles.pinnedData].join(' ')} data-test-id="canvas-node-status-pinned">
-        <Icon name="pin" />
+        <N8nIcon icon="node-pin" size={size} />
       </div>
     );
   }
 
   if (dirtiness !== undefined) {
-    const title =
-      dirtiness === CanvasNodeDirtiness.PARAMETERS_UPDATED ? 'Node is dirty' : 'Node may be affected by upstream changes';
+    const content = dirtiness === CanvasNodeDirtiness.PARAMETERS_UPDATED ? i18n.baseText('node.dirty') : i18n.baseText('node.subjectToChange');
     return (
-      <div className={[commonClass, styles.warning].join(' ')} data-test-id="canvas-node-status-warning" title={title}>
-        <Icon name="dirty" />
-        {runDataIterations > 1 && <span className={styles.count}>{runDataIterations}</span>}
-      </div>
+      <N8nTooltip placement="bottom" showAfter={500} content={content}>
+        <div className={[commonClass, styles.warning].join(' ')} data-test-id="canvas-node-status-warning">
+          <N8nIcon icon="node-dirty" size={size} />
+          {runDataIterations > 1 && <span className={styles.count}>{runDataIterations}</span>}
+        </div>
+      </N8nTooltip>
     );
   }
 
   if (hasRunData) {
     return (
       <div className={[commonClass, styles.runData].join(' ')} data-test-id="canvas-node-status-success">
-        <Icon name="success" />
+        <N8nIcon icon="node-success" size={size} />
         {runDataIterations > 1 && <span className={styles.count}>{runDataIterations}</span>}
       </div>
     );
@@ -149,4 +144,3 @@ export default function CanvasNodeStatusIcons({
 
   return null;
 }
-
