@@ -5,6 +5,7 @@ import { BaseEdge, EdgeLabelRenderer, type EdgeProps } from 'reactflow';
 import { getEdgeRenderData, NodeConnectionTypes, type NodeConnectionType } from './utils/getEdgeRenderData';
 import { isValidNodeConnectionType } from '@/utils/typeGuards-react';
 import CanvasEdgeToolbar from './CanvasEdgeToolbar';
+import styles from './CanvasEdge.module.css';
 
 export type CanvasConnectionPort = {
   node?: string;
@@ -77,7 +78,12 @@ export default function CanvasEdge(props: EdgeProps<CanvasConnectionData> & Canv
   const labelPosition = renderData.labelPosition;
 
   const labelTransform = `translate(-50%, -50%) translate(${labelPosition[0]}px, ${labelPosition[1]}px)`;
-  const edgeLabelWrapperClass = `vue-flow__edge-label ${renderData.isConnectorStraight ? 'straight' : ''} ${selected ? 'selected' : ''}`;
+  const edgeLabelWrapperClass = [
+    'vue-flow__edge-label',
+    styles.edgeLabelWrapper,
+    renderData.isConnectorStraight ? styles.straight : '',
+    selected ? 'selected' : '',
+  ].join(' ');
 
   const onAdd = () => props.onClick?.({} as any); // placeholder; consumers can override
   const onDelete = () => props.onContextMenu?.({} as any);
@@ -118,7 +124,7 @@ export default function CanvasEdge(props: EdgeProps<CanvasConnectionData> & Canv
               onDelete={onDelete}
             />
           ) : (
-            <div className="n8n-edge-label">{props.label as any}</div>
+            <div className={styles.edgeLabel}>{props.label as any}</div>
           )}
         </div>
       </EdgeLabelRenderer>
