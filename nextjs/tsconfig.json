@@ -16,7 +16,8 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["*"],
-      "@n8n/*": ["shims/@n8n/*"]
+      "@n8n/*": ["shims/@n8n/*"],
+      "@/constants": ["constants.ts"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
