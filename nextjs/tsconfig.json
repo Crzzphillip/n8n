@@ -17,7 +17,8 @@
     "paths": {
       "@/*": ["*"],
       "@n8n/*": ["shims/@n8n/*"],
-      "@/constants": ["constants.ts"]
+      "@/constants": ["constants.ts"],
+      "n8n-workflow": ["workflow/src/index.ts"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
