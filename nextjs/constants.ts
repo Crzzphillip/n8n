@@ -1,19 +1,39 @@
-// Ported from packages/frontend/editor-ui/src/constants.ts for Next.js
-// Vue-specific InjectionKeys and types have been adapted or shimmed.
+import type {
+	EnterpriseEditionFeatureKey,
+	EnterpriseEditionFeatureValue,
+	NodeCreatorOpenSource,
+} from './Interface';
+import type { NodeConnectionType } from 'n8n-workflow';
+import { NodeConnectionTypes } from 'n8n-workflow';
+import type {
+	CanvasInjectionData,
+	CanvasNodeHandleInjectionData,
+	CanvasNodeInjectionData,
+} from '@/types';
+import type { MutableRefObject } from 'react';
 
-// Types to be wired to real packages after npm install
-export type NodeConnectionType = string;
-export const NodeConnectionTypes = { Main: 'main', AiTool: 'aiTool' } as const;
+// React-compatible type replacements for Vue reactivity
+type ComputedRef<T> = { readonly value: T };
+type Ref<T> = MutableRefObject<T>;
 
-// Size limits
-export const MAX_WORKFLOW_SIZE = 1024 * 1024 * 16;
-export const MAX_EXPECTED_REQUEST_SIZE = 2048;
-export const MAX_PINNED_DATA_SIZE = 1024 * 1024 * 12;
-export const MAX_DISPLAY_DATA_SIZE = 1024 * 1024;
-export const MAX_DISPLAY_DATA_SIZE_SCHEMA_VIEW = 1024 * 1024 * 4;
+// Create a proper InjectionKey type that works with symbol properties
+type InjectionKey<T> = symbol & { __brand: 'InjectionKey' } & { __type: T };
+
+// Helper function to create injection keys
+function createInjectionKey<T>(key: string): InjectionKey<T> {
+  return Symbol(key) as InjectionKey<T>;
+}
+import type { ExpressionLocalResolveContext } from './types/expressions';
+
+export const MAX_WORKFLOW_SIZE = 1024 * 1024 * 16; // Workflow size limit in bytes
+export const MAX_EXPECTED_REQUEST_SIZE = 2048; // Expected maximum workflow request metadata (i.e. headers) size in bytes
+export const MAX_PINNED_DATA_SIZE = 1024 * 1024 * 12; // 12 MB; Workflow pinned data size limit in bytes
+export const MAX_DISPLAY_DATA_SIZE = 1024 * 1024; // 1 MB
+export const MAX_DISPLAY_DATA_SIZE_SCHEMA_VIEW = 1024 * 1024 * 4; // 4 MB
 export const MAX_DISPLAY_ITEMS_AUTO_ALL = 250;
 
 export const PLACEHOLDER_FILLED_AT_EXECUTION_TIME = '[filled at execution time]';
+
 export const IN_PROGRESS_EXECUTION_ID = '__IN_PROGRESS__';
 
 // parameter input
@@ -72,7 +92,8 @@ export const EXTERNAL_SECRETS_PROVIDER_MODAL_KEY = 'externalSecretsProvider';
 export const COMMUNITY_PLUS_ENROLLMENT_MODAL = 'communityPlusEnrollment';
 export const DELETE_FOLDER_MODAL_KEY = 'deleteFolder';
 export const MOVE_FOLDER_MODAL_KEY = 'moveFolder';
-export const WORKFLOW_ACTIVATION_CONFLICTING_WEBHOOK_MODAL_KEY = 'workflowActivationConflictingWebhook';
+export const WORKFLOW_ACTIVATION_CONFLICTING_WEBHOOK_MODAL_KEY =
+	'workflowActivationConflictingWebhook';
 export const FROM_AI_PARAMETERS_MODAL_KEY = 'fromAiParameters';
 export const WORKFLOW_EXTRACTION_NAME_MODAL_KEY = 'workflowExtractionName';
 export const WHATS_NEW_MODAL_KEY = 'whatsNew';
@@ -80,9 +101,9 @@ export const WORKFLOW_DIFF_MODAL_KEY = 'workflowDiff';
 export const EXPERIMENT_TEMPLATE_RECO_V2_KEY = 'templateRecoV2';
 
 export const COMMUNITY_PACKAGE_MANAGE_ACTIONS = {
-  UNINSTALL: 'uninstall',
-  UPDATE: 'update',
-  VIEW_DOCS: 'view-documentation',
+	UNINSTALL: 'uninstall',
+	UPDATE: 'update',
+	VIEW_DOCS: 'view-documentation',
 };
 
 // breakpoints
@@ -99,7 +120,8 @@ export const DATA_EDITING_DOCS_URL = `https://${DOCS_DOMAIN}/data/data-editing/`
 export const SCHEMA_PREVIEW_DOCS_URL = `https://${DOCS_DOMAIN}/data/schema-preview/`;
 export const MFA_DOCS_URL = `https://${DOCS_DOMAIN}/user-management/two-factor-auth/`;
 export const NPM_PACKAGE_DOCS_BASE_URL = 'https://www.npmjs.com/package/';
-export const NPM_KEYWORD_SEARCH_URL = 'https://www.npmjs.com/search?q=keywords%3An8n-community-node-package';
+export const NPM_KEYWORD_SEARCH_URL =
+	'https://www.npmjs.com/search?q=keywords%3An8n-community-node-package';
 export const N8N_QUEUE_MODE_DOCS_URL = `https://${DOCS_DOMAIN}/hosting/scaling/queue-mode/`;
 export const COMMUNITY_NODES_INSTALLATION_DOCS_URL = `https://${DOCS_DOMAIN}/integrations/community-nodes/installation/gui-install/`;
 export const COMMUNITY_NODES_RISKS_DOCS_URL = `https://${DOCS_DOMAIN}/integrations/community-nodes/risks/`;
@@ -114,7 +136,7 @@ export const N8N_MAIN_GITHUB_REPO_URL = 'https://github.com/n8n-io/n8n';
 
 export const NODE_MIN_INPUT_ITEMS_COUNT = 4;
 
-// node types (copied as-is)
+// node types
 export const BAMBOO_HR_NODE_TYPE = 'n8n-nodes-base.bambooHr';
 export const CALENDLY_TRIGGER_NODE_TYPE = 'n8n-nodes-base.calendlyTrigger';
 export const CODE_NODE_TYPE = 'n8n-nodes-base.code';
@@ -152,7 +174,8 @@ export const CHAT_TRIGGER_NODE_TYPE = '@n8n/n8n-nodes-langchain.chatTrigger';
 export const CHAT_NODE_TYPE = '@n8n/n8n-nodes-langchain.chat';
 export const AGENT_NODE_TYPE = '@n8n/n8n-nodes-langchain.agent';
 export const OPEN_AI_NODE_TYPE = '@n8n/n8n-nodes-langchain.openAi';
-export const OPEN_AI_NODE_MESSAGE_ASSISTANT_TYPE = '@n8n/n8n-nodes-langchain.openAi.assistant.message';
+export const OPEN_AI_NODE_MESSAGE_ASSISTANT_TYPE =
+	'@n8n/n8n-nodes-langchain.openAi.assistant.message';
 export const OPEN_AI_ASSISTANT_NODE_TYPE = '@n8n/n8n-nodes-langchain.openAiAssistant';
 export const BASIC_CHAIN_NODE_TYPE = '@n8n/n8n-nodes-langchain.chainLlm';
 export const QA_CHAIN_NODE_TYPE = '@n8n/n8n-nodes-langchain.chainRetrievalQa';
@@ -201,7 +224,8 @@ export const CRYPTO_NODE_TYPE = 'n8n-nodes-base.crypto';
 export const RSS_READ_NODE_TYPE = 'n8n-nodes-base.rssFeedRead';
 export const COMPRESSION_NODE_TYPE = 'n8n-nodes-base.compression';
 export const EDIT_IMAGE_NODE_TYPE = 'n8n-nodes-base.editImage';
-export const CHAIN_SUMMARIZATION_LANGCHAIN_NODE_TYPE = '@n8n/n8n-nodes-langchain.chainSummarization';
+export const CHAIN_SUMMARIZATION_LANGCHAIN_NODE_TYPE =
+	'@n8n/n8n-nodes-langchain.chainSummarization';
 export const SIMULATE_NODE_TYPE = 'n8n-nodes-base.simulate';
 export const SIMULATE_TRIGGER_NODE_TYPE = 'n8n-nodes-base.simulateTrigger';
 export const AI_TRANSFORM_NODE_TYPE = 'n8n-nodes-base.aiTransform';
@@ -219,55 +243,67 @@ export const CREDENTIAL_ONLY_HTTP_NODE_VERSION = 4.1;
 export const TEMPLATE_CATEGORY_AI = 'categories/ai';
 
 export const EXECUTABLE_TRIGGER_NODE_TYPES = [
-  'n8n-nodes-base.start',
-  MANUAL_TRIGGER_NODE_TYPE,
-  SCHEDULE_TRIGGER_NODE_TYPE,
-  CRON_NODE_TYPE,
-  INTERVAL_NODE_TYPE,
+	START_NODE_TYPE,
+	MANUAL_TRIGGER_NODE_TYPE,
+	SCHEDULE_TRIGGER_NODE_TYPE,
+	CRON_NODE_TYPE,
+	INTERVAL_NODE_TYPE,
 ];
 
 export const NON_ACTIVATABLE_TRIGGER_NODE_TYPES = [
-  ERROR_TRIGGER_NODE_TYPE,
-  MANUAL_TRIGGER_NODE_TYPE,
-  EXECUTE_WORKFLOW_TRIGGER_NODE_TYPE,
-  MANUAL_CHAT_TRIGGER_NODE_TYPE,
+	ERROR_TRIGGER_NODE_TYPE,
+	MANUAL_TRIGGER_NODE_TYPE,
+	EXECUTE_WORKFLOW_TRIGGER_NODE_TYPE,
+	MANUAL_CHAT_TRIGGER_NODE_TYPE,
 ];
 
-export const NODES_USING_CODE_NODE_EDITOR = [CODE_NODE_TYPE, AI_CODE_NODE_TYPE, AI_TRANSFORM_NODE_TYPE];
+export const NODES_USING_CODE_NODE_EDITOR = [
+	CODE_NODE_TYPE,
+	AI_CODE_NODE_TYPE,
+	AI_TRANSFORM_NODE_TYPE,
+];
 
 export const NODE_POSITION_CONFLICT_ALLOWLIST = [STICKY_NODE_TYPE];
+
 export const PIN_DATA_NODE_TYPES_DENYLIST = [SPLIT_IN_BATCHES_NODE_TYPE, STICKY_NODE_TYPE];
 
 export const OPEN_URL_PANEL_TRIGGER_NODE_TYPES = [
-  WEBHOOK_NODE_TYPE,
-  FORM_TRIGGER_NODE_TYPE,
-  CHAT_TRIGGER_NODE_TYPE,
-  MCP_TRIGGER_NODE_TYPE,
+	WEBHOOK_NODE_TYPE,
+	FORM_TRIGGER_NODE_TYPE,
+	CHAT_TRIGGER_NODE_TYPE,
+	MCP_TRIGGER_NODE_TYPE,
 ];
 
-export const SINGLE_WEBHOOK_TRIGGERS = [TELEGRAM_TRIGGER_NODE_TYPE, SLACK_TRIGGER_NODE_TYPE, FACEBOOK_LEAD_ADS_TRIGGER_NODE_TYPE];
+export const SINGLE_WEBHOOK_TRIGGERS = [
+	TELEGRAM_TRIGGER_NODE_TYPE,
+	SLACK_TRIGGER_NODE_TYPE,
+	FACEBOOK_LEAD_ADS_TRIGGER_NODE_TYPE,
+];
 
 export const LIST_LIKE_NODE_OPERATIONS = ['getAll', 'getMany', 'read', 'search'];
+
 export const PRODUCTION_ONLY_TRIGGER_NODE_TYPES = [CHAT_TRIGGER_NODE_TYPE];
 
 // Node creator
-export const NODE_CREATOR_OPEN_SOURCES = {
-  NO_TRIGGER_EXECUTION_TOOLTIP: 'no_trigger_execution_tooltip',
-  PLUS_ENDPOINT: 'plus_endpoint',
-  ADD_INPUT_ENDPOINT: 'add_input_endpoint',
-  TRIGGER_PLACEHOLDER_BUTTON: 'trigger_placeholder_button',
-  ADD_NODE_BUTTON: 'add_node_button',
-  TAB: 'tab',
-  NODE_CONNECTION_ACTION: 'node_connection_action',
-  NODE_CONNECTION_DROP: 'node_connection_drop',
-  NOTICE_ERROR_MESSAGE: 'notice_error_message',
-  CONTEXT_MENU: 'context_menu',
-  ADD_EVALUATION_NODE_BUTTON: 'add_evaluation_node_button',
-  ADD_EVALUATION_TRIGGER_BUTTON: 'add_evaluation_trigger_button',
-  TEMPLATES_CALLOUT: 'templates_callout',
-  '': '',
-} as const;
-
+export const NODE_CREATOR_OPEN_SOURCES: Record<
+	Uppercase<NodeCreatorOpenSource>,
+	NodeCreatorOpenSource
+> = {
+	NO_TRIGGER_EXECUTION_TOOLTIP: 'no_trigger_execution_tooltip',
+	PLUS_ENDPOINT: 'plus_endpoint',
+	ADD_INPUT_ENDPOINT: 'add_input_endpoint',
+	TRIGGER_PLACEHOLDER_BUTTON: 'trigger_placeholder_button',
+	ADD_NODE_BUTTON: 'add_node_button',
+	TAB: 'tab',
+	NODE_CONNECTION_ACTION: 'node_connection_action',
+	NODE_CONNECTION_DROP: 'node_connection_drop',
+	NOTICE_ERROR_MESSAGE: 'notice_error_message',
+	CONTEXT_MENU: 'context_menu',
+	ADD_EVALUATION_NODE_BUTTON: 'add_evaluation_node_button',
+	ADD_EVALUATION_TRIGGER_BUTTON: 'add_evaluation_trigger_button',
+	TEMPLATES_CALLOUT: 'templates_callout',
+	'': '',
+};
 export const CORE_NODES_CATEGORY = 'Core Nodes';
 export const HUMAN_IN_THE_LOOP_CATEGORY = 'HITL';
 export const CUSTOM_NODES_CATEGORY = 'Custom Nodes';
@@ -305,9 +341,12 @@ export const REQUEST_NODE_FORM_URL = 'https://n8n-community.typeform.com/to/K1fB
 export const PRE_BUILT_AGENTS_COLLECTION = 'pre-built-agents-collection';
 
 // Node Connection Types
-export const NODE_CONNECTION_TYPE_ALLOW_MULTIPLE: NodeConnectionType[] = [NodeConnectionTypes.AiTool, NodeConnectionTypes.Main];
+export const NODE_CONNECTION_TYPE_ALLOW_MULTIPLE: NodeConnectionType[] = [
+	NodeConnectionTypes.AiTool,
+	NodeConnectionTypes.Main,
+];
 
-// Personalization survey and other constants copied verbatim
+/** PERSONALIZATION SURVEY */
 export const EMAIL_KEY = 'email';
 export const WORK_AREA_KEY = 'workArea';
 export const FINANCE_WORK_AREA = 'finance';
@@ -315,6 +354,7 @@ export const IT_ENGINEERING_WORK_AREA = 'IT-Engineering';
 export const PRODUCT_WORK_AREA = 'product';
 export const SALES_BUSINESSDEV_WORK_AREA = 'sales-businessDevelopment';
 export const SECURITY_WORK_AREA = 'security';
+
 export const COMPANY_TYPE_KEY = 'companyType';
 export const SAAS_COMPANY_TYPE = 'saas';
 export const ECOMMERCE_COMPANY_TYPE = 'ecommerce';
@@ -324,6 +364,7 @@ export const DIGITAL_AGENCY_COMPANY_TYPE = 'digital-agency';
 export const SYSTEMS_INTEGRATOR_COMPANY_TYPE = 'systems-integrator';
 export const OTHER_COMPANY_TYPE = 'other';
 export const PERSONAL_COMPANY_TYPE = 'personal';
+
 export const COMPANY_INDUSTRY_EXTENDED_KEY = 'companyIndustryExtended';
 export const OTHER_COMPANY_INDUSTRY_EXTENDED_KEY = 'otherCompanyIndustryExtended';
 export const PHYSICAL_RETAIL_OR_SERVICES = 'physical-retail-or-services';
@@ -335,11 +376,12 @@ export const MEDIA_INDUSTRY = 'media-industry';
 export const MANUFACTURING_INDUSTRY = 'manufacturing-industry';
 export const MSP_INDUSTRY = 'msp';
 export const HEALTHCARE_INDUSTRY = 'healthcare';
-export const FINANCE_INSURANCE_INDUSTRRY = 'finance-insurance-industry';
+export const FINANCE_INSURANCE_INDUSTRY = 'finance-insurance-industry';
 export const IT_INDUSTRY = 'it-industry';
 export const SECURITY_INDUSTRY = 'security-industry';
 export const TELECOMS_INDUSTRY = 'telecoms';
 export const OTHER_INDUSTRY_OPTION = 'other';
+
 export const COMPANY_SIZE_KEY = 'companySize';
 export const COMPANY_SIZE_20_OR_LESS = '<20';
 export const COMPANY_SIZE_20_99 = '20-99';
@@ -347,6 +389,7 @@ export const COMPANY_SIZE_100_499 = '100-499';
 export const COMPANY_SIZE_500_999 = '500-999';
 export const COMPANY_SIZE_1000_OR_MORE = '1000+';
 export const COMPANY_SIZE_PERSONAL_USE = 'personalUser';
+
 export const MARKETING_AUTOMATION_GOAL_KEY = 'automationGoalSm';
 export const MARKETING_AUTOMATION_LEAD_GENERATION_GOAL = 'lead-generation';
 export const MARKETING_AUTOMATION_CUSTOMER_COMMUNICATION = 'customer-communication';
@@ -355,16 +398,21 @@ export const MARKETING_AUTOMATION_AD_CAMPAIGN = 'ad-campaign';
 export const MARKETING_AUTOMATION_REPORTING = 'reporting';
 export const MARKETING_AUTOMATION_DATA_SYNCHING = 'data-syncing';
 export const MARKETING_AUTOMATION_OTHER = 'other';
+
 export const OTHER_MARKETING_AUTOMATION_GOAL_KEY = 'automationGoalSmOther';
+
 export const CODING_SKILL_KEY = 'codingSkill';
+
 export const AUTOMATION_BENEFICIARY_KEY = 'automationBeneficiary';
 export const AUTOMATION_BENEFICIARY_SELF = 'myself';
 export const AUTOMATION_BENEFICIARY_MY_TEAM = 'my-team';
 export const AUTOMATION_BENEFICIARY_OTHER_TEAMS = 'other-teams';
+
 export const USAGE_MODE_KEY = 'usageModes';
 export const USAGE_MODE_CONNECT_TO_DB = 'connect-internal-db';
 export const USAGE_MODE_BUILD_BE_SERVICES = 'build-be-services';
 export const USAGE_MODE_MANIPULATE_FILES = 'manipulate-files';
+
 export const REPORTED_SOURCE_KEY = 'reportedSource';
 export const REPORTED_SOURCE_OTHER_KEY = 'reportedSourceOther';
 export const REPORTED_SOURCE_GOOGLE = 'google';
@@ -375,17 +423,20 @@ export const REPORTED_SOURCE_FRIEND = 'friend';
 export const REPORTED_SOURCE_PODCAST = 'podcast';
 export const REPORTED_SOURCE_EVENT = 'event';
 export const REPORTED_SOURCE_OTHER = 'other';
+
 export const AUTOMATION_GOAL_KEY = 'automationGoal';
 export const DEVOPS_AUTOMATION_GOAL_KEY = 'automationGoalDevops';
 export const DEVOPS_AUTOMATION_GOAL_OTHER_KEY = 'automationGoalDevopsOther';
 export const DEVOPS_AUTOMATION_OTHER = 'other';
 export const DEVOPS_AUTOMATION_CI_CD_GOAL = 'ci-cd';
-export const DEVOPS_AUTOMATION_CLOUD_INFRASTRUCTURE_ORCHESTRATION_GOAL = 'cloud-infrastructure-orchestration';
+export const DEVOPS_AUTOMATION_CLOUD_INFRASTRUCTURE_ORCHESTRATION_GOAL =
+	'cloud-infrastructure-orchestration';
 export const DEVOPS_AUTOMATION_DATA_SYNCING_GOAL = 'data-syncing';
 export const DEVOPS_INCIDENT_RESPONSE_GOAL = 'incident-response';
 export const DEVOPS_MONITORING_AND_ALERTING_GOAL = 'monitoring-alerting';
 export const DEVOPS_REPORTING_GOAL = 'reporting';
 export const DEVOPS_TICKETING_SYSTEMS_INTEGRATIONS_GOAL = 'ticketing-systems-integrations';
+
 export const CUSTOMER_INTEGRATIONS_GOAL = 'customer-integrations';
 export const CUSTOMER_SUPPORT_GOAL = 'customer-support';
 export const ENGINEERING_GOAL = 'engineering';
@@ -398,21 +449,49 @@ export const SECURITY_GOAL = 'security';
 export const OTHER_AUTOMATION_GOAL = 'other';
 export const NOT_SURE_YET_GOAL = 'not-sure-yet';
 
+export const ROLE_KEY = 'role';
+export const ROLE_OTHER_KEY = 'roleOther';
+export const ROLE_BUSINESS_OWNER = 'business-owner';
+export const ROLE_CUSTOMER_SUPPORT = 'customer-support';
+export const ROLE_DATA_SCIENCE = 'data-science';
+export const ROLE_DEVOPS = 'devops';
+export const ROLE_IT = 'it';
+export const ROLE_ENGINEERING = 'engineering';
+export const ROLE_SALES_AND_MARKETING = 'sales-and-marketing';
+export const ROLE_SECURITY = 'security';
+export const ROLE_OTHER = 'other';
+
+/** END OF PERSONALIZATION SURVEY */
+
 export const MODAL_CANCEL = 'cancel';
 export const MODAL_CONFIRM = 'confirm';
 export const MODAL_CLOSE = 'close';
 
-export const ILLEGAL_FOLDER_CHARACTERS = ['[', ']', '^', '\\', '/', ':', '*', '?', '"', '<', '>', '|'];
+export const ILLEGAL_FOLDER_CHARACTERS = [
+	'[',
+	']',
+	'^',
+	'\\',
+	'/',
+	':',
+	'*',
+	'?',
+	'"',
+	'<',
+	'>',
+	'|',
+];
 export const FOLDER_NAME_ILLEGAL_CHARACTERS_REGEX = new RegExp(
-  `[${ILLEGAL_FOLDER_CHARACTERS.map((char) => char.replace(/[.*+?^${}()|[\\]\\]/g, '\\$&')).join('')}]`,
+	`[${ILLEGAL_FOLDER_CHARACTERS.map((char) => {
+		return char.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+	}).join('')}]`,
 );
+
 export const FOLDER_NAME_ONLY_DOTS_REGEX = /^\.+$/;
 export const FOLDER_NAME_MAX_LENGTH = 100;
 export const VALID_EMAIL_REGEX =
-  /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+	/^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 export const VALID_WORKFLOW_IMPORT_URL_REGEX = /^http[s]?:\/\/.*\.json$/i;
-
-// local storage keys
 export const LOCAL_STORAGE_ACTIVATION_FLAG = 'N8N_HIDE_ACTIVATION_ALERT';
 export const LOCAL_STORAGE_PIN_DATA_DISCOVERY_NDV_FLAG = 'N8N_PIN_DATA_DISCOVERY_NDV';
 export const LOCAL_STORAGE_PIN_DATA_DISCOVERY_CANVAS_FLAG = 'N8N_PIN_DATA_DISCOVERY_CANVAS';
@@ -433,241 +512,366 @@ export const LOCAL_STORAGE_LOGS_SYNC_SELECTION = 'N8N_LOGS_SYNC_SELECTION_ENABLE
 export const LOCAL_STORAGE_LOGS_PANEL_DETAILS_PANEL = 'N8N_LOGS_DETAILS_PANEL';
 export const LOCAL_STORAGE_LOGS_PANEL_DETAILS_PANEL_SUB_NODE = 'N8N_LOGS_DETAILS_PANEL_SUB_NODE';
 export const LOCAL_STORAGE_WORKFLOW_LIST_PREFERENCES_KEY = 'N8N_WORKFLOWS_LIST_PREFERENCES';
-export const LOCAL_STORAGE_EXPERIMENTAL_DOCKED_NODE_SETTINGS = 'N8N_EXPERIMENTAL_DOCKED_NODE_SETTINGS';
+export const LOCAL_STORAGE_EXPERIMENTAL_DOCKED_NODE_SETTINGS =
+	'N8N_EXPERIMENTAL_DOCKED_NODE_SETTINGS';
 export const LOCAL_STORAGE_READ_WHATS_NEW_ARTICLES = 'N8N_READ_WHATS_NEW_ARTICLES';
 export const LOCAL_STORAGE_DISMISSED_WHATS_NEW_CALLOUT = 'N8N_DISMISSED_WHATS_NEW_CALLOUT';
 export const LOCAL_STORAGE_NDV_PANEL_WIDTH = 'N8N_NDV_PANEL_WIDTH';
 export const LOCAL_STORAGE_FOCUS_PANEL = 'N8N_FOCUS_PANEL';
-export const LOCAL_STORAGE_EXPERIMENTAL_DISMISSED_SUGGESTED_WORKFLOWS = 'N8N_EXPERIMENTAL_DISMISSED_SUGGESTED_WORKFLOWS';
+export const LOCAL_STORAGE_EXPERIMENTAL_DISMISSED_SUGGESTED_WORKFLOWS =
+	'N8N_EXPERIMENTAL_DISMISSED_SUGGESTED_WORKFLOWS';
 
 export const BASE_NODE_SURVEY_URL = 'https://n8n-community.typeform.com/to/BvmzxqYv#nodename=';
-export const COMMUNITY_PLUS_DOCS_URL = 'https://docs.n8n.io/hosting/community-edition-features/#registered-community-edition';
+export const COMMUNITY_PLUS_DOCS_URL =
+	'https://docs.n8n.io/hosting/community-edition-features/#registered-community-edition';
 export const RELEASE_NOTES_URL = 'https://docs.n8n.io/release-notes/';
+
+export const HIRING_BANNER = `
+                                                                    //////
+                                                                 ///////////
+                                                               /////      ////
+                                               ///////////////////         ////
+                                             //////////////////////       ////
+     ///////               ///////          ////                /////////////
+  ////////////          ////////////       ////                    ///////
+ ////       ////       ////       ////    ////
+/////        /////////////         //////////
+ /////     ////       ////       ////     ////
+  ////////////          ////////////       ////           ////////
+    ///////                //////           ////        /////////////
+                                             /////////////        ////
+                                                //////////        ////
+                                                       ////      ////
+                                                        ///////////
+                                                          //////
+
+Love n8n? Help us build the future of automation! https://n8n.io/careers?utm_source=n8n_user&utm_medium=console_output
+`;
 
 export const TEMPLATES_NODES_FILTER = ['n8n-nodes-base.start', 'n8n-nodes-base.respondToWebhook'];
 
 export const enum VIEWS {
-  HOMEPAGE = 'Homepage',
-  COLLECTION = 'TemplatesCollectionView',
-  EXECUTIONS = 'Executions',
-  EXECUTION_PREVIEW = 'ExecutionPreview',
-  EXECUTION_DEBUG = 'ExecutionDebug',
-  EXECUTION_HOME = 'ExecutionsLandingPage',
-  TEMPLATE = 'TemplatesWorkflowView',
-  TEMPLATE_SETUP = 'TemplatesWorkflowSetupView',
-  TEMPLATES = 'TemplatesSearchView',
-  CREDENTIALS = 'CredentialsView',
-  VARIABLES = 'VariablesView',
-  NEW_WORKFLOW = 'NodeViewNew',
-  WORKFLOW = 'NodeViewExisting',
-  DEMO = 'WorkflowDemo',
-  TEMPLATE_IMPORT = 'WorkflowTemplate',
-  WORKFLOW_ONBOARDING = 'WorkflowOnboarding',
-  SIGNIN = 'SigninView',
-  SIGNUP = 'SignupView',
-  SIGNOUT = 'SignoutView',
-  SETUP = 'SetupView',
-  FORGOT_PASSWORD = 'ForgotMyPasswordView',
-  CHANGE_PASSWORD = 'ChangePasswordView',
-  SETTINGS = 'Settings',
-  USERS_SETTINGS = 'UsersSettings',
-  LDAP_SETTINGS = 'LdapSettings',
-  PERSONAL_SETTINGS = 'PersonalSettings',
-  API_SETTINGS = 'APISettings',
-  NOT_FOUND = 'NotFoundView',
-  COMMUNITY_NODES = 'CommunityNodes',
-  WORKFLOWS = 'WorkflowsView',
-  WORKFLOW_EXECUTIONS = 'WorkflowExecutions',
-  EVALUATION = 'Evaluation',
-  EVALUATION_EDIT = 'EvaluationEdit',
-  EVALUATION_RUNS_DETAIL = 'EvaluationRunsDetail',
-  USAGE = 'Usage',
-  LOG_STREAMING_SETTINGS = 'LogStreamingSettingsView',
-  SSO_SETTINGS = 'SSoSettings',
-  EXTERNAL_SECRETS_SETTINGS = 'ExternalSecretsSettings',
-  SAML_ONBOARDING = 'SamlOnboarding',
-  SOURCE_CONTROL = 'SourceControl',
-  MFA_VIEW = 'MfaView',
-  WORKFLOW_HISTORY = 'WorkflowHistory',
-  WORKER_VIEW = 'WorkerView',
-  PROJECTS = 'Projects',
-  PROJECT_DETAILS = 'ProjectDetails',
-  PROJECTS_WORKFLOWS = 'ProjectsWorkflows',
-  PROJECTS_CREDENTIALS = 'ProjectsCredentials',
-  PROJECT_SETTINGS = 'ProjectSettings',
-  PROJECTS_EXECUTIONS = 'ProjectsExecutions',
-  FOLDERS = 'Folders',
-  PROJECTS_FOLDERS = 'ProjectsFolders',
-  INSIGHTS = 'Insights',
-  SHARED_WITH_ME = 'SharedWithMe',
-  SHARED_WORKFLOWS = 'SharedWorkflows',
-  SHARED_CREDENTIALS = 'SharedCredentials',
+	HOMEPAGE = 'Homepage',
+	COLLECTION = 'TemplatesCollectionView',
+	EXECUTIONS = 'Executions',
+	EXECUTION_PREVIEW = 'ExecutionPreview',
+	EXECUTION_DEBUG = 'ExecutionDebug',
+	EXECUTION_HOME = 'ExecutionsLandingPage',
+	TEMPLATE = 'TemplatesWorkflowView',
+	TEMPLATE_SETUP = 'TemplatesWorkflowSetupView',
+	TEMPLATES = 'TemplatesSearchView',
+	CREDENTIALS = 'CredentialsView',
+	VARIABLES = 'VariablesView',
+	NEW_WORKFLOW = 'NodeViewNew',
+	WORKFLOW = 'NodeViewExisting',
+	DEMO = 'WorkflowDemo',
+	TEMPLATE_IMPORT = 'WorkflowTemplate',
+	WORKFLOW_ONBOARDING = 'WorkflowOnboarding',
+	SIGNIN = 'SigninView',
+	SIGNUP = 'SignupView',
+	SIGNOUT = 'SignoutView',
+	SETUP = 'SetupView',
+	FORGOT_PASSWORD = 'ForgotMyPasswordView',
+	CHANGE_PASSWORD = 'ChangePasswordView',
+	SETTINGS = 'Settings',
+	USERS_SETTINGS = 'UsersSettings',
+	LDAP_SETTINGS = 'LdapSettings',
+	PERSONAL_SETTINGS = 'PersonalSettings',
+	API_SETTINGS = 'APISettings',
+	NOT_FOUND = 'NotFoundView',
+	COMMUNITY_NODES = 'CommunityNodes',
+	WORKFLOWS = 'WorkflowsView',
+	WORKFLOW_EXECUTIONS = 'WorkflowExecutions',
+	EVALUATION = 'Evaluation',
+	EVALUATION_EDIT = 'EvaluationEdit',
+	EVALUATION_RUNS_DETAIL = 'EvaluationRunsDetail',
+	USAGE = 'Usage',
+	LOG_STREAMING_SETTINGS = 'LogStreamingSettingsView',
+	SSO_SETTINGS = 'SSoSettings',
+	EXTERNAL_SECRETS_SETTINGS = 'ExternalSecretsSettings',
+	SAML_ONBOARDING = 'SamlOnboarding',
+	SOURCE_CONTROL = 'SourceControl',
+	MFA_VIEW = 'MfaView',
+	WORKFLOW_HISTORY = 'WorkflowHistory',
+	WORKER_VIEW = 'WorkerView',
+	PROJECTS = 'Projects',
+	PROJECT_DETAILS = 'ProjectDetails',
+	PROJECTS_WORKFLOWS = 'ProjectsWorkflows',
+	PROJECTS_CREDENTIALS = 'ProjectsCredentials',
+	PROJECT_SETTINGS = 'ProjectSettings',
+	PROJECTS_EXECUTIONS = 'ProjectsExecutions',
+	FOLDERS = 'Folders',
+	PROJECTS_FOLDERS = 'ProjectsFolders',
+	INSIGHTS = 'Insights',
+	SHARED_WITH_ME = 'SharedWithMe',
+	SHARED_WORKFLOWS = 'SharedWorkflows',
+	SHARED_CREDENTIALS = 'SharedCredentials',
+	ENTITY_NOT_FOUND = 'EntityNotFound',
+	ENTITY_UNAUTHORIZED = 'EntityUnAuthorized',
 }
 
 export const EDITABLE_CANVAS_VIEWS = [VIEWS.WORKFLOW, VIEWS.NEW_WORKFLOW, VIEWS.EXECUTION_DEBUG];
 export const VISIBLE_LOGS_VIEWS = [...EDITABLE_CANVAS_VIEWS, VIEWS.EXECUTION_PREVIEW];
 
 export const TEST_PIN_DATA = [
-  { name: 'First item', code: 1 },
-  { name: 'Second item', code: 2 },
+	{
+		name: 'First item',
+		code: 1,
+	},
+	{
+		name: 'Second item',
+		code: 2,
+	},
 ];
 export const MAPPING_PARAMS = [
-  '$binary',
-  '$data',
-  '$env',
-  '$evaluateExpression',
-  '$execution',
-  '$ifEmpty',
-  '$input',
-  '$item',
-  '$jmespath',
-  '$fromAI',
-  '$json',
-  '$node',
-  '$now',
-  '$parameter',
-  '$parameters',
-  '$position',
-  '$prevNode',
-  '$resumeWebhookUrl',
-  '$runIndex',
-  '$today',
-  '$vars',
-  '$workflow',
-  '$nodeVersion',
+	'$binary',
+	'$data',
+	'$env',
+	'$evaluateExpression',
+	'$execution',
+	'$ifEmpty',
+	'$input',
+	'$item',
+	'$jmespath',
+	'$fromAI',
+	'$json',
+	'$node',
+	'$now',
+	'$parameter',
+	'$parameters',
+	'$position',
+	'$prevNode',
+	'$resumeWebhookUrl',
+	'$runIndex',
+	'$today',
+	'$vars',
+	'$workflow',
+	'$nodeVersion',
 ];
 
 export const DEFAULT_STICKY_HEIGHT = 160;
 export const DEFAULT_STICKY_WIDTH = 240;
 
 export const enum WORKFLOW_MENU_ACTIONS {
-  DUPLICATE = 'duplicate',
-  DOWNLOAD = 'download',
-  IMPORT_FROM_URL = 'import-from-url',
-  IMPORT_FROM_FILE = 'import-from-file',
-  PUSH = 'push',
-  SETTINGS = 'settings',
-  DELETE = 'delete',
-  ARCHIVE = 'archive',
-  UNARCHIVE = 'unarchive',
-  RENAME = 'rename',
-  CHANGE_OWNER = 'change-owner',
+	DUPLICATE = 'duplicate',
+	DOWNLOAD = 'download',
+	IMPORT_FROM_URL = 'import-from-url',
+	IMPORT_FROM_FILE = 'import-from-file',
+	PUSH = 'push',
+	SETTINGS = 'settings',
+	DELETE = 'delete',
+	ARCHIVE = 'archive',
+	UNARCHIVE = 'unarchive',
+	RENAME = 'rename',
+	CHANGE_OWNER = 'change-owner',
 }
+
+/**
+ * Enterprise edition
+ */
+export const EnterpriseEditionFeature: Record<
+	EnterpriseEditionFeatureKey,
+	EnterpriseEditionFeatureValue
+> = {
+	AdvancedExecutionFilters: 'advancedExecutionFilters',
+	Sharing: 'sharing',
+	Ldap: 'ldap',
+	LogStreaming: 'logStreaming',
+	Variables: 'variables',
+	Saml: 'saml',
+	Oidc: 'oidc',
+	EnforceMFA: 'mfaEnforcement',
+	SourceControl: 'sourceControl',
+	ExternalSecrets: 'externalSecrets',
+	AuditLogs: 'auditLogs',
+	DebugInEditor: 'debugInEditor',
+	WorkflowHistory: 'workflowHistory',
+	WorkerView: 'workerView',
+	AdvancedPermissions: 'advancedPermissions',
+	ApiKeyScopes: 'apiKeyScopes',
+};
 
 export const MAIN_NODE_PANEL_WIDTH = 390;
 
 export const enum MAIN_HEADER_TABS {
-  WORKFLOW = 'workflow',
-  EXECUTIONS = 'executions',
-  SETTINGS = 'settings',
-  EVALUATION = 'evaluation',
+	WORKFLOW = 'workflow',
+	EXECUTIONS = 'executions',
+	SETTINGS = 'settings',
+	EVALUATION = 'evaluation',
 }
-
 export const CURL_IMPORT_NOT_SUPPORTED_PROTOCOLS = [
-  'ftp',
-  'ftps',
-  'dict',
-  'imap',
-  'imaps',
-  'ldap',
-  'ldaps',
-  'mqtt',
-  'pop',
-  'pop3s',
-  'rtmp',
-  'rtsp',
-  'scp',
-  'sftp',
-  'smb',
-  'smbs',
-  'smtp',
-  'smtps',
-  'telnet',
-  'tftp',
+	'ftp',
+	'ftps',
+	'dict',
+	'imap',
+	'imaps',
+	'ldap',
+	'ldaps',
+	'mqtt',
+	'pop',
+	'pop3s',
+	'rtmp',
+	'rtsp',
+	'scp',
+	'sftp',
+	'smb',
+	'smbs',
+	'smtp',
+	'smtps',
+	'telnet',
+	'tftp',
 ];
 
 export const CURL_IMPORT_NODES_PROTOCOLS: { [key: string]: string } = {
-  ftp: 'FTP',
-  ftps: 'FTP',
-  ldap: 'LDAP',
-  ldaps: 'LDAP',
-  mqtt: 'MQTT',
-  imap: 'IMAP',
-  imaps: 'IMAP',
+	ftp: 'FTP',
+	ftps: 'FTP',
+	ldap: 'LDAP',
+	ldaps: 'LDAP',
+	mqtt: 'MQTT',
+	imap: 'IMAP',
+	imaps: 'IMAP',
 };
 
 export const enum SignInType {
-  LDAP = 'ldap',
-  EMAIL = 'email',
-  OIDC = 'oidc',
+	LDAP = 'ldap',
+	EMAIL = 'email',
+	OIDC = 'oidc',
 }
 
 export const N8N_SALES_EMAIL = 'sales@n8n.io';
+
 export const N8N_CONTACT_EMAIL = 'contact@n8n.io';
-export const EXPRESSION_EDITOR_PARSER_TIMEOUT = 15_000;
+
+export const EXPRESSION_EDITOR_PARSER_TIMEOUT = 15_000; // ms
 
 export const KEEP_AUTH_IN_NDV_FOR_NODES = [
-  HTTP_REQUEST_NODE_TYPE,
-  HTTP_REQUEST_TOOL_NODE_TYPE,
-  WEBHOOK_NODE_TYPE,
-  WAIT_NODE_TYPE,
-  DISCORD_NODE_TYPE,
-  CHAT_TRIGGER_NODE_TYPE,
-  FORM_TRIGGER_NODE_TYPE,
+	HTTP_REQUEST_NODE_TYPE,
+	HTTP_REQUEST_TOOL_NODE_TYPE,
+	WEBHOOK_NODE_TYPE,
+	WAIT_NODE_TYPE,
+	DISCORD_NODE_TYPE,
+	CHAT_TRIGGER_NODE_TYPE,
+	FORM_TRIGGER_NODE_TYPE,
 ];
 export const MAIN_AUTH_FIELD_NAME = 'authentication';
 export const NODE_RESOURCE_FIELD_NAME = 'resource';
 
-export const CANVAS_ZOOMED_VIEW_EXPERIMENT = { name: 'canvas_zoomed_view', control: 'control', variant: 'variant' } as const;
-export const NDV_UI_OVERHAUL_EXPERIMENT = { name: '029_ndv_ui_overhaul', control: 'control', variant: 'variant' } as const;
-export const WORKFLOW_BUILDER_EXPERIMENT = { name: '036_workflow_builder_agent', control: 'control', variant: 'variant' } as const;
-export const EXTRA_TEMPLATE_LINKS_EXPERIMENT = { name: '034_extra_template_links', control: 'control', variant: 'variant' } as const;
+export const CANVAS_ZOOMED_VIEW_EXPERIMENT = {
+	name: 'canvas_zoomed_view',
+	control: 'control',
+	variant: 'variant',
+};
+
+export const NDV_UI_OVERHAUL_EXPERIMENT = {
+	name: '029_ndv_ui_overhaul',
+	control: 'control',
+	variant: 'variant',
+};
+
+export const WORKFLOW_BUILDER_EXPERIMENT = {
+	name: '036_workflow_builder_agent',
+	control: 'control',
+	variant: 'variant',
+};
+
+export const EXTRA_TEMPLATE_LINKS_EXPERIMENT = {
+	name: '034_extra_template_links',
+	control: 'control',
+	variant: 'variant',
+};
+
 export const TEMPLATE_ONBOARDING_EXPERIMENT = {
-  name: '035_template_onboarding',
-  control: 'control',
-  variantStarterPack: 'variant-starter-pack',
-  variantSuggestedTemplates: 'variant-suggested-templates',
-} as const;
+	name: '035_template_onboarding',
+	control: 'control',
+	variantStarterPack: 'variant-starter-pack',
+	variantSuggestedTemplates: 'variant-suggested-templates',
+};
+
 export const BATCH_11AUG_EXPERIMENT = {
-  name: '37_onboarding_experiments_batch_aug11',
-  control: 'control',
-  variantReadyToRun: 'variant-ready-to-run-workflows',
-  variantReadyToRun2: 'variant-ready-to-run-workflows_v2',
-  variantReadyToRun3: 'variant-ready-to-run-workflows_v3',
-} as const;
-export const PRE_BUILT_AGENTS_EXPERIMENT = { name: '038_pre_built_agents', control: 'control', variant: 'variant' } as const;
-export const TEMPLATE_RECO_V2 = { name: '039_template_onboarding_v2', control: 'control', variant: 'variant' } as const;
+	name: '37_onboarding_experiments_batch_aug11',
+	control: 'control',
+	variantReadyToRun: 'variant-ready-to-run-workflows',
+	variantReadyToRun2: 'variant-ready-to-run-workflows_v2',
+	variantReadyToRun3: 'variant-ready-to-run-workflows_v3',
+};
+
+export const PRE_BUILT_AGENTS_EXPERIMENT = {
+	name: '038_pre_built_agents',
+	control: 'control',
+	variant: 'variant',
+};
+
+export const TEMPLATE_RECO_V2 = {
+	name: '039_template_onboarding_v2',
+	control: 'control',
+	variant: 'variant',
+};
+
 export const EXPERIMENTS_TO_TRACK = [
-  WORKFLOW_BUILDER_EXPERIMENT.name,
-  EXTRA_TEMPLATE_LINKS_EXPERIMENT.name,
-  TEMPLATE_ONBOARDING_EXPERIMENT.name,
-  NDV_UI_OVERHAUL_EXPERIMENT.name,
-  BATCH_11AUG_EXPERIMENT.name,
-  PRE_BUILT_AGENTS_EXPERIMENT.name,
+	WORKFLOW_BUILDER_EXPERIMENT.name,
+	EXTRA_TEMPLATE_LINKS_EXPERIMENT.name,
+	TEMPLATE_ONBOARDING_EXPERIMENT.name,
+	NDV_UI_OVERHAUL_EXPERIMENT.name,
+	BATCH_11AUG_EXPERIMENT.name,
+	PRE_BUILT_AGENTS_EXPERIMENT.name,
 ];
 
-export const MFA_FORM = { MFA_TOKEN: 'MFA_TOKEN', MFA_RECOVERY_CODE: 'MFA_RECOVERY_CODE' } as const;
+export const MFA_FORM = {
+	MFA_TOKEN: 'MFA_TOKEN',
+	MFA_RECOVERY_CODE: 'MFA_RECOVERY_CODE',
+} as const;
+
 export const MFA_AUTHENTICATION_REQUIRED_ERROR_CODE = 998;
+
 export const MFA_AUTHENTICATION_CODE_WINDOW_EXPIRED = 997;
+
 export const MFA_AUTHENTICATION_CODE_INPUT_MAX_LENGTH = 6;
+
 export const MFA_AUTHENTICATION_RECOVERY_CODE_INPUT_MAX_LENGTH = 36;
 
 export const NODE_TYPES_EXCLUDED_FROM_OUTPUT_NAME_APPEND = [
-  FILTER_NODE_TYPE,
-  SWITCH_NODE_TYPE,
-  REMOVE_DUPLICATES_NODE_TYPE,
-  RESPOND_TO_WEBHOOK_NODE_TYPE,
+	FILTER_NODE_TYPE,
+	SWITCH_NODE_TYPE,
+	REMOVE_DUPLICATES_NODE_TYPE,
+	RESPOND_TO_WEBHOOK_NODE_TYPE,
 ];
 
-// HTML sanitization allowlist
-export const ALLOWED_HTML_ATTRIBUTES = ['href', 'name', 'target', 'title', 'class', 'id', 'style'];
-export const ALLOWED_HTML_TAGS = ['p', 'strong', 'b', 'code', 'a', 'br', 'i', 'ul', 'li', 'em', 'small', 'details', 'summary', 'mark'];
+type ClearOutgoingConnectonsEvents = {
+	[nodeName: string]: {
+		parameterPaths: string[];
+		eventTypes: string[];
+	};
+};
 
-// Cloud URLs (window usage adapted for Next.js: guard against SSR; default to app)
-export const CLOUD_CHANGE_PLAN_PAGE =
-  typeof window !== 'undefined' && window.location?.host?.includes('stage-app.n8n.cloud')
-    ? 'https://stage-app.n8n.cloud/account/change-plan'
-    : 'https://app.n8n.cloud/account/change-plan';
+export const SHOULD_CLEAR_NODE_OUTPUTS: ClearOutgoingConnectonsEvents = {
+	[SWITCH_NODE_TYPE]: {
+		parameterPaths: ['parameters.rules.values'],
+		eventTypes: ['optionsOrderChanged'],
+	},
+};
+
+export const ALLOWED_HTML_ATTRIBUTES = ['href', 'name', 'target', 'title', 'class', 'id', 'style'];
+
+export const ALLOWED_HTML_TAGS = [
+	'p',
+	'strong',
+	'b',
+	'code',
+	'a',
+	'br',
+	'i',
+	'ul',
+	'li',
+	'em',
+	'small',
+	'details',
+	'summary',
+	'mark',
+];
+
+export const CLOUD_CHANGE_PLAN_PAGE = window.location.host.includes('stage-app.n8n.cloud')
+	? 'https://stage-app.n8n.cloud/account/change-plan'
+	: 'https://app.n8n.cloud/account/change-plan';
 
 export const CLOUD_TRIAL_CHECK_INTERVAL = 5000;
 
@@ -681,29 +885,74 @@ export const ASK_AI_LOADING_DURATION_MS = 12000;
 export const ASK_AI_SLIDE_OUT_DURATION_MS = 200;
 
 export const APPEND_ATTRIBUTION_DEFAULT_PATH = 'parameters.options.appendAttribution';
+
 export const DRAG_EVENT_DATA_KEY = 'nodesAndConnections';
+
 export const NOT_DUPLICATABLE_NODE_TYPES = [FORM_TRIGGER_NODE_TYPE];
 export const UPDATE_WEBHOOK_ID_NODE_TYPES = [FORM_TRIGGER_NODE_TYPE];
+
 export const CREATOR_HUB_URL = 'https://creators.n8n.io/hub';
 
-// Time utilities
-export const TIME = { SECOND: 1000, MINUTE: 60 * 1000, HOUR: 60 * 60 * 1000, DAY: 24 * 60 * 60 * 1000 } as const;
+/**
+ * Units of time in milliseconds
+ */
+export const TIME = {
+	SECOND: 1000,
+	MINUTE: 60 * 1000,
+	HOUR: 60 * 60 * 1000,
+	DAY: 24 * 60 * 60 * 1000,
+};
+
 export const THREE_DAYS_IN_MILLIS = 3 * TIME.DAY;
 export const SEVEN_DAYS_IN_MILLIS = 7 * TIME.DAY;
 export const SIX_MONTHS_IN_MILLIS = 6 * 30 * TIME.DAY;
 
-// Mouse button codes
-export const MOUSE_EVENT_BUTTON = { PRIMARY: 0, MIDDLE: 1, SECONDARY: 2, BROWSER_BACK: 3, BROWSER_FORWARD: 4 } as const;
-export const MOUSE_EVENT_BUTTONS = { NONE: 0, PRIMARY: 1, SECONDARY: 2, MIDDLE: 4, BROWSER_BACK: 8, BROWSER_FORWARD: 16 } as const;
+/**
+ * Mouse button codes
+ */
 
-// Template URLs used for routing
-export const TEMPLATES_URLS = {
-  DEFAULT_API_HOST: 'https://api.n8n.io/api/',
-  BASE_WEBSITE_URL: 'https://n8n.io/workflows/',
-  UTM_QUERY: { utm_source: 'n8n_app', utm_medium: 'template_library' },
+/**
+ * Mapping for the MouseEvent.button property that indicates which button was pressed
+ * on the mouse to trigger the event.
+ *
+ * @docs https://www.w3.org/TR/uievents/#dom-mouseevent-button
+ */
+export const MOUSE_EVENT_BUTTON = {
+	PRIMARY: 0,
+	MIDDLE: 1,
+	SECONDARY: 2,
+	BROWSER_BACK: 3,
+	BROWSER_FORWARD: 4,
 } as const;
 
-// Secure cookie warning (safe to keep for Next.js; consumer decides where to use)
+/**
+ * Mapping for the MouseEvent.buttons property that indicates which buttons are pressed
+ * on the mouse when a mouse event is triggered. If multiple buttons are pressed,
+ * the values are added together to produce a new number.
+ *
+ * @docs https://www.w3.org/TR/uievents/#dom-mouseevent-buttons
+ */
+export const MOUSE_EVENT_BUTTONS = {
+	NONE: 0,
+	PRIMARY: 1,
+	SECONDARY: 2,
+	MIDDLE: 4,
+	BROWSER_BACK: 8,
+	BROWSER_FORWARD: 16,
+} as const;
+
+/**
+ * Urls used to route users to the right template repository
+ */
+export const TEMPLATES_URLS = {
+	DEFAULT_API_HOST: 'https://api.n8n.io/api/',
+	BASE_WEBSITE_URL: 'https://n8n.io/workflows/',
+	UTM_QUERY: {
+		utm_source: 'n8n_app',
+		utm_medium: 'template_library',
+	},
+};
+
 export const INSECURE_CONNECTION_WARNING = `
 <body style="margin-top: 20px; font-family: 'Open Sans', sans-serif; text-align: center;">
 <h1 style="font-size: 40px">&#x1F6AB;</h1>
@@ -711,20 +960,31 @@ export const INSECURE_CONNECTION_WARNING = `
 </h2>
 <br/>
 <div style="font-size: 18px; max-width: 640px; text-align: left; margin: 10px auto">
-  To fix this, please consider the following options:
-  <ul>
-    <li>Setup TLS/HTTPS (<strong>recommended</strong>), or</li>
-    <li>If you are running this locally, and not using Safari, try using <a href="http://localhost:5678">localhost</a> instead</li>
-    <li>If you prefer to disable this security feature (<strong>not recommended</strong>), set the environment variable <code>N8N_SECURE_COOKIE</code> to <code>false</code></li>
-  </ul>
+	To fix this, please consider the following options:
+	<ul>
+		<li>Setup TLS/HTTPS (<strong>recommended</strong>), or</li>
+		<li>If you are running this locally, and not using Safari, try using <a href="http://localhost:5678">localhost</a> instead</li>
+		<li>If you prefer to disable this security feature (<strong>not recommended</strong>), set the environment variable <code>N8N_SECURE_COOKIE</code> to <code>false</code></li>
+	</ul>
 </div>
 </body>`;
 
-// App element IDs
+/**
+ * Injection Keys
+ */
+
+// Create injection keys using the helper function
+export const CanvasKey = createInjectionKey<CanvasInjectionData>('canvas');
+export const CanvasNodeKey = createInjectionKey<CanvasNodeInjectionData>('canvasNode');
+export const CanvasNodeHandleKey = createInjectionKey<CanvasNodeHandleInjectionData>('canvasNodeHandle');
+export const PopOutWindowKey = createInjectionKey<Ref<Window | undefined>>('PopOutWindow');
+export const ExpressionLocalResolveContextSymbol = createInjectionKey<ComputedRef<ExpressionLocalResolveContext | undefined>>('ExpressionLocalResolveContext');
+
 export const APP_MODALS_ELEMENT_ID = 'app-modals';
 export const CODEMIRROR_TOOLTIP_CONTAINER_ELEMENT_ID = 'cm-tooltip-container';
 
 export const AI_NODES_PACKAGE_NAME = '@n8n/n8n-nodes-langchain';
-export const AI_ASSISTANT_MAX_CONTENT_LENGTH = 100; // in kilobytes
-export const RUN_DATA_DEFAULT_PAGE_SIZE = 25;
 
+export const AI_ASSISTANT_MAX_CONTENT_LENGTH = 100; // in kilobytes
+
+export const RUN_DATA_DEFAULT_PAGE_SIZE = 25;

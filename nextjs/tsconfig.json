@@ -22,18 +22,10 @@
       "@/*": [
         "*"
       ],
+      "@n8n/composables/*": ["shims/@n8n/composables/*"],
       "@n8n/*": [
-        "shims/@n8n/*"
-      ],
-      "@n8n/rest-api-client/*": [
-        "shims/@n8n/rest-api-client/*"
-      ],
-      "@n8n/ai-workflow-builder.ee/*": [
-        "shims/@n8n/ai-workflow-builder.ee/*"
-      ],
-      "@n8n/rest-api-client/*": [
-        "shims/@n8n/rest-api-client/*",
-        "@n8n/rest-api-client/*/src/index.ts"
+        "shims/@n8n/*/src/index.ts",
+        "@n8n/*/src/index.ts"
       ],
       "@/constants": [
         "constants.ts"
