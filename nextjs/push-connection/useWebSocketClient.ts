@@ -1,6 +1,7 @@
 import { useHeartbeat } from '@/push-connection/useHeartbeat';
 import { useReconnectTimer } from '@/push-connection/useReconnectTimer';
-import { ref } from 'vue';
+type Ref<T> = { value: T };
+const ref = <T>(initial: T): Ref<T> => ({ value: initial });
 import { createHeartbeatMessage } from '@n8n/api-types';
 export type UseWebSocketClientOptions<T> = {
 	url: string;
@@ -74,11 +75,13 @@ export const useWebSocketClient = <T>(options: UseWebSocketClientOptions<T>) => 
 		// Ensure we disconnect any existing connection
 		disconnect();
 
-		socket.value = new WebSocket(options.url);
-		socket.value.addEventListener('open', onConnected);
-		socket.value.addEventListener('message', onMessage);
-		socket.value.addEventListener('error', onError);
-		socket.value.addEventListener('close', onConnectionLost);
+		if (typeof window === 'undefined') return;
+		const ws = new WebSocket(options.url);
+		socket.value = ws;
+		ws.addEventListener('open', onConnected);
+		ws.addEventListener('message', onMessage);
+		ws.addEventListener('error', onError);
+		ws.addEventListener('close', onConnectionLost);
 	};
 
 	const reconnectTimer = useReconnectTimer({

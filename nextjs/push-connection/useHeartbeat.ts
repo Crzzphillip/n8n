@@ -1,4 +1,5 @@
-import { ref } from 'vue';
+type Ref<T> = { value: T };
+const ref = <T>(initial: T): Ref<T> => ({ value: initial });
 
 export type UseHeartbeatOptions = {
 	interval: number;

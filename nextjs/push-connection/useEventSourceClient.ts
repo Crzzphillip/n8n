@@ -1,5 +1,7 @@
 import { useReconnectTimer } from '@/push-connection/useReconnectTimer';
-import { ref } from 'vue';
+
+type Ref<T> = { value: T };
+const ref = <T>(initial: T): Ref<T> => ({ value: initial });
 
 export type UseEventSourceClientOptions = {
 	url: string;
@@ -43,10 +45,12 @@ export const useEventSourceClient = (options: UseEventSourceClientOptions) => {
 		// Ensure we disconnect any existing connection
 		disconnect();
 
-		eventSource.value = new EventSource(options.url, { withCredentials: true });
-		eventSource.value.addEventListener('open', onConnected);
-		eventSource.value.addEventListener('message', onMessage);
-		eventSource.value.addEventListener('close', onConnectionLost);
+		if (typeof window === 'undefined') return;
+		const es = new EventSource(options.url, { withCredentials: true });
+		eventSource.value = es;
+		es.addEventListener('open', onConnected);
+		es.addEventListener('message', onMessage);
+		es.addEventListener('close', onConnectionLost);
 	};
 
 	const reconnectTimer = useReconnectTimer({

@@ -145,7 +145,7 @@ export const useRootStore = create<RootStore>(((set: any, get: () => RootStore) 
 			});
 		},
 		setUrlBaseEditor: (value: string) => {
-			const url = value.endsWith('/') ? value : `${value}/`;
+		const url = value.endsWith('/') ? value : `${value}/`;
 			set(() => {
 				const base: RootStoreState = { ...(get() as RootStoreState) } as RootStoreState;
 				base.urlBaseEditor = url;
@@ -212,7 +212,7 @@ export const useRootStore = create<RootStore>(((set: any, get: () => RootStore) 
 			set(() => {
 				const base: RootStoreState = { ...(get() as RootStoreState) } as RootStoreState;
 				base.timezone = value;
-				setGlobalState({ defaultTimezone: value });
+		setGlobalState({ defaultTimezone: value });
 				return { timezone: value, ...computeDerivedFields(base) } as Partial<RootStore>;
 			});
 		},

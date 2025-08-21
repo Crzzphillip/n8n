@@ -93,7 +93,7 @@ export const useAgentRequestStore = create<AgentRequestStore>()(
 				set((state) => {
 					if (workflowId) {
 						if (!state.agentRequests[workflowId]) return {} as Partial<AgentRequestStore>;
-						return {
+	return {
 							agentRequests: {
 								...state.agentRequests,
 								[workflowId]: {},
